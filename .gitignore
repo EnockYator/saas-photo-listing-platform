@@ -1,0 +1,98 @@
+# Binaries and compiled files
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Go specific
+# Binaries for programs
+*.out
+
+# Dependency directories (remove the comment below to include it)
+vendor/
+
+# Go workspace file
+go.work
+
+# Test coverage
+coverage.txt
+coverage.html
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Configuration files (except example configs)
+config.yaml
+config.yml
+config.json
+config.toml
+config.local.*
+
+# Keep example configs
+!config.example.*
+!*.example.*
+
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+tmp/
+temp/
+
+# Migration specific
+db/migrations/*.sql
+!db/migrations/*.up.sql
+!db/migrations/*.down.sql
+
+# SQLC generated files
+internal/db/sqlc/*.go
+!internal/db/sqlc/db.go
+!internal/db/sqlc/models.go
+
+# Certificates and keys
+*.pem
+*.key
+*.crt
+*.cer
+
+# Build artifacts
+dist/
+build/
+
+# Uploaded files/media (if stored locally)
+uploads/
+media/
+images/
+
+# Development environment files
+docker-compose.override.yml
+docker-compose.dev.yml
+
+# Optional: Platform specific
+# For deployment configurations git is not ignored
