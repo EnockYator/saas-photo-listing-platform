@@ -77,35 +77,71 @@ HTTP → Handlers → Services → Storage → Database
 
 ## Project Structure
 
+```text
 saas-photo-listing-platform/
+├── backend/
+│   ├── cmd/
+│   │   └── api/
+│   │       └── main.go               # Application entry point
+│   │
+│   ├── deployments/
+│   │   ├── docker-compose.yml        # Local orchestration (API, DB, etc.)
+│   │   └── Dockerfile                # Backend container image
+│   │
+│   ├── go.mod                        # Go module definition
+│   ├── go.sum                        # Go dependency checksums
+│   │
+│   ├── internal/
+│   │   ├── db/
+│   │   │   ├── schema/               # Database migrations
+│   │   │   │   ├── 001_create_users.sql
+│   │   │   │   └── 002_create_photos.sql
+│   │   │   └── sqlc.yaml             # sqlc configuration
+│   │   │
+│   │   ├── domain/                   # Core business entities
+│   │   │   ├── listing.go
+│   │   │   ├── photo.go
+│   │   │   ├── subscription.go
+│   │   │   └── user.go
+│   │   │
+│   │   ├── http/
+│   │   │   ├── handlers/             # HTTP request handlers
+│   │   │   │   ├── auth_handler.go
+│   │   │   │   ├── listing_handler.go
+│   │   │   │   └── photo_handler.go
+│   │   │   ├── router.go             # Route definitions
+│   │   │   └── schemas/              # Request/response DTOs
+│   │   │       ├── auth.go
+│   │   │       ├── listing.go
+│   │   │       └── photo.go
+│   │   │
+│   │   ├── middleware/               # HTTP middlewares
+│   │   │   ├── auth.go               # Authentication middleware
+│   │   │   └── middleware.go         # Common middleware utilities
+│   │   │
+│   │   ├── storage/
+│   │   │   ├── postgres/             # PostgreSQL persistence
+│   │   │   │   ├── db.go
+│   │   │   │   ├── queries/           # SQL queries for sqlc
+│   │   │   │   └── sqlc_generated/    # Generated Go code from sqlc
+│   │   │   │
+│   │   │   └── s3_storage/            # Object storage (S3-compatible)
+│   │   │       └── s3_storage.go
+│   │   │
+│   │   ├── util/                     # Shared utilities
+│   │   │   ├── helpers.go
+│   │   │   └── validator.go
+│   │   │
+│   │   └── worker/                   # Background jobs & async processing
+│   │
+│   └── Makefile                     # Build & dev automation
 │
-├── cmd/
-│ └── api/ # Application entry point
-├── internal/
-│ ├── config/ # App configuration
-│ ├── domain/ # Core business models
-│ ├── http/
-│ │ ├── handlers/ # HTTP handlers/controllers
-│ │ ├── schemas/ # API request/response schemas
-│ │ └── router.go # Route registration
-│ ├── service/ # Business logic
-│ ├── storage/
-│ │ ├── postgres/ # SQLC + DB access
-│ │ │ ├── queries/ # SQLC SQL files
-│ │ │ └── sqlc_generated/ # SQLC-generated structs and methods
-│ │ └── s3_storage.go # File storage
-│ ├── middleware/ # HTTP middleware
-│ ├── util/ # Helpers & validators
-│ └── worker/ # Async jobs
-├── db/
-│ ├── schema/ # Database migrations
-│ └── sqlc.yaml # SQLC configuration
-├── deployments/ # Docker/Nginx deployment
-├── go.mod
-├── go.sum
-├── Makefile
-└── README.md
-
+├── frontend/                         # React frontend (UI)
+│
+├── nginx/
+│   └── nginx.conf                   # Reverse proxy & static serving
+│
+└── README.md                        # Project documentation
 
 ---
 
@@ -249,6 +285,4 @@ Contributing
 
     Push to branch: git push origin feature/my-feature
 
-    Open a Pull Request
-
-    Follow Go coding standards, clean architecture, and write tests for new functionality.
+    Open a Pull R
