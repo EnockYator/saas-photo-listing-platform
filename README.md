@@ -1,55 +1,115 @@
 # Photo Listing SaaS
 
-A **Photo Listing SaaS platform** built with **Go (Golang), PostgreSQL, SQLC, and React**, designed for multi-tenant, role-based access, and scalable photo management. This backend is production-ready and follows **clean architecture principles** with strict separation of concerns.
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+
+A **production-grade Photo Listing SaaS platform** for uploading, organizing, watermarking, and securely sharing photos at scale.
+Built with **Go (Golang), PostgreSQL, SQLC, and React**, the system is designed for **multi-tenant environments, role-based access control, and high-performance media handling**.
+This system is production-ready and follows **clean architecture principles** with strict separation of concerns, ensuring maintainability, testability, and long-term scalability.
 
 ---
 
 ## Table of Contents
 
 1. [Project Overview](#project-overview)  
-2. [Features](#features)  
-3. [Tech Stack](#tech-stack)  
-4. [Project Structure](#project-structure)  
-5. [Setup & Installation](#setup--installation)  
-6. [Database & SQLC](#database--sqlc)  
-7. [API Documentation](#api-documentation)  
-8. [Environment Variables](#environment-variables)  
-9. [Developer Workflow](#developer-workflow)  
-10. [Contributing](#contributing)  
-11. [License](#license)  
+2. [Core Features](#core-features)
+3. [Architecture & Design Principles](architecture--design-principles)
+4. [Tech Stack](#tech-stack)  
+5. [Project Structure](#project-structure)  
+6. [Setup & Installation](#setup--installation)  
+7. [Database & SQLC](#database--sqlc)  
+8. [API Documentation](#api-documentation)  
+9. [Environment Variables](#environment-variables)  
+10. [Developer Workflow](#developer-workflow)  
+11. [Contributing](#contributing)  
+12. [License](#license)  
 
 ---
 
 ## Project Overview
 
-This SaaS platform allows users to:
+**Photo Listing SaaS** enables individuals and organizations to manage large collections of photos efficiently while enforcing access control and subscription limits.
 
-- Upload and manage photos
-- Organize photos into listings
+### Key Capabilities
+
+- Upload and manage photos securely
+- Group photos into structured listings
+- Apply text or image-based watermarks
 - Share photos publicly or privately
-- Apply subscriptions and access limits
-- Use an API-first backend for web/mobile clients
+- Enforce subscription-based upload limits
+- Expose an API-first backend for web and mobile clients
 
-The backend follows **layered architecture**:
+The platform is designed to scale horizontally and is suitable for:
 
-HTTP → Handlers → Services → Storage → Database
-
-
-- **Handlers**: Handle requests/responses  
-- **Services**: Contain business logic  
-- **Storage**: Database access via SQLC  
-- **Domain Models**: Pure business objects  
+- Photography portfolios
+- Real estate listings
+- Event photo delivery
+- Media agencies
+- Internal enterprise photo systems
 
 ---
 
-## Features
+## Core Features
 
-- **User Roles**: Admin, Tutor, Student  
-- **Photo Management**: Upload, delete, organize listings  
-- **Subscriptions**: Enforce upload limits based on plan  
-- **Cloud Storage**: S3-compatible storage for media files  
-- **REST API**: JSON request/response with proper status codes  
-- **Async Workers**: Background processing for image tasks  
+- **Multi-Tenant Architecture**: Isolated data per tenant 
+- **Role-Based Access Control**: Guest, Tenant, Viewer organize listings 
+- **Photo Management**: Upload, update, delete, and organize photos into listings
+- **Watermarking**: Protect media with configurable watermarks
+- **Subscription Enforcement**: Upload and storage limits per plan
+- **Cloud Object Storage**: S3-compatible storage (AWS S3 / MinIO)
+- **RESTful API**: JSON-based, stateless endpoints
+- **Async Workers**: Background image processing and long-running tasks
+- **Docker-First Setup**: Consistent environments across development & production
+
+---
+
+## Architecture & Design Principles
+
+The backend strictly follows **Clean Architecture** with clear separation of concerns.
+
+### High-Level Flow
+
+```pqsql
+HTTP (Handlers)
+      ↓
+Service Layer (Use Cases)
+      ↓
+Domain (Business Rules & Entities)
+      ↓
+Storage (Postgres / S3)
+      ↓
+Database / Object Storage
+```
+
+### Layer responsibilities
+
+- **HTTP Handlers**
+
+    - Request validation
+    - Response formatting
+    - Authentication & authorization hooks
+
+- **Service Layer**
+
+    - Business logic and workflows
+    - Coordinates domain entities and storage interfaces
+    - No framework or infrastructure dependencies
+
+- **Domain**
+
+    - Core business entities
+    - Business rules and invariants
+    - Framework-agnostic
+
+- **Storage**
+
+    - Database persistence via SQLC
+    - Object storage integrations (S3-compatible)
+
+This structure ensures:
+- Low coupling
+- High testability
+- Easy refactoring
+- Long-term maintainability
 
 ---
 
@@ -57,21 +117,24 @@ HTTP → Handlers → Services → Storage → Database
 
 **Backend**:
 
-- [Go (Golang)](https://golang.org/) – Server-side language  
-- [SQLC](https://sqlc.dev/) – Type-safe SQL generation  
-- PostgreSQL – Database  
-- S3 / MinIO – File storage  
-- Docker & Docker Compose – Containerization  
+- [**Go (Golang**)](https://golang.org/) – High-performance, statically typed backend language
+- [**Gin**](https://gin-gonic.com/) – Fast and minimalist HTTP framework
+- [**SQLC**](https://sqlc.dev/) – Type-safe Go code generation from raw SQL queries
+- [**PostgreSQL**](https://www.postgresql.org/) – Relational database for persistent data storage
+- [**S3 / MinIO**](https://min.io/) – Object storage for photos and media assets
+- [**Docker**](https://www.docker.com/) – Containerization for consistent runtime environments
+- [**Docker Compose**](https://docs.docker.com/compose/) – Local multi-container orchestration 
 
 **Frontend**:
 
-- React + Mantine / TailwindCSS  
-- Redux Toolkit Query (RTK Query) – State management & API handling  
+- [**React**](https://react.dev/) – Component-based UI framework
+- **Mantine / TailwindCSS** – UI styling 
+- **Redux Toolkit Query (RTK Query)** – State management & API handling  
 
-**Other Tools**:
+**Infrastructure & Tooling**:
 
-- Nginx – Reverse proxy  
-- Makefile – Task automation  
+- [**NGINX**](https://nginx.org/) – Reverse proxy and API gateway  
+- **Makefile** – Developer automation and shortcut  
 
 ---
 
@@ -119,6 +182,15 @@ saas-photo-listing-platform/
 │   │   │   ├── auth.go               # Authentication middleware
 │   │   │   └── middleware.go         # Common middleware utilities
 │   │   │
+│   │   ├── service/                   # Application use cases
+│   │   │   ├── auth
+│   │   │   │   └── service.go
+│   │   │   ├── listing
+│   │   │   │   └── service.go
+│   │   │   ├── photo
+│   │   │   │   └── service.go
+│   │   │   └── subscription
+│   │   │       └── service.go
 │   │   ├── storage/
 │   │   │   ├── postgres/             # PostgreSQL persistence
 │   │   │   │   ├── db.go
@@ -142,147 +214,236 @@ saas-photo-listing-platform/
 │   └── nginx.conf                   # Reverse proxy & static serving
 │
 └── README.md                        # Project documentation
+```
 
 ---
 
 ## Setup & Installation
 
+This project is **Docker-first**. All services (Backend, Frontend, PostgreSQL, NGINX) are containerized and orchestrated using **Docker Compose**.
+
+---
+
 ### Prerequisites
 
-- Go >= 1.21  
-- PostgreSQL >= 15  
-- Docker & Docker Compose  
-- Node.js & npm (for frontend)
+- Docker
+- Docker Compose
 
-### Backend Setup
+> You do **NOT** need Go, PostgreSQL, or Node.js installed locally.
+
+---
+
+### Quick Start
+
+#### Clone the Repository
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/saas-photo-listing-platform.git
+git clone https://github.com/EnockYator/saas-photo-listing-platform.git
 cd saas-photo-listing-platform
+```
 
-# Install dependencies
-go mod tidy
+---
 
-# Set up SQLC
-sqlc generate
+#### Start all Services
 
-# Start the backend
-go run cmd/api/main.go
+```bash
+docker-compose up --build
+```
 
-Frontend Setup
+This command will:
 
-(Assuming frontend is in frontend/ folder)
+- Build the Go backend
 
-cd frontend
-npm install
-npm start
+- Start PostgreSQL
 
-Database & SQLC
+- Apply database migrations
 
-    Create a PostgreSQL database:
+- Generate SQLC code
 
-CREATE DATABASE saas_photo;
+- Start the React frontend
 
-    Run migrations:
+- Configure NGINX as a reverse proxy
 
-psql -U <username> -d saas_photo -f db/schema/001_create_users.sql
-psql -U <username> -d saas_photo -f db/schema/002_create_photos.sql
-psql -U <username> -d saas_photo -f db/schema/003_create_listings.sql
+---
 
-    Generate SQLC code:
+#### Access URLs
 
-sqlc generate
+| Service       | URL                          | Port |
+|---------------|------------------------------|------|
+| Frontend      | http://localhost             | 80   |
+| Backend API   | http://localhost/api         | 8080 |
+| PostgreSQL    | localhost                    | 5432 |
 
-    SQLC generates type-safe Go structs and queries in internal/storage/postgres/sqlc_generated/.
+---
 
-API Documentation
+#### Stopping the Application
 
-All endpoints follow REST principles. Responses are in JSON.
+```bash
+docker compose down
+docker compose down -v # Removes all volumes
+```
 
-Example: Create Photo
+---
 
+## Database & SQLC
+
+- All database schemas are defined using raw SQL
+
+- SQLC generates type-safe Go code
+
+- No ORM magic — queries are explicit and performant
+
+This approach provides:
+
+- Compile-time query validation
+
+- Predictable SQL performance
+
+- Clear ownership of database logic
+
+---
+
+## API Documentation
+
+The API follows REST principles with standardized responses.
+
+**Example: Create Photo**
+
+```http
 POST /photos
 Authorization: Bearer <token>
 Content-Type: application/json
+```
 
 Request Body:
-
+```json
 {
   "listing_id": 10,
   "title": "Wedding Shot"
 }
+```
 
 Response (201 Created):
-
+```json
 {
   "id": 45,
   "title": "Wedding Shot",
   "listing_id": 10
 }
+```
 
-    Status codes, validation, and error messages are standardized across all endpoints.
+All endpoints:
 
-Environment Variables
+- Return consistent HTTP status codes
+
+- Validate input data
+
+- Provide structured error responses
+
+---
+
+## Environment Variables
 
 Create a .env file in the root:
 
-# Server
+### Server
+```ini
 PORT=8080
 ENV=development
+```
 
-# Database
-DB_HOST=localhost
+### Database
+```ini
+POSTGRES_USER=your_postgres_username
+POSTGRES_PASSWORD=your_postgres_password
+POSTGRES_DB=saas_photo_listing_db
+
+DB_HOST=postgres
 DB_PORT=5432
+DB_NAME=saas_photo_listing_db
 DB_USER=postgres
-DB_PASSWORD=password
-DB_NAME=saas_photo
+DB_PASSWORD=your_postgres_password
+```
 
-# S3 Storage
+### Object Storage
+```ini
 S3_ENDPOINT=https://s3.example.com
-S3_ACCESS_KEY=your_access_key
-S3_SECRET_KEY=your_secret_key
+S3_ACCESS_KEY=your_s3_access_key
+S3_SECRET_KEY=your_s3_secret_key
 S3_BUCKET=photos
+```
 
-Developer Workflow
+- **Important Note:** Never commit secrets to version control (Git).
+
+---
+
+## Developer Workflow
 
 Data flow from client to database and back:
 
-Client (React/mobile)
+```text
+Client (Web / Mobile)
    ↓
-JSON Request
+HTTP Handler
    ↓
-HTTP Handler (http/handlers/photo_handler.go)
-   └─ Converts JSON → API schema → Domain model
+Service Layer (Business Logic)
    ↓
-Service Layer (service/photo_service.go)
-   └─ Business logic on Domain model
+Domain Models
    ↓
-Storage Layer (storage/postgres/photo_repo.go + SQLC)
-   └─ Domain model → SQLC Params → Database
-Database
-Database → SQLC Struct → Domain Model → Service → API Schema → JSON Response
-   ↑
-Client receives response
+Storage (SQLC / S3)
+   ↓
+Database / Object Storage
+```
 
-    Handlers: deal with API schemas only
+**Rules enforced:**
 
-    Services: operate on domain models only
+    Handlers work with DTOs only
 
-    Storage: SQLC-generated structs only
+    Services operate on domain models
 
-    Conversions happen at layer boundaries
+    Storage layers deal with persistence only
 
-    This ensures clean separation of concerns and maintainable code.
+    All conversions happen at boundaries
 
-Contributing
+This guarantees clean separation and long-term maintainability.
 
-    Fork the repository
+---
 
-    Create a feature branch: git checkout -b feature/my-feature
+## Contributing
 
-    Commit changes: git commit -m "Add my feature"
+  1. Fork the repository
 
-    Push to branch: git push origin feature/my-feature
+  2. Create a feature branch:
+  ```bash
+  git checkout -b feature/my-feature
+  ```
 
-    Open a Pull R
+  3. Commit changes: 
+  ```bash
+  git commit -m "Add your_feature_name"
+  ```
+
+  4. Push to branch:
+  ```bash
+  git push origin feature/your_feature_name
+  ```
+
+  5. Open a Pull Request
+
+  ---
+
+## License
+
+This project is licensed under the **MIT License**.  
+See the [LICENSE](LICENSE) file for details.
+
+---
+
+## Future Enhancements
+
+- Swagger/OpenAPI integration for API docs
+- CI/CD pipelines for automated testing and deployment
+- Multi-region cloud deployment
+- Role-based analytics dashboards
+
+
