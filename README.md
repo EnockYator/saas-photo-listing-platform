@@ -12,7 +12,7 @@ This system is production-ready and follows **clean architecture principles** wi
 
 1. [Project Overview](#project-overview)  
 2. [Core Features](#core-features)
-3. [Architecture & Design Principles](architecture--design-principles)
+3. [Architecture & Design Principles](#architecture--design-principles)
 4. [Tech Stack](#tech-stack)  
 5. [Project Structure](#project-structure)  
 6. [Setup & Installation](#setup--installation)  
