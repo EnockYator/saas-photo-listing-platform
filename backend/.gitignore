@@ -1,5 +1,5 @@
 ############################################
-# OS & Editor
+# OS & Editor files
 ############################################
 .DS_Store
 Thumbs.db
@@ -10,72 +10,113 @@ Thumbs.db
 *.code-workspace
 
 ############################################
-# Node / Package managers
+# Go (Golang)
 ############################################
-node_modules/
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
 
-# npm / yarn / pnpm logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
+# Build output
+/bin/
+/build/
+/dist/
+
+# Go workspace
+go.work
+go.work.sum
+
+# Go cache
+/pkg/
+/vendor/
 
 ############################################
-# Environment variables (CRITICAL)
+# Environment & Secrets (CRITICAL)
 ############################################
 .env
 .env.*
 !.env.example
 
-############################################
-# Build output
-############################################
-# Vite
-dist/
-
-# CRA / Next.js
-build/
-.next/
-out/
+# Secrets & credentials
+*.pem
+*.key
+*.crt
+*.p12
+*.jks
 
 ############################################
-# Cache & tooling
+# Logs & Runtime files
 ############################################
-.cache/
-.eslintcache
-
-# Vite cache
-.vite/
+logs/
+*.log
+*.pid
 
 ############################################
-# Testing
+# Database
+############################################
+# Local DB data
+postgres_data/
+pgdata/
+*.sqlite
+*.db
+
+# SQL dumps & backups
+*.sql
+*.dump
+*.backup
+
+############################################
+# File uploads (Photo SaaS specific)
+############################################
+# Uploaded photos
+uploads/
+storage/
+media/
+photos/
+thumbnails/
+
+# Image processing temp files
+tmp/
+cache/
+*.tmp
+
+############################################
+# Docker
+############################################
+# Docker runtime files
+docker-data/
+docker-volumes/
+
+# Override files
+docker-compose.override.yml
+
+############################################
+# Testing & Coverage
 ############################################
 coverage/
+*.cover
+*.prof
 
 ############################################
-# Storybook
+# CI / CD
 ############################################
-storybook-static/
+# GitHub Actions artifacts
+.github/workflows/*.log
 
 ############################################
-# Cypress / Playwright
+# API Docs / Generated files
 ############################################
-cypress/videos/
-cypress/screenshots/
-playwright-report/
-
-############################################
-# Frontend uploads / temp assets
-############################################
-tmp/
-temp/
-uploads/
-media/
+swagger/
+openapi/
+*.gen.go
 
 ############################################
 # Misc
 ############################################
-*.log
 *.bak
 *.old
 *.orig
