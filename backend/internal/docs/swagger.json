@@ -1,6 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
+        "title": "My API",
         "contact": {}
     },
     "paths": {}
