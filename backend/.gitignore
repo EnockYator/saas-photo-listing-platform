@@ -1,5 +1,5 @@
 ############################################
-# OS & Editor (GLOBAL)
+# OS & Editor files
 ############################################
 .DS_Store
 Thumbs.db
@@ -10,82 +10,109 @@ Thumbs.db
 *.code-workspace
 
 ############################################
-# Environment files (GLOBAL)
+# Go (Golang)
+############################################
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Build output
+/bin/
+/build/
+/dist/
+
+# Go workspace
+go.work
+go.work.sum
+
+# Go cache
+/pkg/
+/vendor/
+
+############################################
+# Environment & Secrets (CRITICAL)
 ############################################
 .env
 .env.*
 !.env.example
 
-############################################
-# Logs (GLOBAL)
-############################################
-logs/
-*.log
-
-############################################
-# Node / Frontend (GLOBAL)
-############################################
-node_modules/
-dist/
-build/
-.vite/
-.next/
-out/
-coverage/
-
-############################################
-# Go / Backend (GLOBAL)
-############################################
-bin/
-build/
-dist/
-*.out
-*.test
-/vendor/
-/pkg/
-
-############################################
-# Database & Storage (GLOBAL)
-############################################
-postgres_data/
-pgdata/
-*.db
-*.sqlite
-*.sql
-*.dump
-*.backup
-
-############################################
-# Uploads & Media (GLOBAL – SaaS Photo)
-############################################
-uploads/
-media/
-photos/
-storage/
-thumbnails/
-tmp/
-cache/
-
-############################################
-# Docker (GLOBAL)
-############################################
-docker-data/
-docker-volumes/
-docker-compose.override.yml
-
-############################################
-# CI / CD
-############################################
-.github/workflows/*.log
-
-############################################
-# Security
-############################################
+# Secrets & credentials
 *.pem
 *.key
 *.crt
 *.p12
 *.jks
+
+############################################
+# Logs & Runtime files
+############################################
+logs/
+*.log
+*.pid
+
+############################################
+# Database
+############################################
+# Local DB data
+postgres_data/
+pgdata/
+*.sqlite
+*.db
+
+# SQL dumps & backups
+*.sql
+*.dump
+*.backup
+
+############################################
+# File uploads (Photo SaaS specific)
+############################################
+# Uploaded photos
+uploads/
+storage/
+media/
+photos/
+thumbnails/
+
+# Image processing temp files
+tmp/
+cache/
+*.tmp
+
+############################################
+# Docker
+############################################
+# Docker runtime files
+docker-data/
+docker-volumes/
+
+# Override files
+docker-compose.override.yml
+
+############################################
+# Testing & Coverage
+############################################
+coverage/
+*.cover
+*.prof
+
+############################################
+# CI / CD
+############################################
+# GitHub Actions artifacts
+.github/workflows/*.log
+
+############################################
+# API Docs / Generated files
+############################################
+swagger/
+openapi/
+*.gen.go
 
 ############################################
 # Misc

@@ -1,5 +1,5 @@
 ############################################
-# OS & Editor (GLOBAL)
+# OS & Editor
 ############################################
 .DS_Store
 Thumbs.db
@@ -10,86 +10,72 @@ Thumbs.db
 *.code-workspace
 
 ############################################
-# Environment files (GLOBAL)
+# Node / Package managers
+############################################
+node_modules/
+
+# npm / yarn / pnpm logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+############################################
+# Environment variables (CRITICAL)
 ############################################
 .env
 .env.*
 !.env.example
 
 ############################################
-# Logs (GLOBAL)
+# Build output
 ############################################
-logs/
-*.log
-
-############################################
-# Node / Frontend (GLOBAL)
-############################################
-node_modules/
+# Vite
 dist/
+
+# CRA / Next.js
 build/
-.vite/
 .next/
 out/
+
+############################################
+# Cache & tooling
+############################################
+.cache/
+.eslintcache
+
+# Vite cache
+.vite/
+
+############################################
+# Testing
+############################################
 coverage/
 
 ############################################
-# Go / Backend (GLOBAL)
+# Storybook
 ############################################
-bin/
-build/
-dist/
-*.out
-*.test
-/vendor/
-/pkg/
+storybook-static/
 
 ############################################
-# Database & Storage (GLOBAL)
+# Cypress / Playwright
 ############################################
-postgres_data/
-pgdata/
-*.db
-*.sqlite
-*.sql
-*.dump
-*.backup
+cypress/videos/
+cypress/screenshots/
+playwright-report/
 
 ############################################
-# Uploads & Media (GLOBAL – SaaS Photo)
+# Frontend uploads / temp assets
 ############################################
+tmp/
+temp/
 uploads/
 media/
-photos/
-storage/
-thumbnails/
-tmp/
-cache/
-
-############################################
-# Docker (GLOBAL)
-############################################
-docker-data/
-docker-volumes/
-docker-compose.override.yml
-
-############################################
-# CI / CD
-############################################
-.github/workflows/*.log
-
-############################################
-# Security
-############################################
-*.pem
-*.key
-*.crt
-*.p12
-*.jks
 
 ############################################
 # Misc
 ############################################
+*.log
 *.bak
 *.old
 *.orig
