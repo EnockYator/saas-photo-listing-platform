@@ -17,6 +17,12 @@ Thumbs.db
 !.env.example
 
 ############################################
+# VS COde
+############################################
+.vscode/
+.history/
+
+############################################
 # Logs (GLOBAL)
 ############################################
 logs/
@@ -43,17 +49,27 @@ dist/
 *.test
 /vendor/
 /pkg/
+.cache/
+.modcache/
+
 
 ############################################
 # Database & Storage (GLOBAL)
 ############################################
 postgres_data/
+postgres/
 pgdata/
 *.db
 *.sqlite
-*.sql
 *.dump
 *.backup
+
+# Allow committing sqlc queries safely
+!queries/
+sqlc_generated/
+!db/queries/
+# Ignore other random SQL dumps
+*.sql
 
 ############################################
 # Uploads & Media (GLOBAL – SaaS Photo)
