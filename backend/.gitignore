@@ -8,6 +8,36 @@ vendor/
 
 # Logs and temporary files
 *.log
+<<<<<<< HEAD
+=======
+*.pid
+
+############################################
+# Database
+############################################
+# # Local DB data
+# postgres_data/
+# pgdata/
+# *.sqlite
+# *.db
+
+# SQL dumps & backups
+*.dump
+*.backup
+
+############################################
+# File uploads (Photo SaaS specific)
+############################################
+# Uploaded photos
+uploads/
+media/
+photos/
+thumbnails/
+
+# Image processing temp files
+tmp/
+cache/
+>>>>>>> f24756c (fix: fix .gitignore)
 *.tmp
 
 # Environment files
