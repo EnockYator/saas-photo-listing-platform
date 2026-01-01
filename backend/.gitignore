@@ -58,11 +58,11 @@ logs/
 ############################################
 # Database
 ############################################
-# Local DB data
-postgres_data/
-pgdata/
-*.sqlite
-*.db
+# # Local DB data
+# postgres_data/
+# pgdata/
+# *.sqlite
+# *.db
 
 # SQL dumps & backups
 *.dump
