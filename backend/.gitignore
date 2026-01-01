@@ -65,7 +65,6 @@ pgdata/
 *.db
 
 # SQL dumps & backups
-!*.sql
 *.dump
 *.backup
 
@@ -74,7 +73,6 @@ pgdata/
 ############################################
 # Uploaded photos
 uploads/
-!storage/
 media/
 photos/
 thumbnails/
