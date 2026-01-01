@@ -5,7 +5,7 @@ go 1.25.5
 // gin web framework
 require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	golang.org/x/crypto v0.46.0
+	golang.org/x/crypto v0.46.0 // indirect
 	golang.org/x/net v0.48.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
@@ -78,7 +78,6 @@ require github.com/go-swagger/go-swagger v0.33.1
 
 require (
 	github.com/gin-gonic/gin v1.11.0
-	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/joho/godotenv v1.5.1
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.1
