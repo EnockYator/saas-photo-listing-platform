@@ -62,7 +62,11 @@ coverage.out
 *.bak
 *.old
 <<<<<<< HEAD
+<<<<<<< HEAD
 *.orig
 =======
 *.orig
 >>>>>>> 31f48b6 (chore(docker): add Dockerfiles and docker-compose for backend, worker, and frontend)
+=======
+*.orig
+>>>>>>> c08bd67 (fix: fix .gitignore)
