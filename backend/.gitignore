@@ -36,6 +36,10 @@ tmp
 # Environment files
 .env
 *.env
+.env.local
+.env.development
+.env.test
+.env.production
 !.env.example
 
 # Test / coverage
