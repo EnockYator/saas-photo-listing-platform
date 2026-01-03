@@ -1,0 +1,52 @@
+# Go build artifacts
+bin/
+*.exe
+*.out
+
+# Vendor
+vendor/
+
+# Logs and temporary files
+*.log
+*.pid
+
+# SQL dumps & backups
+*.dump
+*.backup
+
+############################################
+# File uploads (Photo SaaS specific)
+############################################
+# Uploaded photos
+uploads/
+media/
+photos/
+thumbnails/
+
+# Image processing temp files
+tmp/
+cache/
+*.tmp
+tmp
+
+# Environment files
+.env
+*.env
+!.env.example
+
+# Test / coverage
+coverage.out
+*.test
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.DS_Store
+
+############################################
+# Misc
+############################################
+*.bak
+*.old
+*.orig
