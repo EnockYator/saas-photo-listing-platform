@@ -1,0 +1,29 @@
+# Go build artifacts
+bin/
+*.exe
+*.out
+
+# Local files
+*.log
+*.tmp
+*.env
+
+# Test / coverage
+coverage.out
+*.test
+
+# Vendor and modules
+vendor/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.DS_Store
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# Uploads (if you don’t want to include uploads in image)
+uploads/
