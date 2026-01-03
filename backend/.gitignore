@@ -30,6 +30,10 @@ cache/*.tmp
 # Environment files
 .env
 *.env
+.env.local
+.env.development
+.env.test
+.env.production
 !.env.example
 
 # Test / coverage
@@ -42,3 +46,10 @@ coverage.out
 *.swp
 *.DS_Store
 
+
+############################################
+# Misc
+############################################
+*.bak
+*.old
+*.orig
