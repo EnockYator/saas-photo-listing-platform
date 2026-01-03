@@ -1,0 +1,26 @@
+# Go build artifacts
+bin/
+*.exe
+*.out
+
+# Vendor
+vendor/
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Environment files
+*.env
+!.env.example
+
+# Test / coverage
+coverage.out
+*.test
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.DS_Store
+
