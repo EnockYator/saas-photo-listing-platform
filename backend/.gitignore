@@ -30,7 +30,7 @@ cache/
 tmp
 
 # Environment files
-# .env
+.env
 !.env.example
 
 # Test / coverage
