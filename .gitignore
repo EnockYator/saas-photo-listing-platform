@@ -1,3 +1,7 @@
+<<<<<<< HEAD
 .env
 /backend/.env
 /frontend/.env
+=======
+.env
+>>>>>>> 78f9631 (chore: gitignore environment variables)
