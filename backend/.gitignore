@@ -8,7 +8,26 @@ vendor/
 
 # Logs and temporary files
 *.log
+*.pid
+
+# SQL dumps & backups
+*.dump
+*.backup
+
+############################################
+# File uploads (Photo SaaS specific)
+############################################
+# Uploaded photos
+uploads/
+media/
+photos/
+thumbnails/
+
+# Image processing temp files
+tmp/
+cache/
 *.tmp
+tmp
 
 # Environment files
 .env
@@ -23,4 +42,11 @@ coverage.out
 .idea/
 *.swp
 *.DS_Store
+
+############################################
+# Misc
+############################################
+*.bak
+*.old
+*.orig
 
