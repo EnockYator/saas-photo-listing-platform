@@ -1,111 +1,38 @@
-############################################
-# OS & Editor (GLOBAL)
-############################################
+
+################################################
+# General
+################################################
+# Node modules
+node_modules/
+# Build outputs
+dist/
+build/
+.out/
+# Dependency directories
+jspm_packages/
+# System files
 .DS_Store
 Thumbs.db
-*.swp
-*.swo
-.idea/
-.vscode/
-*.code-workspace
-
-############################################
-# Environment files (GLOBAL)
-############################################
+# Logs
+logs/*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+# Environment files
 .env
-.env.*
-!.env.example
-
-############################################
-# VS COde
-############################################
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+# IDE / Editor
 .vscode/
-.history/
-
-############################################
-# Logs (GLOBAL)
-############################################
-logs/
-*.log
-
-############################################
-# Node / Frontend (GLOBAL)
-############################################
-node_modules/
-dist/
-build/
-.vite/
-.next/
-out/
+.idea/
+*.sublime-project
+*.sublime-workspace
+# Temporary files
+*.tmp
+*tmp
+*.swp
+# Coverage directory
 coverage/
-
-############################################
-# Go / Backend (GLOBAL)
-############################################
-bin/
-build/
-dist/
-*.out
-*.test
-/vendor/
-/pkg/
-.cache/
-.modcache/
-
-
-############################################
-# Database & Storage (GLOBAL)
-############################################
-postgres_data/
-postgres/
-pgdata/
-*.db
-*.sqlite
-*.dump
-*.backup
-
-# Allow committing sqlc queries safely
-!queries/
-sqlc_generated/
-!db/queries/
-# Ignore other random SQL dumps
-*.sql
-
-############################################
-# Uploads & Media (GLOBAL – SaaS Photo)
-############################################
-uploads/
-media/
-photos/
-storage/
-thumbnails/
-tmp/
-cache/
-
-############################################
-# Docker (GLOBAL)
-############################################
-docker-data/
-docker-volumes/
-docker-compose.override.yml
-
-############################################
-# CI / CD
-############################################
-.github/workflows/*.log
-
-############################################
-# Security
-############################################
-*.pem
-*.key
-*.crt
-*.p12
-*.jks
-
-############################################
-# Misc
-############################################
-*.bak
-*.old
-*.orig
+################################################ 
