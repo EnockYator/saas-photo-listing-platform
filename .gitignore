@@ -1,4 +1,3 @@
-
 # Environment files
 .env
 .env.local
@@ -9,5 +8,5 @@
 # Temporary files
 *.tmp
 *tmp
+tmp/
 *.swp
-
