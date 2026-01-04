@@ -25,27 +25,13 @@ thumbnails/
 
 # Image processing temp files
 tmp/
-<<<<<<< HEAD
-<<<<<<< HEAD
-cache/*.tmp
-=======
 cache/
 *.tmp
 tmp
->>>>>>> 31f48b6 (chore(docker): add Dockerfiles and docker-compose for backend, worker, and frontend)
-=======
-cache/
-*.tmp
-tmp
->>>>>>> a3ae6a2 (chore(docker): add Dockerfiles and docker-compose for backend, worker, and frontend)
 
 # Environment files
 .env
 *.env
-.env.local
-.env.development
-.env.test
-.env.production
 !.env.example
 
 # Test / coverage
@@ -58,28 +44,9 @@ coverage.out
 *.swp
 *.DS_Store
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
->>>>>>> 31f48b6 (chore(docker): add Dockerfiles and docker-compose for backend, worker, and frontend)
-=======
->>>>>>> a3ae6a2 (chore(docker): add Dockerfiles and docker-compose for backend, worker, and frontend)
 ############################################
 # Misc
 ############################################
 *.bak
 *.old
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 *.orig
-=======
-*.orig
->>>>>>> 31f48b6 (chore(docker): add Dockerfiles and docker-compose for backend, worker, and frontend)
-=======
-*.orig
->>>>>>> c08bd67 (fix: fix .gitignore)
-=======
-*.orig
->>>>>>> a3ae6a2 (chore(docker): add Dockerfiles and docker-compose for backend, worker, and frontend)
