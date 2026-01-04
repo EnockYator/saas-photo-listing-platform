@@ -1,6 +1,6 @@
 // +build tools
 
-package tools
+package main
 
 // This import is only for tracking the CLI tool version.
 // The blank identifier (_) prevents it from being included in the final binary.

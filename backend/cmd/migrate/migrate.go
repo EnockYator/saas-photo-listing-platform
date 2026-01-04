@@ -12,7 +12,7 @@ func main() {
 
 	if err := postgres.RunMigrations(
 		cfg.DatabaseURL,
-		"internal/infrastructure/database/migrations",
+		"internal/infrastructure/database/postgres/migrations",
 	); err != nil {
 		log.Fatal(err)
 	}

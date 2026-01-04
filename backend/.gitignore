@@ -1,68 +1,14 @@
-############################################
-# OS & Editor files
-############################################
-.DS_Store
-Thumbs.db
-*.swp
-*.swo
-.idea/
-.vscode/
-*.code-workspace
-
-############################################
-# Go (Golang)
-############################################
-# Binaries
+# Go build artifacts
+bin/
 *.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-*.test
 *.out
 
-# Build output
-/bin/
-/build/
-/dist/
+# Vendor
+vendor/
 
-# Go workspace
-go.work
-go.work.sum
-
-# Go cache
-/pkg/
-/vendor/
-
-############################################
-# Environment & Secrets (CRITICAL)
-############################################
-.env
-.env.*
-!.env.example
-
-# Secrets & credentials
-*.pem
-*.key
-*.crt
-*.p12
-*.jks
-
-############################################
-# Logs & Runtime files
-############################################
-logs/
+# Logs and temporary files
 *.log
 *.pid
-
-############################################
-# Database
-############################################
-# # Local DB data
-# postgres_data/
-# pgdata/
-# *.sqlite
-# *.db
 
 # SQL dumps & backups
 *.dump
@@ -81,36 +27,21 @@ thumbnails/
 tmp/
 cache/
 *.tmp
+tmp
 
-############################################
-# Docker
-############################################
-# Docker runtime files
-docker-data/
-docker-volumes/
+# Environment files
+.env
+!.env.example
 
-# Override files
-docker-compose.override.yml
+# Test / coverage
+coverage.out
+*.test
 
-############################################
-# Testing & Coverage
-############################################
-coverage/
-*.cover
-*.prof
-
-############################################
-# CI / CD
-############################################
-# GitHub Actions artifacts
-.github/workflows/*.log
-
-############################################
-# API Docs / Generated files
-############################################
-swagger/
-openapi/
-*.gen.go
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.DS_Store
 
 ############################################
 # Misc
@@ -118,3 +49,4 @@ openapi/
 *.bak
 *.old
 *.orig
+

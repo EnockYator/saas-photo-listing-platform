@@ -6,11 +6,7 @@ yarn.lock
 # Build output
 dist/
 
-# Logs
-npm-debug.log
-yarn-error.log
-
-# Environment
+# Local environment
 .env
 *.local
 
