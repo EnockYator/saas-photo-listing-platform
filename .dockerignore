@@ -1,0 +1,20 @@
+# Ignore backend and frontend build artifacts
+backend/bin/
+backend/vendor/
+frontend/node_modules/
+frontend/dist/
+
+# Git
+.git/
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.DS_Store
+
+# Environment
+*.env
