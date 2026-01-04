@@ -1,3 +1,13 @@
+
+# Environment files
 .env
-/backend/.env
-/frontend/.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Temporary files
+*.tmp
+*tmp
+*.swp
+
