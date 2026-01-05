@@ -15,7 +15,11 @@ func main() {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
+<<<<<<< HEAD
 	// Build Postgres DSN
+=======
+	// Build the Postgres DSN
+>>>>>>> 5e02025 (chore: configure sqlc and go-migrate)
 	dbURL := fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
 		cfg.DBUser,
@@ -26,6 +30,7 @@ func main() {
 		cfg.DBSSLMode,
 	)
 
+<<<<<<< HEAD
 	// Path to  migrations folder
 	migrationPath := "./internal/infrastructure/database/postgres/migrations"
 
@@ -36,3 +41,12 @@ func main() {
 
 	log.Println("✅ All migrations applied successfully")
 }
+=======
+	// Run migrations
+	if err := postgres.RunMigrations(dbURL); err != nil {
+		log.Fatalf("migrations failed: %v", err)
+	}
+
+	log.Println("All migrations applied successfully")
+}
+>>>>>>> 5e02025 (chore: configure sqlc and go-migrate)
