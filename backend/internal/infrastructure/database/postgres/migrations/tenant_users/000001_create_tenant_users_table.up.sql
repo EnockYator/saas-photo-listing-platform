@@ -1,9 +1,14 @@
-CREATE TABLE IF NOT EXISTS tenant_users (
+CREATE TYPE tenant_user_role AS ENUM (
+    'tenant_admin',
+    'tenant_editor',
+    'viewer'
+);
+
+CREATE TABLE tenant_users (
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     
-    role TEXT NOT NULL DEFAULT 'viewer'
-        CONSTRAINT tenant_user_role_check CHECK (role IN ('admin', 'editor', 'viewer')),
+    role tenant_user_role NOT NULL,
     
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -18,8 +23,8 @@ FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
 
 -- Indexes
-CREATE INDEX idx_tenant_user_user_id
+CREATE INDEX idx_tenant_users_user_id
     ON tenant_users(user_id);
 
-CREATE INDEX idx_tenant_user_role
+CREATE INDEX idx_tenant_users_role
     ON tenant_users(role);
