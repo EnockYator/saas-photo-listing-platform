@@ -2,12 +2,7 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-<<<<<<< HEAD
 [![CI](https://github.com/EnockYator/saas-photo-listing-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/EnockYator/saas-photo-listing-platform/actions/workflows/ci.yml)
-
-=======
-![CI](https://github.com/<org>/<repo>/actions/workflows/ci.yml/badge.svg)
->>>>>>> e91d1a2 (chore(workflow): introduce pr templates and fix github workflow (#38))
 
 A **production-grade Photo Listing SaaS platform** for uploading, organizing, watermarking, and securely sharing photos at scale.
 Built with **Go (Golang), PostgreSQL, SQLC, and React**, the system is designed for **multi-tenant environments, role-based access control, and high-performance media handling**.
