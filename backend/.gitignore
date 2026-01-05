@@ -8,18 +8,7 @@ vendor/
 
 # Logs and temporary files
 *.log
-<<<<<<< HEAD
-=======
 *.pid
-
-############################################
-# Database
-############################################
-# # Local DB data
-# postgres_data/
-# pgdata/
-# *.sqlite
-# *.db
 
 # SQL dumps & backups
 *.dump
@@ -36,9 +25,7 @@ thumbnails/
 
 # Image processing temp files
 tmp/
-cache/
->>>>>>> f24756c (fix: fix .gitignore)
-*.tmp
+cache/*.tmp
 
 # Environment files
 .env
