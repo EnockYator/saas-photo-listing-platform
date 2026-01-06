@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS notifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
 
     message TEXT NOT NULL,
@@ -17,6 +16,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     is_read BOOLEAN NOT NULL DEFAULT FALSE,
     
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 
     CONSTRAINT chk_notification_timestamps
@@ -40,4 +40,3 @@ CREATE INDEX idx_notifications_tenant_user
 
 CREATE INDEX idx_notifications_type
     ON notifications(tenant_id, type);
-
