@@ -4,10 +4,6 @@ CREATE TABLE  IF NOT EXISTS subscriptions (
     plan_id UUID NOT NULL REFERENCES plans(id) ON DELETE CASCADE,  
     
     status TEXT NOT NULL DEFAULT 'inactive'
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 85236ed (fix: fix conflicts in branches (#46))
         CONSTRAINT subscription_status_check
             CHECK (status IN (
                 'active',
@@ -15,22 +11,7 @@ CREATE TABLE  IF NOT EXISTS subscriptions (
                 'canceled',
                 'past_due'
             )),
-<<<<<<< HEAD
-   
-=======
-        CONSTRAINT subscription_status_check CHECK (status IN (
-<<<<<<< HEAD
-=======
-            'active',
->>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)
-            'inactive',
-            'canceled',
-            'past_due'
-        )),
-=======
->>>>>>> 85236ed (fix: fix conflicts in branches (#46))
     
->>>>>>> 8790134 (chore(database): add indexes and constraints to database tables for fast performance and security)
     started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     end_at TIMESTAMPTZ NOT NULL,
     
