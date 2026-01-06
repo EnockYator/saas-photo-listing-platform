@@ -5,7 +5,6 @@ CREATE TABLE  IF NOT EXISTS subscriptions (
     
     status TEXT NOT NULL DEFAULT 'inactive'
         CONSTRAINT subscription_status_check CHECK (status IN (
-            'active',
             'inactive',
             'canceled',
             'past_due'

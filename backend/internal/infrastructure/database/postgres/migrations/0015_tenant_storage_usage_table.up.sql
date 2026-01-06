@@ -9,7 +9,6 @@ CREATE TABLE IF NOT EXISTS tenant_storage_usage (
 
     CONSTRAINT chk_tenant_storage_usage_timestamps
     CHECK (updated_at >= created_at)
-
 );
 
 -- Trigger to keep updated_at fresh
