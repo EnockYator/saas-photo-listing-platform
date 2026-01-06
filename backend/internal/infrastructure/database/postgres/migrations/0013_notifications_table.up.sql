@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     is_read BOOLEAN NOT NULL DEFAULT FALSE,
     
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 
     CONSTRAINT chk_notification_timestamps
@@ -38,4 +39,8 @@ CREATE INDEX idx_notifications_tenant_user
     ON notifications(tenant_id, user_id, created_at DESC);
 
 CREATE INDEX idx_notifications_type
+<<<<<<< HEAD
 ON notifications(tenant_id, type);
+=======
+    ON notifications(tenant_id, type);
+>>>>>>> dedf8b4 (refactor: place all miration files in migrations/ directory rather than sub-directories)
