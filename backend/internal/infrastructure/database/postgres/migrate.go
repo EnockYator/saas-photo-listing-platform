@@ -22,6 +22,7 @@ func RunMigrations(dsn string) error {
 		"internal/infrastructure/database/postgres/migrations/audit_logs",
 		"internal/infrastructure/database/postgres/migrations/notifications",
 		"internal/infrastructure/database/postgres/migrations/share_links",
+		"internal/infrastructure/database/postgres/migrations/shared",
 		"internal/infrastructure/database/postgres/migrations/tenants",
 		"internal/infrastructure/database/postgres/migrations/tenant_storage_usage",
 		"internal/infrastructure/database/postgres/migrations/tenant_users",
