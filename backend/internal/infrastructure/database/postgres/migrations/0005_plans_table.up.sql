@@ -8,8 +8,7 @@ CREATE TABLE IF NOT EXISTS plans (
         CONSTRAINT plan_price_positive_check CHECK (price >= 0),
 
     billing_cycle TEXT NOT NULL DEFAULT 'monthly'
-        CONSTRAINT plan_billing_cycle_check CHECK (billing_cycle IN ('monthly', 'yearly')),
-    
+ 
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

@@ -24,9 +24,9 @@ CREATE TABLE IF NOT EXISTS files (
         CHECK (updated_at >= created_at),
 
     CHECK (
-        (watermark_type IS NULL AND watermarked_url IS NULL)
-     OR (watermark_type IS NOT NULL AND watermarked_url IS NOT NULL)
-    )
+            (watermark_type IS NULL AND watermarked_url IS NULL)
+        OR (watermark_type IS NOT NULL AND watermarked_url IS NOT NULL)
+        )
 );
 
 CREATE TRIGGER trg_files_updated_at
