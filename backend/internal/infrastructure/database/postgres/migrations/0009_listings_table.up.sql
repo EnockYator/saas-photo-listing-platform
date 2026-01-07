@@ -9,10 +9,10 @@ CREATE TABLE IF NOT EXISTS listings (
     description TEXT,
 
     status TEXT NOT NULL DEFAULT 'draft'
-        CONSTRAINT listings_listing_status_check CHECK (status IN ('draft', 'published')),
+        CONSTRAINT listing_status_check CHECK (status IN ('draft', 'published')),
 
     visibility TEXT NOT NULL DEFAULT 'private'
-        CONSTRAINT listings_listing_visibility_check CHECK (visibility IN ('private', 'public')),
+        CONSTRAINT listing_visibility_check CHECK (visibility IN ('private', 'public')),
 
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),

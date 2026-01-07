@@ -1,10 +1,14 @@
 # SQLC Configuration File
-
+  
+  ##########################################
   # # Users Domain
+  ##########################################
+  
+  #  Users table
   version: "2"
   sql:
     - engine: "postgresql"
-      schema: "internal/infrastructure/database/postgres/migrations/users/*.up.sql"
+      schema: "internal/infrastructure/database/postgres/migrations/*users_table.up.sql"
       queries: "internal/infrastructure/database/postgres/queries/users.sql"
       gen:
         go:
@@ -13,7 +17,11 @@
           emit_json_tags: true
           emit_prepared_queries: true
 
+  ##########################################
   # # Listings domain
+  ##########################################
+
+  # Listing table
   version: "2"
   sql:
     - engine: "postgresql"
@@ -26,7 +34,11 @@
           emit_json_tags: true
           emit_prepared_queries: true
 
+  ##########################################
   # # Files domain
+  ##########################################
+
+  # Files table
   version: "2"
   sql:
     - engine: "postgresql"
@@ -39,7 +51,11 @@
           emit_json_tags: true
           emit_prepared_queries: true
 
+  ##########################################
   # # Payments domain
+  ##########################################
+
+  # Payments table
   version: "2"
   sql:
     - engine: "postgresql"
@@ -52,7 +68,11 @@
           emit_json_tags: true
           emit_prepared_queries: true
 
+  ##########################################
   # # Notifications domain
+  ##########################################
+
+  # Notifications table
   version: "2"
   sql:
     - engine: "postgresql"
@@ -65,7 +85,11 @@
           emit_json_tags: true
           emit_prepared_queries: true
 
-  # # Subscriptions domain
+  ########################################## 
+  # Subscriptions domain
+  ##########################################
+
+  # Subscriptions table
   version: "2"
   sql:
     - engine: "postgresql"
@@ -78,8 +102,37 @@
           emit_json_tags: true
           emit_prepared_queries: true
 
+  # Plans table
+  version: "2"
+  sql:
+    - engine: "postgresql"
+      schema: "internal/infrastructure/database/postgres/migrations/*plans_table.up.sql"
+      queries: "internal/infrastructure/database/postgres/queries/plans.sql"
+      gen:
+        go: 
+          package: "sqlc"
+          out: "internal/domains/subscriptions/infrastructure/repository/sqlc"
+          emit_json_tags: true
+          emit_prepared_queries: true 
+
+  # Plan_limits table
+  version: "2"
+  sql:
+    - engine: "postgresql"
+      schema: "internal/infrastructure/database/postgres/migrations/plan_limits/*.up.sql"
+      queries: "internal/infrastructure/database/postgres/queries/plan_limits.sql"
+      gen:
+        go: 
+          package: "sqlc"
+          out: "internal/domains/subscriptions/infrastructure/repository/sqlc"
+          emit_json_tags: true
+          emit_prepared_queries: true
+
+  ##########################################
   # # Audit domain
-  # Audit Logs
+  ##########################################
+
+  # Audit_logs table
   version: "2"
   sql:
     - engine: "postgresql"
@@ -92,7 +145,11 @@
           emit_json_tags: true
           emit_prepared_queries: true
 
+  ##########################################
   # # Sharing domain
+  ##########################################
+
+  # Share_links table
   version: "2"
   sql:
     - engine: "postgresql"
@@ -105,7 +162,11 @@
           emit_json_tags: true
           emit_prepared_queries: true
 
-  # # Usage domain
+  ##########################################
+  # # Usage_Stats domain
+  ##########################################
+
+  ## Usage_stats table
   version: "2"
   sql:
     - engine: "postgresql"
@@ -118,12 +179,15 @@
           emit_json_tags: true
           emit_prepared_queries: true
 
+  ##########################################
   # # Tenants domain
-  # Tenants
+  ##########################################
+
+  # Tenants table
   version: "2"
   sql:
     - engine: "postgresql"
-      schema: "internal/infrastructure/database/postgres/migrations/tenants/*.up.sql"
+      schema: "internal/infrastructure/database/postgres/migrations/*tenants_table.up.sql"
       queries: "internal/infrastructure/database/postgres/queries/tenants.sql"
       gen:
         go:
@@ -132,7 +196,6 @@
           emit_json_tags: true
           emit_prepared_queries: true
 
-  # # Tenants domain
   # tenant_storage_usage
   version: "2"
   sql:
@@ -146,7 +209,6 @@
           emit_json_tags: true
           emit_prepared_queries: true
 
-  # # Tenants domain
   # Tenant_users
   version: "2"
   sql:
@@ -157,46 +219,6 @@
         go:
           package: "sqlc"
           out: "internal/domains/tenants/infrastructure/repository/sqlc"
-          emit_json_tags: true
-          emit_prepared_queries: true
-
-  # # Plans domain
-  # Plans
-  version: "2"
-  sql:
-    - engine: "postgresql"
-      schema: "internal/infrastructure/database/postgres/migrations/plans/*.up.sql"
-      queries: "internal/infrastructure/database/postgres/queries/plans.sql"
-      gen:
-        go: 
-          package: "sqlc"
-          out: "internal/domains/subscriptions/infrastructure/repository/sqlc"
-          emit_json_tags: true
-          emit_prepared_queries: true 
-
-  # # Plan_limits domain
-  version: "2"
-  sql:
-    - engine: "postgresql"
-      schema: "internal/infrastructure/database/postgres/migrations/plan_limits/*.up.sql"
-      queries: "internal/infrastructure/database/postgres/queries/plan_limits.sql"
-      gen:
-        go: 
-          package: "sqlc"
-          out: "internal/domains/subscriptions/infrastructure/repository/sqlc"
-          emit_json_tags: true
-          emit_prepared_queries: true
-
-  # # System domain
-  version: "2"
-  sql:
-    - engine: "postgresql"
-      schema: "internal/infrastructure/database/postgres/migrations/shared/*.up.sql"
-      queries: "internal/infrastructure/database/postgres/queries/shared.sql"
-      gen:
-        go: 
-          package: "sqlc"
-          out: "internal/domains/system/infrastructure/repository/sqlc"
           emit_json_tags: true
           emit_prepared_queries: true
 
