@@ -4,7 +4,11 @@ CREATE TABLE plans (
     type TEXT NOT NULL
         CONSTRAINT plans_type_check CHECK (type IN ('free', 'basic', 'business')),
     
-    price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
+    price DECIMAL(10,2) NOT NULL
+        CONSTRAINT price_positive_check CHECK (price >= 0),
+
+    billing_cycle TEXT NOT NULL DEFAULT 'monthly'
+        CONSTRAINT plans_billing_cycle_check CHECK (billing_cycle IN ('monthly', 'yearly')),
     
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -15,3 +19,13 @@ CREATE TRIGGER trg_plans_updated_at
 BEFORE UPDATE ON plans
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
+
+-- Index for querying by type
+CREATE INDEX idx_plans_type
+    ON plans(type);
+
+-- Index for querying by billing_cycle
+CREATE INDEX idx_plans_billing_cycle
+    ON plans(billing_cycle);
+
+
