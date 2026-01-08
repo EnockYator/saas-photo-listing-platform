@@ -1,13 +1,6 @@
 
 CREATE TABLE IF NOT EXISTS share_links (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-<<<<<<< HEAD
-=======
-    
-    listing_id UUID NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
-    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
->>>>>>> c431e38 (refactor: place all miration files in migrations/ directory rather than sub-directories)
-
     listing_id UUID NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     
