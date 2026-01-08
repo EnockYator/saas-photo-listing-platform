@@ -17,7 +17,12 @@ CREATE TABLE IF NOT EXISTS listings (
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    deleted_at TIMESTAMPTZ  DEFAULT NULL
+    deleted_at TIMESTAMPTZ  DEFAULT NULL,
+
+    CONSTRAINT chk_listing_timestamps
+        CHECK (updated_at >= created_at)
+
+
 );
 
 -- Attach shared trigger
@@ -27,11 +32,15 @@ FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
 
 -- Indexes (query-driven)
-CREATE INDEX idx_listings_tenant_user
+CREATE INDEX idx_listing_tenant_user
     ON listings(tenant_id, user_id);
 
-CREATE INDEX idx_listings_tenant_status
+CREATE INDEX idx_listing_tenant_status
     ON listings(tenant_id, status);
 
-CREATE INDEX idx_listings_tenant_visibility
+CREATE INDEX idx_listing_tenant_visibility
     ON listings(tenant_id, visibility);
+
+CREATE INDEX idx_tenant_listing_created_at_desc
+    ON listings (tenant_id, created_at DESC);
+

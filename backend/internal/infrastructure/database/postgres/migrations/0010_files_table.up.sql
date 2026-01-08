@@ -20,6 +20,9 @@ CREATE TABLE IF NOT EXISTS files (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 
+    CONSTRAINT chk_file_timestamps
+        CHECK (updated_at >= created_at),
+
     CHECK (
         (watermark_type IS NULL AND watermarked_url IS NULL)
      OR (watermark_type IS NOT NULL AND watermarked_url IS NOT NULL)
