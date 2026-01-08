@@ -1,4 +1,4 @@
-CREATE TABLE plan_limits (
+CREATE TABLE IF NOT EXISTS plan_limits (
     plan_id UUID PRIMARY KEY REFERENCES plans(id) ON DELETE CASCADE,
 
     max_storage_bytes BIGINT NOT NULL

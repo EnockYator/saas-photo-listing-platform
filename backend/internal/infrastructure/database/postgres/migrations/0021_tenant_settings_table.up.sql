@@ -8,7 +8,10 @@ CREATE TABLE IF NOT EXISTS tenant_settings (
     watermark_text TEXT DEFAULT NULL,
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+    CONSTRAINT chk_tenant_settings_timestamps
+        CHECK (updated_at >= created_at)
 );
 
 -- Trigger to keep updated_at fresh

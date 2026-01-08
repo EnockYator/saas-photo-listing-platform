@@ -1,224 +1,284 @@
 # SQLC Configuration File
+
+    version: "2"
+
+    sql:
   
   ##########################################
-  # # Users Domain
+  # # Auth Domain
   ##########################################
   
-  #  Users table
-  version: "2"
-  sql:
-    - engine: "postgresql"
-      schema: "internal/infrastructure/database/postgres/migrations/*users_table.up.sql"
-      queries: "internal/infrastructure/database/postgres/queries/users.sql"
-      gen:
-        go:
-          package: "sqlc"
-          out: "internal/domains/users/infrastructure/repository/sqlc"
-          emit_json_tags: true
-          emit_prepared_queries: true
+    #  Users table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/infrastructure/database/postgres/queries/auth/*.sql"
+        gen:
+          go:
+            package: "sqlc"
+            out: "internal/domains/auth/infrastructure/repository/sqlc"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+    #  Roles table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/infrastructure/database/postgres/queries/auth/*.sql"
+        gen:
+          go:
+            package: "sqlc"
+            out: "internal/domains/auth/infrastructure/repository/sqlc"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+    #  User_roles table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/infrastructure/database/postgres/queries/auth/*.sql"
+        gen:
+          go:
+            package: "sqlc"
+            out: "internal/domains/auth/infrastructure/repository/sqlc"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+    #  Auth_sessions table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/infrastructure/database/postgres/queries/auth/*.sql"
+        gen:
+          go:
+            package: "sqlc"
+            out: "internal/domains/auth/infrastructure/repository/sqlc"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+  
+  
+  
+  ##########################################
+  # # Audit Domain
+  ##########################################
+  
+    #  Audit_logs table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/infrastructure/database/postgres/queries/audit/*.sql"
+        gen:
+          go:
+            package: "sqlc"
+            out: "internal/domains/audit/infrastructure/repository/sqlc"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+    #  Usage_stats table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/infrastructure/database/postgres/queries/audit/*.sql"
+        gen:
+          go:
+            package: "sqlc"
+            out: "internal/domains/audit/infrastructure/repository/sqlc"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+
+
+##########################################
+  # # Tenant Domain
+  ##########################################
+  
+    #  Files table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/infrastructure/database/postgres/queries/tenant/*.sql"
+        gen:
+          go:
+            package: "sqlc"
+            out: "internal/domains/tenant/infrastructure/repository/sqlc"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+    #  Listing_photos table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/infrastructure/database/postgres/queries/tenant/*.sql"
+        gen:
+          go:
+            package: "sqlc"
+            out: "internal/domains/tenant/infrastructure/repository/sqlc"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+    #  Listings table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/infrastructure/database/postgres/queries/tenant/*.sql"
+        gen:
+          go:
+            package: "sqlc"
+            out: "internal/domains/tenant/infrastructure/repository/sqlc"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+    #  Tenant_settings table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/infrastructure/database/postgres/queries/tenant/*.sql"
+        gen:
+          go:
+            package: "sqlc"
+            out: "internal/domains/tenant/infrastructure/repository/sqlc"
+            emit_json_tags: true
+            emit_prepared_queries: true
+    
+    #  Tenant_storage_usage table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/infrastructure/database/postgres/queries/tenant/*.sql"
+        gen:
+          go:
+            package: "sqlc"
+            out: "internal/domains/tenant/infrastructure/repository/sqlc"
+            emit_json_tags: true
+            emit_prepared_queries: true
+    
+    #  Tenant_users table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/infrastructure/database/postgres/queries/tenant/*.sql"
+        gen:
+          go:
+            package: "sqlc"
+            out: "internal/domains/tenant/infrastructure/repository/sqlc"
+            emit_json_tags: true
+            emit_prepared_queries: true
+    
+    #  Tenants table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/infrastructure/database/postgres/queries/tenant/*.sql"
+        gen:
+          go:
+            package: "sqlc"
+            out: "internal/domains/tenant/infrastructure/repository/sqlc"
+            emit_json_tags: true
+            emit_prepared_queries: true
+  
+
 
   ##########################################
-  # # Listings domain
+  # # Sharing Domain
   ##########################################
+  
+    #  Share_links table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/infrastructure/database/postgres/queries/sharing/*.sql"
+        gen:
+          go:
+            package: "sqlc"
+            out: "internal/domains/sharing/infrastructure/repository/sqlc"
+            emit_json_tags: true
+            emit_prepared_queries: true
 
-  # Listing table
-  version: "2"
-  sql:
-    - engine: "postgresql"
-      schema: "internal/infrastructure/database/postgres/migrations/listings/*.up.sql"
-      queries: "internal/infrastructure/database/postgres/queries/listings.sql"
-      gen:
-        go:
-          package: "sqlc"
-          out: "internal/domains/listings/infrastructure/repository/sqlc"
-          emit_json_tags: true
-          emit_prepared_queries: true
 
-  ##########################################
-  # # Files domain
-  ##########################################
-
-  # Files table
-  version: "2"
-  sql:
-    - engine: "postgresql"
-      schema: "internal/infrastructure/database/postgres/migrations/files/*.up.sql"
-      queries: "internal/infrastructure/database/postgres/queries/files.sql"
-      gen:
-        go:
-          package: "sqlc"
-          out: "internal/domains/files/infrastructure/repository/sqlc"
-          emit_json_tags: true
-          emit_prepared_queries: true
 
   ##########################################
-  # # Payments domain
+  # # Notifications Domain
   ##########################################
+  
+    #  Notifications table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/infrastructure/database/postgres/queries/notification/*.sql"
+        gen:
+          go:
+            package: "sqlc"
+            out: "internal/domains/notification/infrastructure/repository/sqlc"
+            emit_json_tags: true
+            emit_prepared_queries: true
 
-  # Payments table
-  version: "2"
-  sql:
-    - engine: "postgresql"
-      schema: "internal/infrastructure/database/postgres/migrations/payments/*.up.sql"
-      queries: "internal/infrastructure/database/postgres/queries/payments.sql"
-      gen:
-        go:
-          package: "sqlc"
-          out: "internal/domains/payments/infrastructure/repository/sqlc"
-          emit_json_tags: true
-          emit_prepared_queries: true
 
+
+##########################################
+  # # Subscriptions Domain
   ##########################################
-  # # Notifications domain
-  ##########################################
+  
+    #  Subscriptions table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/infrastructure/database/postgres/queries/subscription/*.sql"
+        gen:
+          go:
+            package: "sqlc"
+            out: "internal/domains/subscription/infrastructure/repository/sqlc"
+            emit_json_tags: true
+            emit_prepared_queries: true
 
-  # Notifications table
-  version: "2"
-  sql:
-    - engine: "postgresql"
-      schema: "internal/infrastructure/database/postgres/migrations/notifications/*.up.sql"
-      queries: "internal/infrastructure/database/postgres/queries/notifications.sql"
-      gen:
-        go:
-          package: "sqlc"
-          out: "internal/domains/notifications/infrastructure/repository/sqlc"
-          emit_json_tags: true
-          emit_prepared_queries: true
+    #  Plans table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/infrastructure/database/postgres/queries/subscription/*.sql"
+        gen:
+          go:
+            package: "sqlc"
+            out: "internal/domains/subscription/infrastructure/repository/sqlc"
+            emit_json_tags: true
+            emit_prepared_queries: true
 
-  ########################################## 
-  # Subscriptions domain
-  ##########################################
+    #  Plan_limits table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/infrastructure/database/postgres/queries/subscription/*.sql"
+        gen:
+          go:
+            package: "sqlc"
+            out: "internal/domains/subscription/infrastructure/repository/sqlc"
+            emit_json_tags: true
+            emit_prepared_queries: true
 
-  # Subscriptions table
-  version: "2"
-  sql:
-    - engine: "postgresql"
-      schema: "internal/infrastructure/database/postgres/migrations/subscriptions/*.up.sql"
-      queries: "internal/infrastructure/database/postgres/queries/subscriptions.sql"
-      gen:
-        go:
-          package: "sqlc"
-          out: "internal/domains/subscriptions/infrastructure/repository/sqlc"
-          emit_json_tags: true
-          emit_prepared_queries: true
 
-  # Plans table
-  version: "2"
-  sql:
-    - engine: "postgresql"
-      schema: "internal/infrastructure/database/postgres/migrations/*plans_table.up.sql"
-      queries: "internal/infrastructure/database/postgres/queries/plans.sql"
-      gen:
-        go: 
-          package: "sqlc"
-          out: "internal/domains/subscriptions/infrastructure/repository/sqlc"
-          emit_json_tags: true
-          emit_prepared_queries: true 
-
-  # Plan_limits table
-  version: "2"
-  sql:
-    - engine: "postgresql"
-      schema: "internal/infrastructure/database/postgres/migrations/plan_limits/*.up.sql"
-      queries: "internal/infrastructure/database/postgres/queries/plan_limits.sql"
-      gen:
-        go: 
-          package: "sqlc"
-          out: "internal/domains/subscriptions/infrastructure/repository/sqlc"
-          emit_json_tags: true
-          emit_prepared_queries: true
 
   ##########################################
-  # # Audit domain
+  # # Payments Domain
   ##########################################
+  
+    #  Payments table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/infrastructure/database/postgres/queries/payment/*.sql"
+        gen:
+          go:
+            package: "sqlc"
+            out: "internal/domains/payment/infrastructure/repository/sqlc"
+            emit_json_tags: true
+            emit_prepared_queries: true
 
-  # Audit_logs table
-  version: "2"
-  sql:
-    - engine: "postgresql"
-      schema: "internal/infrastructure/database/postgres/migrations/audit_logs/*.up.sql"
-      queries: "internal/infrastructure/database/postgres/queries/audit_logs.sql"
-      gen:
-        go:
-          package: "sqlc"
-          out: "internal/domains/audit_logs/infrastructure/repository/sqlc"
-          emit_json_tags: true
-          emit_prepared_queries: true
+    #  Invoices table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/infrastructure/database/postgres/queries/payment/*.sql"
+        gen:
+          go:
+            package: "sqlc"
+            out: "internal/domains/payment/infrastructure/repository/sqlc"
+            emit_json_tags: true
+            emit_prepared_queries: true
 
-  ##########################################
-  # # Sharing domain
-  ##########################################
+    #  Refunds table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/infrastructure/database/postgres/queries/payment/*.sql"
+        gen:
+          go:
+            package: "sqlc"
+            out: "internal/domains/payments/infrastructure/repository/sqlc"
+            emit_json_tags: true
+            emit_prepared_queries: true
 
-  # Share_links table
-  version: "2"
-  sql:
-    - engine: "postgresql"
-      schema: "internal/infrastructure/database/postgres/migrations/share_links/*.up.sql"
-      queries: "internal/infrastructure/database/postgres/queries/share_links.sql"
-      gen:
-        go:
-          package: "sqlc"
-          out: "internal/domains/sharing_links/infrastructure/repository/sqlc"
-          emit_json_tags: true
-          emit_prepared_queries: true
 
-  ##########################################
-  # # Usage_Stats domain
-  ##########################################
+  
 
-  ## Usage_stats table
-  version: "2"
-  sql:
-    - engine: "postgresql"
-      schema: "internal/infrastructure/database/postgres/migrations/usage_stats/*.up.sql"
-      queries: "internal/infrastructure/database/postgres/queries/usage_stats.sql"
-      gen:
-        go:
-          package: "sqlc"
-          out: "internal/domains/usage_stats/infrastructure/repository/sqlc"
-          emit_json_tags: true
-          emit_prepared_queries: true
 
-  ##########################################
-  # # Tenants domain
-  ##########################################
 
-  # Tenants table
-  version: "2"
-  sql:
-    - engine: "postgresql"
-      schema: "internal/infrastructure/database/postgres/migrations/*tenants_table.up.sql"
-      queries: "internal/infrastructure/database/postgres/queries/tenants.sql"
-      gen:
-        go:
-          package: "sqlc"
-          out: "internal/domains/tenants/infrastructure/repository/sqlc"
-          emit_json_tags: true
-          emit_prepared_queries: true
-
-  # tenant_storage_usage
-  version: "2"
-  sql:
-    - engine: "postgresql"
-      schema: "internal/infrastructure/database/postgres/migrations/tenant_storage_usage/*.up.sql"
-      queries: "internal/infrastructure/database/postgres/queries/tenant_storage_usage.sql"
-      gen:
-        go:
-          package: "sqlc"
-          out: "internal/domains/tenants/infrastructure/repository/sqlc"
-          emit_json_tags: true
-          emit_prepared_queries: true
-
-  # Tenant_users
-  version: "2"
-  sql:
-    - engine: "postgresql"
-      schema: "internal/infrastructure/database/postgres/migrations/tenant_users/*.up.sql"
-      queries: "internal/infrastructure/database/postgres/queries/tenant_users.sql"
-      gen:
-        go:
-          package: "sqlc"
-          out: "internal/domains/tenants/infrastructure/repository/sqlc"
-          emit_json_tags: true
-          emit_prepared_queries: true
-
+  

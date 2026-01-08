@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
 
     message TEXT NOT NULL,
     
@@ -16,7 +16,11 @@ CREATE TABLE IF NOT EXISTS notifications (
     is_read BOOLEAN NOT NULL DEFAULT FALSE,
     
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+    CONSTRAINT chk_notification_timestamps
+        CHECK (updated_at >= created_at)
+
 );
 
 -- Trigger bound to the table
@@ -30,9 +34,13 @@ CREATE INDEX idx_notifications_user_unread
     ON notifications(user_id, created_at DESC)
     WHERE is_read = FALSE;
 
--- Tenant scoped queries (admin views)
+-- Admin view, all notifications per tenant & user 
 CREATE INDEX idx_notifications_tenant_user
-    ON notifications(tenant_id, user_id);
+    ON notifications(tenant_id, user_id, created_at DESC);
+
+CREATE INDEX idx_notifications_type
+    ON notifications(tenant_id, type);
+
 
 
 
