@@ -5,6 +5,10 @@ CREATE TABLE  IF NOT EXISTS subscriptions (
     
     status TEXT NOT NULL DEFAULT 'inactive'
         CONSTRAINT subscription_status_check CHECK (status IN (
+<<<<<<< HEAD
+=======
+            'active',
+>>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)
             'inactive',
             'canceled',
             'past_due'
@@ -30,4 +34,9 @@ CREATE INDEX idx_subscription_tenant_status
     ON subscriptions(tenant_id, status);
 
 CREATE INDEX idx_subscription_created_at
+<<<<<<< HEAD
     ON subscriptions(created_at);
+=======
+    ON subscriptions(created_at);
+
+>>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)
