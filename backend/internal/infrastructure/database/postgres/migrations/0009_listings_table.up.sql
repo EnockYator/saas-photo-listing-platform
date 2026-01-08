@@ -20,6 +20,11 @@ CREATE TABLE IF NOT EXISTS listings (
 
     CONSTRAINT chk_listing_timestamps
         CHECK (updated_at >= created_at)
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)
 );
 
 -- Attach shared trigger
@@ -40,3 +45,7 @@ CREATE INDEX idx_listing_tenant_visibility
 
 CREATE INDEX idx_tenant_listing_created_at_desc
     ON listings (tenant_id, created_at DESC);
+<<<<<<< HEAD
+=======
+
+>>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)

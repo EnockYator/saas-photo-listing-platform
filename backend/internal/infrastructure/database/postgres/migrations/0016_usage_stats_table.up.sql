@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS usage_stats (
 
     CONSTRAINT chk_usage_stats_timestamps
         CHECK (updated_at >= created_at),
-    
+
     CONSTRAINT chk_total_uploads_positive
         CHECK (total_uploads >= 0),
     

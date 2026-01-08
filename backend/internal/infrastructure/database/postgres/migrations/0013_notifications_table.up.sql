@@ -4,6 +4,13 @@ CREATE TABLE IF NOT EXISTS notifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+
+=======
+>>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)
+>>>>>>> 8e0a703 (chore(database): add indexes and constraints to database tables for fast performance and security)
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
 
     message TEXT NOT NULL,
@@ -16,11 +23,18 @@ CREATE TABLE IF NOT EXISTS notifications (
     is_read BOOLEAN NOT NULL DEFAULT FALSE,
     
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+<<<<<<< HEAD
 
+=======
+>>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 
     CONSTRAINT chk_notification_timestamps
         CHECK (updated_at >= created_at)
+<<<<<<< HEAD
+=======
+
+>>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)
 );
 
 -- Trigger bound to the table
@@ -37,6 +51,16 @@ CREATE INDEX idx_notifications_user_unread
 -- Admin view, all notifications per tenant & user 
 CREATE INDEX idx_notifications_tenant_user
     ON notifications(tenant_id, user_id, created_at DESC);
+<<<<<<< HEAD
+=======
+
+CREATE INDEX idx_notifications_type
+    ON notifications(tenant_id, type);
+
+
+
+
+>>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)
 
 CREATE INDEX idx_notifications_type
     ON notifications(tenant_id, type);

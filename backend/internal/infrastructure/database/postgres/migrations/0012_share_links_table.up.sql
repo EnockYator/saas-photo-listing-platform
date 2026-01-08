@@ -1,6 +1,7 @@
 
 CREATE TABLE IF NOT EXISTS share_links (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+<<<<<<< HEAD
     
     listing_id UUID NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
@@ -8,6 +9,18 @@ CREATE TABLE IF NOT EXISTS share_links (
     listing_id UUID NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     
+=======
+<<<<<<< HEAD
+
+    listing_id UUID NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+
+=======
+    listing_id UUID NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    
+>>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)
+>>>>>>> 8e0a703 (chore(database): add indexes and constraints to database tables for fast performance and security)
     permission TEXT NOT NULL
         CONSTRAINT share_links_permission_check CHECK (permission IN ('read', 'write', 'admin')),
 
