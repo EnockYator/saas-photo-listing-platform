@@ -9,6 +9,10 @@ CREATE TABLE IF NOT EXISTS tenant_storage_usage (
 
     CONSTRAINT chk_tenant_storage_usage_timestamps
     CHECK (updated_at >= created_at)
+<<<<<<< HEAD
+=======
+
+>>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)
 );
 
 -- Trigger to keep updated_at fresh

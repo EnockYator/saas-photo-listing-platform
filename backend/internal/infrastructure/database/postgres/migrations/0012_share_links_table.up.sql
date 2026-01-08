@@ -1,32 +1,10 @@
 
 CREATE TABLE IF NOT EXISTS share_links (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-<<<<<<< HEAD
-<<<<<<< HEAD
-    
-    listing_id UUID NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
-    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
 
     listing_id UUID NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     
-=======
-<<<<<<< HEAD
-=======
->>>>>>> dedf8b4 (refactor: place all miration files in migrations/ directory rather than sub-directories)
-
-    listing_id UUID NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
-    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-
-
-    listing_id UUID NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
-    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    
-<<<<<<< HEAD
->>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)
->>>>>>> 8e0a703 (chore(database): add indexes and constraints to database tables for fast performance and security)
-=======
->>>>>>> dedf8b4 (refactor: place all miration files in migrations/ directory rather than sub-directories)
     permission TEXT NOT NULL
         CONSTRAINT share_links_permission_check CHECK (permission IN ('read', 'write', 'admin')),
 
@@ -48,14 +26,9 @@ CREATE TABLE IF NOT EXISTS share_links (
     
     CONSTRAINT view_counts_positive_check
         CHECK (view_count >= 0),
-<<<<<<< HEAD
-=======
 
     CONSTRAINT view_counts_not_exceeding_max_views_check
         CHECK (view_count <= max_views OR max_views = 0)
->>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)
-
-    CONSTRAINT view_counts_not_exceeding_max_views_check
 );
 
 -- Trigger to keep updated_at fresh
