@@ -1,11 +1,19 @@
 CREATE TABLE IF NOT EXISTS tenant_users (
 
+<<<<<<< HEAD
+=======
+CREATE TABLE IF NOT EXISTS tenant_users (
+>>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     
     role TEXT NOT NULL DEFAULT 'viewer'
         CONSTRAINT tenant_user_role_check CHECK (role IN ('admin', 'editor', 'viewer')),
+<<<<<<< HEAD
  
+=======
+    
+>>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     
