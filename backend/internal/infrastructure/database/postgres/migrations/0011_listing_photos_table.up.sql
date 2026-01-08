@@ -13,6 +13,9 @@ CREATE TABLE IF NOT EXISTS listing_photos (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     deleted_at TIMESTAMPTZ DEFAULT NULL,
 
+    CONSTRAINT chk_listing_photos_timestamps
+        CHECK (updated_at >= created_at),
+
     -- Constraints
     -- One file appears once per listing
     UNIQUE (listing_id, file_id),
