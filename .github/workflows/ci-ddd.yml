@@ -1,0 +1,29 @@
+name: DDD Workflow CI
+
+on:
+  push:
+    branches:
+      - 'feature/ddd-*'
+  pull_request:
+    branches:
+      - dev
+
+# jobs:
+#   build-test-ddd:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v3
+#       - name: Set up Go
+#         uses: actions/setup-go@v4
+#         with:
+#           go-version: 1.21
+#       - name: Install dependencies
+#         run: go mod tidy
+#       - name: Run linter
+#         run: |
+#           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s --
+#           ./bin/golangci-lint run ./...
+#       - name: Run all tests
+#         run: go test -v ./...
+#       - name: Run domain tests only
+#         run: go test -v ./internal/**/domain/...
