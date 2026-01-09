@@ -1,11 +1,10 @@
-# DDD Feature PR Template
-# For feature/ddd-* branches
+<!-- Used ONLY when opening a DDD Feature PR --> 
 
 ## Summary
 <!-- Describe what this PR is for, focusing on domain/business logic -->
 
-## Motivation
-<!-- Why is this change needed from a business/domain perspective? -->
+## Why is this change needed?
+<!-- Explain why this change is needed from business/domain perspective -->
 
 ## Domain Context
 - Which bounded context is affected?
@@ -19,7 +18,12 @@
 ## Implementation Notes
 - New entities / value objects
 - Repository or service changes
-- Persistence or infrastructure impact
+- Persistence or infrastructure 
+
+## How was it tested?
+- [ ] Unit tests
+- [ ] Manual testing
+- [ ] CI pipeline
 
 ## Related Issues
 Closes #
