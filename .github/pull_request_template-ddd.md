@@ -1,12 +1,15 @@
+# DDD Feature PR Template
+# For feature/ddd-* branches
+
 ## Summary
-Brief description of what this PR changes.
+<!-- Describe what this PR is for, focusing on domain/business logic -->
+
+## Motivation
+<!-- Why is this change needed from a business/domain perspective? -->
 
 ## Domain Context
 - Which bounded context is affected?
 - Which aggregate(s) are involved?
-
-## Motivation
-Why is this change needed from a business/domain perspective?
 
 ## Design Decisions
 - Key architectural or domain decisions
@@ -21,7 +24,12 @@ Why is this change needed from a business/domain perspective?
 ## Related Issues
 Closes #
 
-## Checklist
+## Checklist / Acceptance Criteria
 - [ ] Domain invariants enforced
+- [ ] Domain tests pass
+- [ ] Business rules validated
 - [ ] No domain logic leaked to application/infrastructure
 - [ ] Naming aligns with ubiquitous language
+
+## Notes
+<!-- Any additional info for reviewers -->
