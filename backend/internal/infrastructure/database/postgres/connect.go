@@ -27,6 +27,7 @@ func NewDB(cfg *config.Config) (*gorm.DB, error) {
 	}
 	if err := sqlDB.Ping(); err != nil {
 		return nil, fmt.Errorf("failed to ping DB: %w", err)
+	}
 
 	return db, nil
 }
