@@ -49,5 +49,9 @@ CREATE INDEX idx_notifications_tenant_user
     ON notifications(tenant_id, user_id, created_at DESC);
 
 CREATE INDEX idx_notifications_type
+<<<<<<< HEAD
     ON notifications(tenant_id, type);
 
+=======
+    ON notifications(tenant_id, type);
+>>>>>>> 9e4fead (chore(github): rebase main to dev (#45))
