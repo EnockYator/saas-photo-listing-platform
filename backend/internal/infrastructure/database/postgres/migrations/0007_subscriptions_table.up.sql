@@ -4,12 +4,13 @@ CREATE TABLE  IF NOT EXISTS subscriptions (
     plan_id UUID NOT NULL REFERENCES plans(id) ON DELETE CASCADE,  
     
     status TEXT NOT NULL DEFAULT 'inactive'
-        CONSTRAINT subscription_status_check CHECK (status IN (
-            'active',
-            'inactive',
-            'canceled',
-            'past_due'
-        )),
+        CONSTRAINT subscription_status_check
+            CHECK (status IN (
+                'active',
+                'inactive',
+                'canceled',
+                'past_due'
+            )),
     
     started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     end_at TIMESTAMPTZ NOT NULL,

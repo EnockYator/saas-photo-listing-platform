@@ -12,10 +12,19 @@ CREATE TABLE IF NOT EXISTS usage_stats (
     CONSTRAINT chk_usage_stats_timestamps
         CHECK (updated_at >= created_at),
 
+<<<<<<< HEAD
+    CONSTRAINT chk_total_uploads_positive
+        CHECK (total_uploads >= 0),
+
+    CONSTRAINT chk_total_storage_used_bytes_positive
+        CHECK (total_storage_used_bytes >= 0),
+
+=======
     CONSTRAINT chk_total_uploads_positive CHECK (total_uploads >= 0),
     CONSTRAINT chk_total_storage_used_bytes_positive CHECK (total_storage_used_bytes >= 0),
 
     
+>>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)
     UNIQUE (tenant_id, user_id)  -- one row per tenant+user
 );
 
