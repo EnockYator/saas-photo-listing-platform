@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS usage_stats (
 
     CONSTRAINT chk_total_uploads_positive
         CHECK (total_uploads >= 0),
-
+    
     CONSTRAINT chk_total_storage_used_bytes_positive
         CHECK (total_storage_used_bytes >= 0),
 

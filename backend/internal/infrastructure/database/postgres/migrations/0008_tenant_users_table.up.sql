@@ -4,7 +4,11 @@ CREATE TABLE IF NOT EXISTS tenant_users (
     
     role TEXT NOT NULL DEFAULT 'viewer'
         CONSTRAINT tenant_user_role_check CHECK (role IN ('admin', 'editor', 'viewer')),
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> be199d5 (fix conflicts (#50))
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     
