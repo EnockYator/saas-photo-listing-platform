@@ -1,16 +1,20 @@
-# Normal Feature / Bug Fix PR Template
-# For normal branches (feature/**)
+<!-- Default PR Template --> 
 
 ### Summary
 <!-- Describe what this PR does-->
 
-## Motivation
-<!-- Why is this change needed? -->
+## Why is this change needed?
+<!-- Problem this PR solves -->
 
 ## Changes
 - Added / fixed:
 - Refactored:
 - Updated tests:
+
+## How was it tested?
+- [ ] Unit tests
+- [ ] Manual testing
+- [ ] CI pipeline
 
 ## Related Issue
 Closes #

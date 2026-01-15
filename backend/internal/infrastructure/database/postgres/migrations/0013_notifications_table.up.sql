@@ -40,8 +40,3 @@ CREATE INDEX idx_notifications_tenant_user
 
 CREATE INDEX idx_notifications_type
     ON notifications(tenant_id, type);
-
-
-
-
-

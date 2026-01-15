@@ -43,4 +43,3 @@ CREATE INDEX idx_listing_tenant_visibility
 
 CREATE INDEX idx_tenant_listing_created_at_desc
     ON listings (tenant_id, created_at DESC);
-
