@@ -39,4 +39,8 @@ CREATE INDEX idx_listing_tenant_visibility
     ON listings(tenant_id, visibility);
 
 CREATE INDEX idx_tenant_listing_created_at_desc
+<<<<<<< HEAD
     ON listings (tenant_id, created_at DESC);
+=======
+    ON listings (tenant_id, created_at DESC);
+>>>>>>> 9e4fead (chore(github): rebase main to dev (#45))

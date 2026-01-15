@@ -27,10 +27,16 @@ CREATE INDEX idx_plan_type
 CREATE INDEX idx_plans_billing_cycle
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 975dd66 (chore(github): rebase main to dev (#45))
     ON plans(billing_cycle);
 =======
     ON plans(billing_cycle);
 >>>>>>> 9e4fead (chore(github): rebase main to dev (#45))
+<<<<<<< HEAD
 =======
     ON plans(billing_cycle);
 >>>>>>> e215485 (refactor: place all miration files in migrations/ directory rather than sub-directories)
+=======
+>>>>>>> 975dd66 (chore(github): rebase main to dev (#45))
