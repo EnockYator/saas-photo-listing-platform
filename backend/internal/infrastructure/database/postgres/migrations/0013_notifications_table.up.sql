@@ -4,7 +4,21 @@ CREATE TABLE IF NOT EXISTS notifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+<<<<<<< HEAD
     
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+
+=======
+>>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)
+>>>>>>> 8e0a703 (chore(database): add indexes and constraints to database tables for fast performance and security)
+=======
+    
+>>>>>>> 552c6f1 (fix: fix conflicts in branches (#46))
+>>>>>>> be199d53ec43a24e000114e9e1c64525626c58a3
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
 
     message TEXT NOT NULL,
@@ -41,3 +55,16 @@ CREATE INDEX idx_notifications_tenant_user
 CREATE INDEX idx_notifications_type
     ON notifications(tenant_id, type);
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+
+
+
+>>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)
+
+CREATE INDEX idx_notifications_type
+    ON notifications(tenant_id, type);
+=======
+>>>>>>> 552c6f1 (fix: fix conflicts in branches (#46))
+>>>>>>> be199d53ec43a24e000114e9e1c64525626c58a3
