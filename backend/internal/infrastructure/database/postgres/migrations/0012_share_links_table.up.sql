@@ -1,10 +1,16 @@
 
 CREATE TABLE IF NOT EXISTS share_links (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+<<<<<<< HEAD
     
     listing_id UUID NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
 
+=======
+    listing_id UUID NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    
+>>>>>>> fix-conflicts/main
     permission TEXT NOT NULL
         CONSTRAINT share_links_permission_check CHECK (permission IN ('read', 'write', 'admin')),
 
@@ -29,7 +35,6 @@ CREATE TABLE IF NOT EXISTS share_links (
 
     CONSTRAINT view_counts_not_exceeding_max_views_check
         CHECK (view_count <= max_views OR max_views = 0)
-
 );
 
 -- Trigger to keep updated_at fresh

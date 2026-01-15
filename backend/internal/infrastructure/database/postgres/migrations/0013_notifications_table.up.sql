@@ -4,6 +4,20 @@ CREATE TABLE IF NOT EXISTS notifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+
+=======
+>>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)
+>>>>>>> 8e0a703 (chore(database): add indexes and constraints to database tables for fast performance and security)
+=======
+    
+>>>>>>> 552c6f1 (fix: fix conflicts in branches (#46))
+>>>>>>> fix-conflicts/main
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
 
     message TEXT NOT NULL,
@@ -38,4 +52,27 @@ CREATE INDEX idx_notifications_tenant_user
     ON notifications(tenant_id, user_id, created_at DESC);
 
 CREATE INDEX idx_notifications_type
+<<<<<<< HEAD
     ON notifications(tenant_id, type);
+=======
+    ON notifications(tenant_id, type);
+
+<<<<<<< HEAD
+
+
+
+>>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)
+
+CREATE INDEX idx_notifications_type
+<<<<<<< HEAD
+<<<<<<< HEAD
+    ON notifications(tenant_id, type);
+=======
+    ON notifications(tenant_id, type);
+>>>>>>> c431e38 (refactor: place all miration files in migrations/ directory rather than sub-directories)
+=======
+    ON notifications(tenant_id, type);
+=======
+>>>>>>> 552c6f1 (fix: fix conflicts in branches (#46))
+>>>>>>> 777b751 (fix: fix conflicts in branches (#46))
+>>>>>>> fix-conflicts/main

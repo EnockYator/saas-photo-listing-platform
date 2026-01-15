@@ -1,5 +1,4 @@
 # SQLC Configuration File
-
     version: "2"
 
     sql:

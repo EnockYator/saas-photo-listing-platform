@@ -11,7 +11,6 @@ CREATE TABLE  IF NOT EXISTS subscriptions (
                 'canceled',
                 'past_due'
             )),
-    
     started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     end_at TIMESTAMPTZ NOT NULL,
     
@@ -25,6 +24,7 @@ BEFORE UPDATE ON subscriptions
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
 
+<!--indexes-->
 CREATE INDEX idx_subscription_tenant_id
     ON subscriptions(tenant_id);
 

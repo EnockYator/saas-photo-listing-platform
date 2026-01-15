@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS usage_stats (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     
