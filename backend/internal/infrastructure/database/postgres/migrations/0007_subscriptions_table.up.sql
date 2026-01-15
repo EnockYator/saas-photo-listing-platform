@@ -4,7 +4,6 @@ CREATE TABLE  IF NOT EXISTS subscriptions (
     plan_id UUID NOT NULL REFERENCES plans(id) ON DELETE CASCADE,  
     
     status TEXT NOT NULL DEFAULT 'inactive'
-<<<<<<< HEAD
         CONSTRAINT subscription_status_check
             CHECK (status IN (
                 'active',
@@ -13,15 +12,6 @@ CREATE TABLE  IF NOT EXISTS subscriptions (
                 'past_due'
             )),
 
-=======
-        CONSTRAINT subscription_status_check CHECK (status IN (
-            'active',
-            'inactive',
-            'canceled',
-            'past_due'
-        )),
-    
->>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)
     started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     end_at TIMESTAMPTZ NOT NULL,
     
@@ -35,10 +25,7 @@ BEFORE UPDATE ON subscriptions
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
 
-<<<<<<< HEAD
 <!--indexes-->
-=======
->>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)
 CREATE INDEX idx_subscription_tenant_id
     ON subscriptions(tenant_id);
 
@@ -46,8 +33,4 @@ CREATE INDEX idx_subscription_tenant_status
     ON subscriptions(tenant_id, status);
 
 CREATE INDEX idx_subscription_created_at
-<<<<<<< HEAD
     ON subscriptions(created_at);
-=======
-    ON subscriptions(created_at);
->>>>>>> d36301d (fix: fix conflicts in branches (#46))

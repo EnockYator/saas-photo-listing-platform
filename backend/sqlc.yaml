@@ -274,8 +274,12 @@
             out: "internal/domains/payments/infrastructure/repository/sqlc"
             emit_json_tags: true
 <<<<<<< HEAD
+<<<<<<< HEAD
             emit_prepared_queries: true
 =======
             emit_prepared_queries: true
 
 >>>>>>> d36301d (fix: fix conflicts in branches (#46))
+=======
+            emit_prepared_queries: true
+>>>>>>> 7d22e05 (fix: fix conflicts arising when merging dev to main (#49))
