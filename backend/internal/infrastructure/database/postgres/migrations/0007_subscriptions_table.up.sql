@@ -32,4 +32,3 @@ CREATE INDEX idx_subscription_tenant_status
 
 CREATE INDEX idx_subscription_created_at
     ON subscriptions(created_at);
-
