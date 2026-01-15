@@ -48,6 +48,7 @@ CREATE INDEX idx_notifications_tenant_user
 =======
 
 CREATE INDEX idx_notifications_type
+<<<<<<< HEAD
     ON notifications(tenant_id, type);
 
 
@@ -57,3 +58,6 @@ CREATE INDEX idx_notifications_type
 
 CREATE INDEX idx_notifications_type
     ON notifications(tenant_id, type);
+=======
+    ON notifications(tenant_id, type);
+>>>>>>> d36301d (fix: fix conflicts in branches (#46))

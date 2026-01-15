@@ -30,4 +30,8 @@ CREATE INDEX idx_plan_type
 
 -- Index for querying by billing_cycle
 CREATE INDEX idx_plans_billing_cycle
+<<<<<<< HEAD
     ON plans(billing_cycle);
+=======
+    ON plans(billing_cycle);
+>>>>>>> d36301d (fix: fix conflicts in branches (#46))

@@ -46,4 +46,8 @@ CREATE INDEX idx_subscription_tenant_status
     ON subscriptions(tenant_id, status);
 
 CREATE INDEX idx_subscription_created_at
+<<<<<<< HEAD
     ON subscriptions(created_at);
+=======
+    ON subscriptions(created_at);
+>>>>>>> d36301d (fix: fix conflicts in branches (#46))
