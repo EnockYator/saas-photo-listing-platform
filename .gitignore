@@ -1,3 +1,7 @@
 .env
 /backend/.env
+<<<<<<< HEAD
 /frontend/.env
+=======
+/frontend/.env
+>>>>>>> 6a479d6 (chore: refactor .gitignore after a disastrous commit)
