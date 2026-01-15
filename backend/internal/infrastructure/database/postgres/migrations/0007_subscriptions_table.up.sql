@@ -11,7 +11,11 @@ CREATE TABLE  IF NOT EXISTS subscriptions (
                 'canceled',
                 'past_due'
             )),
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> 552c6f1 (fix: fix conflicts in branches (#46))
     started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     end_at TIMESTAMPTZ NOT NULL,
     
@@ -32,4 +36,8 @@ CREATE INDEX idx_subscription_tenant_status
     ON subscriptions(tenant_id, status);
 
 CREATE INDEX idx_subscription_created_at
+<<<<<<< HEAD
     ON subscriptions(created_at);
+=======
+    ON subscriptions(created_at);
+>>>>>>> 552c6f1 (fix: fix conflicts in branches (#46))
