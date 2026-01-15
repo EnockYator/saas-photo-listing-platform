@@ -11,7 +11,7 @@ CREATE TABLE  IF NOT EXISTS subscriptions (
                 'canceled',
                 'past_due'
             )),
-   
+    
     started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     end_at TIMESTAMPTZ NOT NULL,
     
