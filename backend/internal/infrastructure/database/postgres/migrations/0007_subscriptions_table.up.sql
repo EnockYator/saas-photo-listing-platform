@@ -5,6 +5,9 @@ CREATE TABLE  IF NOT EXISTS subscriptions (
     
     status TEXT NOT NULL DEFAULT 'inactive'
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 85236ed (fix: fix conflicts in branches (#46))
         CONSTRAINT subscription_status_check
             CHECK (status IN (
                 'active',
@@ -12,6 +15,7 @@ CREATE TABLE  IF NOT EXISTS subscriptions (
                 'canceled',
                 'past_due'
             )),
+<<<<<<< HEAD
    
 =======
         CONSTRAINT subscription_status_check CHECK (status IN (
@@ -23,6 +27,8 @@ CREATE TABLE  IF NOT EXISTS subscriptions (
             'canceled',
             'past_due'
         )),
+=======
+>>>>>>> 85236ed (fix: fix conflicts in branches (#46))
     
 >>>>>>> 8790134 (chore(database): add indexes and constraints to database tables for fast performance and security)
     started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -45,9 +51,4 @@ CREATE INDEX idx_subscription_tenant_status
     ON subscriptions(tenant_id, status);
 
 CREATE INDEX idx_subscription_created_at
-<<<<<<< HEAD
     ON subscriptions(created_at);
-=======
-    ON subscriptions(created_at);
-
->>>>>>> e5eedb5 (chore(database): add indexes and constraints to database tables for fast performance and security)
