@@ -3,6 +3,7 @@ package postgres
 
 import (
 	"fmt"
+
 	"github.com/EnockYator/saas-photo-listing-platform/backend/internal/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
