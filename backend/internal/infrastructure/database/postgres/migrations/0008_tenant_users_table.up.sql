@@ -1,11 +1,10 @@
-
 CREATE TABLE IF NOT EXISTS tenant_users (
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     
     role TEXT NOT NULL DEFAULT 'viewer'
         CONSTRAINT tenant_user_role_check CHECK (role IN ('admin', 'editor', 'viewer')),
-    
+
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     
