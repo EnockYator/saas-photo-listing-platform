@@ -20,7 +20,6 @@ CREATE TABLE IF NOT EXISTS notifications (
 
     CONSTRAINT chk_notification_timestamps
         CHECK (updated_at >= created_at)
-
 );
 
 -- Trigger bound to the table

@@ -14,15 +14,12 @@ CREATE TABLE IF NOT EXISTS listings (
     visibility TEXT NOT NULL DEFAULT 'private'
         CONSTRAINT listing_visibility_check CHECK (visibility IN ('private', 'public')),
 
-
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     deleted_at TIMESTAMPTZ  DEFAULT NULL,
 
     CONSTRAINT chk_listing_timestamps
         CHECK (updated_at >= created_at)
-
-
 );
 
 -- Attach shared trigger
