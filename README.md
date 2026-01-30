@@ -1,50 +1,30 @@
 # Photo Listing SaaS
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+
+
 [![CI](https://github.com/EnockYator/saas-photo-listing-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/EnockYator/saas-photo-listing-platform/actions/workflows/ci.yml)
 
-[![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?logo=go)](https://golang.org/)
-[![Documentation](https://img.shields.io/badge/docs-overview-blue)](https://github.com/EnockYator/saas-photo-listing-platform/docs/overview.md)
-
-
-## **Introduction**
-
-**Photo Listing SaaS** is a **multi-tenant**, **professional portfolio platform** built exclusively for **photographers**, **studios**, and **creative businesses**. Unlike generic photo-sharing platforms, we provide business-enabling tools with strict **tenant isolation**, subscription-based monetization, and enterprise-grade reliability all built with **Golang** for **maximum performance** and **maintainability**.
-
-**Core Philosophy**: We don't compete with social networks. We provide the digital business backbone for photography professionals to showcase work, manage client deliveries, and grow their business through a polished, professional platform.
+A **production-grade Photo Listing SaaS platform** for uploading, organizing, watermarking, and securely sharing photos at scale.
+Built with **Go (Golang), PostgreSQL, SQLC, and React**, the system is designed for **multi-tenant environments, role-based access control, and high-performance media handling**.
+This system is production-ready and follows **clean architecture principles** with strict separation of concerns, ensuring maintainability, testability, and long-term scalability.
 
 ---
 
 ## Table of Contents
 
-- [Photo Listing SaaS](#photo-listing-saas)
-  - [Introduction](#introduction)
-  - [Table of Contents](#table-of-contents)
-  - [Project Overview](#project-overview)
-    - [Key Capabilities](#key-capabilities)
-  - [Core Features](#core-features)
-  - [Architecture \& Design Principles](#architecture--design-principles)
-    - [High-Level Flow](#high-level-flow)
-    - [Layer responsibilities](#layer-responsibilities)
-  - [Tech Stack](#tech-stack)
-  - [Project Structure](#project-structure)
-  - [Setup \& Installation](#setup--installation)
-    - [Prerequisites](#prerequisites)
-    - [Quick Start](#quick-start)
-      - [Clone the Repository](#clone-the-repository)
-      - [Start all Services](#start-all-services)
-      - [Access URLs](#access-urls)
-      - [Stopping the Application](#stopping-the-application)
-  - [Database \& SQLC](#database--sqlc)
-  - [API Documentation](#api-documentation)
-  - [Environment Variables](#environment-variables)
-    - [Server](#server)
-    - [Database](#database)
-    - [Object Storage](#object-storage)
-  - [Developer Workflow](#developer-workflow)
-  - [Contributing](#contributing)
-  - [License](#license)
-  - [Future Enhancements](#future-enhancements)
+1. [Project Overview](#project-overview)  
+2. [Core Features](#core-features)
+3. [Architecture & Design Principles](#architecture--design-principles)
+4. [Tech Stack](#tech-stack)  
+5. [Project Structure](#project-structure)  
+6. [Setup & Installation](#setup--installation)  
+7. [Database & SQLC](#database--sqlc)  
+8. [API Documentation](#api-documentation)  
+9. [Environment Variables](#environment-variables)  
+10. [Developer Workflow](#developer-workflow)  
+11. [Contributing](#contributing)  
+12. [License](#license)  
 
 ---
 
@@ -55,7 +35,7 @@
 ### Key Capabilities
 
 - Upload and manage photos securely
-- Group photos into structured listings(albums)
+- Group photos into structured listings
 - Apply text or image-based watermarks
 - Share photos publicly or privately
 - Enforce subscription-based upload limits
@@ -73,11 +53,7 @@ The platform is designed to scale horizontally and is suitable for:
 
 ## Core Features
 
-- **Multi-Tenancy**: Isolated data per tenant
-    - Complete data isolation with Row-Level Security
-    - Tenant-aware resource allocation and limits
-    - Separate storage namespaces per tenant
-    
+- **Multi-Tenant Architecture**: Isolated data per tenant 
 - **Role-Based Access Control**: Guest, Tenant, Viewer organize listings 
 - **Photo Management**: Upload, update, delete, and organize photos into listings
 - **Watermarking**: Protect media with configurable watermarks
