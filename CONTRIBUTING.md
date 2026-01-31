@@ -1,16 +1,13 @@
 
-## CONTRIBUTING.md
-
-```markdown
-# Contributing to Photo Listing SaaS
+# Contributing to SaaS Photo Listing 
 
 Thank you for your interest in contributing to Photo Listing SaaS! This document provides guidelines and instructions for contributing to the project.
 
-## 🎯 Code of Conduct
+## Code of Conduct
 
 Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md) to foster an open and welcoming environment.
 
-## 📋 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Go 1.21 or later
@@ -21,7 +18,9 @@ Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md) to foster an op
 ### First-Time Setup
 
 1. **Fork the Repository**
+   
    ```bash
+
    # Fork on GitHub, then clone your fork
    git clone https://github.com/YOUR_USERNAME/photo-listing-saas.git
    cd photo-listing-saas
@@ -56,223 +55,329 @@ Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md) to foster an op
     # Check API is running
     curl http://localhost:8080/health
 
-🏗️ Project Structure
-text
+    ```
 
-photo-listing-saas/
-├── cmd/                    # Application entry points
-│   ├── server/            # Main API server
-│   ├── worker/            # Background job processor
-│   ├── migrate/           # Database migrations
-│   └── seed/              # Development data seeding
-├── internal/              # Private application code
-│   ├── api/               # HTTP handlers and middleware
-│   ├── application/       # Use cases and services
-│   ├── domain/            # Core business logic (see README)
-│   └── infrastructure/    # External implementations
-├── pkg/                   # Public library code
-├── docs/                  # Documentation
-├── scripts/               # Build and deployment scripts
-├── tests/                 # Test suites
-├── migrations/            # Database migration files
-└── docker/               # Docker configurations
+    **Project Structure**
 
-🧪 Testing
-Test Structure
+    ```text
 
-    Unit Tests: In *_test.go files alongside the code
+    saas-photo-listing-platform/
+    ├── backend/
+    │   ├── cmd/                                    # Application entry points
+    │   │   ├── api/                                # Main API server
+    │   │   ├── migrate/                            # Database migrations
+    │   │   ├── tools/
+    │   │   └── worker/                             # Background job processor
+    │   │   └── seed/                               # Development data seeding
+    │   └── internal/                               # Private application code
+    │       ├── auth/
+    │       ├── config/
+    │       ├── docs/
+    │       ├── domains/                            # Aggregates / entities
+    │       │   ├── audit/
+    │       │   │   ├── application/                # Use cases and services
+    │       │   │   ├── domain/             
+    │       │   │   └── infrastructure/
+    │       │   │       └── repository/
+    │       │   │           └── sqlc/
+    │       │   │               ├── audit_logs/
+    │       │   │               └── usage_stats/
+    │       │   ├── auth/
+    │       │   │   ├── application/                # Use cases and services
+    │       │   │   ├── domain/
+    │       │   │   └── infrastructure/
+    │       │   │       └── repository/
+    │       │   │           └── sqlc/
+    │       │   ├── notification/
+    │       │   │   └── email/
+    │       │   │       ├── application/
+    │       │   │       ├── domain/
+    │       │   │       └── infrastructure/
+    │       │   │           ├── provider/
+    │       │   │           └── repository/
+    │       │   │               └── sqlc/
+    │       │   │                   └── notifications/
+    │       │   ├── payment/
+    │       │   │   ├── application/
+    │       │   │   ├── domain/
+    │       │   │   └── infrastructure/
+    │       │   │       ├── repository/
+    │       │   │       │   └── sqlc/
+    │       │   │       │       ├── invoices/
+    │       │   │       │       ├── payments/
+    │       │   │       │       └── refunds/
+    │       │   │       └── stripe/
+    │       │   ├── sharing/
+    │       │   │   ├── application/
+    │       │   │   ├── domain/
+    │       │   │   └── infrastructure/
+    │       │   │       └── repository/
+    │       │   │           └── sqlc/
+    │       │   │               └── share_links/
+    │       │   ├── subscription/
+    │       │   │   ├── application/
+    │       │   │   ├── domain/
+    │       │   │   └── infrastructure/
+    │       │   │       └── repository/
+    │       │   │           └── sqlc/
+    │       │   │               ├── plan_limits/
+    │       │   │               ├── plans/
+    │       │   │               └── subscriptions/
+    │       │   └── tenant/
+    │       │       ├── application/
+    │       │       ├── domain/
+    │       │       │   └── entity/
+    │       │       └── infrastructure/
+    │       │           └── repository/
+    │       │               └── sqlc/
+    │       │                   ├── files/
+    │       │                   ├── listing_photos/
+    │       │                   ├── listings/
+    │       │                   ├── tenants/
+    │       │                   ├── tenant_settings/
+    │       │                   ├── tenant_storage_usage/
+    │       │                   └── tenant_users/
+    │       ├── infrastructure/                             # External implementations
+    │       │   ├── database/
+    │       │   │   └── postgres/
+    │       │   │       ├── migrations/
+    │       │   │       └── queries/
+    │       │   │           ├── audit/
+    │       │   │           ├── auth/
+    │       │   │           ├── notification/
+    │       │   │           ├── payment/
+    │       │   │           ├── sharing/
+    │       │   │           ├── subscription/
+    │       │   │           └── tenant/
+    │       │   ├── nats/
+    │       │   ├── observability/
+    │       │   ├── redis/
+    │       │   └── storage/
+    │       │       └── s3_storage/
+    │       ├── interfaces/
+    │       │   ├── http/
+    │       │   │   ├── dto/
+    │       │   │   └── handlers/                   # HTTP handlers
+    │       │   └── messaging/
+    │       │       └── dto/
+    │       ├── logger/
+    │       ├── middleware/
+    │       └── util/
+    ├── docker/                                     # Docker configurations
+    ├── docs/
+    │   ├── architecture/
+    │   └── images/
+    ├── pkg/                                        # Public library code
+    ├── scripts/                                    # Build and deployment scripts
+    ├── tests/                                      # Test suites
+    ├── nginx/
+    └── react-frontend/
 
-    Integration Tests: In tests/integration/ with test containers
+    ```
 
-    E2E Tests: In tests/e2e/ for full workflow testing
+2. **Testing**
 
-Running Tests
-bash
+    **Test Structure**
+        - Unit Tests: In *_test.go files alongside the code
+        - Integration Tests: In tests/integration/ with test containers
+        - E2E Tests: In tests/e2e/ for full workflow testing
 
-# Run all tests
-make test
+    **Running Tests**
 
-# Run unit tests only
-make test-unit
+    ```bash
 
-# Run integration tests
-make test-integration
+    # Run all tests
+    make test
 
-# Run E2E tests
-make test-e2e
+    # Run unit tests only
+    make test-unit
 
-# Run tests with coverage
-make test-coverage
+    # Run integration tests
+    make test-integration
 
-# Run tests with race detector
-make test-race
+    # Run E2E tests
+    make test-e2e
 
-Writing Tests
-go
+    # Run tests with coverage
+    make test-coverage
 
-// Example test structure
-func TestAlbumService_Create(t *testing.T) {
-    t.Run("creates album successfully", func(t *testing.T) {
-        // Arrange
-        repo := NewMockAlbumRepository()
-        service := NewAlbumService(repo)
-        req := CreateAlbumRequest{
-            Title: "Test Album",
-            Description: "Test Description",
-        }
+    # Run tests with race detector
+    make test-race
+
+    ```
+
+    **Writing Tests**
+
+    ```go
+
+    // Example test structure
+    func TestAlbumService_Create(t *testing.T) {
+        t.Run("creates album successfully", func(t *testing.T) {
+            // Arrange
+            repo := NewMockAlbumRepository()
+            service := NewAlbumService(repo)
+            req := CreateAlbumRequest{
+                Title: "Test Album",
+                Description: "Test Description",
+            }
+            
+            // Act
+            album, err := service.Create(context.Background(), "tenant-123", req)
+            
+            // Assert
+            assert.NoError(t, err)
+            assert.Equal(t, "Test Album", album.Title)
+            assert.Equal(t, "draft", album.Status)
+        })
         
-        // Act
-        album, err := service.Create(context.Background(), "tenant-123", req)
-        
-        // Assert
-        assert.NoError(t, err)
-        assert.Equal(t, "Test Album", album.Title)
-        assert.Equal(t, "draft", album.Status)
-    })
+        t.Run("fails with empty title", func(t *testing.T) {
+            // Test validation error
+        })
+    }
+
+    ```
+
+## Development Workflow
+1. **Choose or Create an Issue**
+    - Check GitHub Issues
+    - Look for good first issue or help wanted labels
+    - Create a new issue if you have a bug report or feature request
+
+2. **Sync with upstream**
+
+    ```bash
+    git fetch upstream
+    git checkout main
+    git merge upstream/main
+    ```
+
+3. **Create feature branch**
+    ```bash
+        git checkout -b feat/your-feature-name
+    ```
+    **or**
+    ```bash
+        git checkout -b fix/issue-number-description
+    ```
+
+    **Branch Naming Convention**:
+
+        feat/ - New features
+
+        fix/ - Bug fixes
+
+        docs/ - Documentation updates
+
+        refactor/ - Code refactoring
+
+        test/ - Test improvements
+
+        chore/ - Maintenance tasks
+
+4. **Make Your Changes**
+    **Code Style Guidelines**
     
-    t.Run("fails with empty title", func(t *testing.T) {
-        // Test validation error
-    })
-}
+    ```go
 
-📝 Development Workflow
-1. Choose or Create an Issue
+    // Use gofmt and goimports
+    go fmt ./...
+    goimports -w .
 
-    Check GitHub Issues
+    // Follow Go naming conventions
+    // - Use camelCase for variables and functions
+    // - Use PascalCase for exported identifiers
+    // - Use short, descriptive names
 
-    Look for good first issue or help wanted labels
+    // Error handling
+    if err != nil {
+        return fmt.Errorf("context: %w", err)
+    }
 
-    Create a new issue if you have a bug report or feature request
+    // Documentation
+    // Add comments for exported functions, types, and packages
+    // Use complete sentences ending with periods
 
-2. Create a Feature Branch
-bash
+    ```
 
-# Sync with upstream
-git fetch upstream
-git checkout main
-git merge upstream/main
+    **Commit Message Convention**
+    ```text
 
-# Create feature branch
-git checkout -b feat/your-feature-name
-# or
-git checkout -b fix/issue-number-description
+    type(scope): subject
 
-Branch Naming Convention:
+    body
 
-    feat/ - New features
+    footer
 
-    fix/ - Bug fixes
+    Types:
 
-    docs/ - Documentation updates
+        feat: New feature
 
-    refactor/ - Code refactoring
+        fix: Bug fix
 
-    test/ - Test improvements
+        docs: Documentation
 
-    chore/ - Maintenance tasks
+        style: Formatting changes
 
-3. Make Your Changes
-Code Style Guidelines
-go
+        refactor: Code refactoring
 
-// Use gofmt and goimports
-go fmt ./...
-goimports -w .
+        test: Adding tests
 
-// Follow Go naming conventions
-// - Use camelCase for variables and functions
-// - Use PascalCase for exported identifiers
-// - Use short, descriptive names
+        chore: Maintenance tasks
+    ```
 
-// Error handling
-if err != nil {
-    return fmt.Errorf("context: %w", err)
-}
+    Example:
+    ```text
 
-// Documentation
-// Add comments for exported functions, types, and packages
-// Use complete sentences ending with periods
+    feat(album): add support for album sharing
 
-Commit Message Convention
-text
+    - Add share link generation endpoint
+    - Implement token-based access control
+    - Add expiration dates for share links
 
-type(scope): subject
+    Closes #123
+    ```
 
-body
+5. **Run Tests and Linters**
+    
+    ```bash
 
-footer
+    # Run linters
+    make lint
 
-Types:
+    # Run all tests
+    make test
 
-    feat: New feature
+    # Check code coverage
+    make test-coverage
 
-    fix: Bug fix
+    # Build to verify compilation
+    make build
 
-    docs: Documentation
+    ```
 
-    style: Formatting changes
+6. **Update Documentation**
+    - Update relevant documentation in /docs/
+    - Update inline code comments if needed
+    - Update API documentation if endpoints changed
 
-    refactor: Code refactoring
+7. **Create Pull Request**
 
-    test: Adding tests
-
-    chore: Maintenance tasks
-
-Example:
-text
-
-feat(album): add support for album sharing
-
-- Add share link generation endpoint
-- Implement token-based access control
-- Add expiration dates for share links
-
-Closes #123
-
-4. Run Tests and Linters
-bash
-
-# Run linters
-make lint
-
-# Run all tests
-make test
-
-# Check code coverage
-make test-coverage
-
-# Build to verify compilation
-make build
-
-5. Update Documentation
-
-    Update relevant documentation in /docs/
-
-    Update inline code comments if needed
-
-    Update API documentation if endpoints changed
-
-6. Create Pull Request
-
-    Push your branch:
-    bash
-
+    **Push your branch**:
+    
+    ```bash
     git push origin feat/your-feature-name
+    ```
 
-    Create a PR on GitHub with:
+    **Create a PR on GitHub with**:
+    - Clear title following commit convention
+    - Description of changes and motivation
+    - Reference to related issue (#123)
+    - Screenshots for UI changes
+    - Test coverage information
 
-        Clear title following commit convention
-
-        Description of changes and motivation
-
-        Reference to related issue (#123)
-
-        Screenshots for UI changes
-
-        Test coverage information
-
-    Fill out the PR template:
-    markdown
+    **Fill out the PR template**:
+        
+    ```markdown
 
     ## Description
     Brief description of changes
@@ -295,18 +400,17 @@ make build
     - [ ] Tests pass locally
     - [ ] No new warnings
 
-7. Address Review Feedback
+    ```
 
-    Respond to all review comments
+8. **Address Review Feedback**
+    - Respond to all review comments
+    - Make requested changes
+    - Push updates to your branch
+    - Request re-review when ready
 
-    Make requested changes
+## Release Process
 
-    Push updates to your branch
-
-    Request re-review when ready
-
-🚀 Release Process
-Versioning
+### Versioning
 
 We follow Semantic Versioning:
 
@@ -316,7 +420,7 @@ We follow Semantic Versioning:
 
     PATCH: Bug fixes (backwards compatible)
 
-Release Checklist
+**Release Checklist**
 
     All tests pass
 
@@ -330,19 +434,17 @@ Release Checklist
 
     Release notes written
 
-📚 Documentation
-Writing Documentation
+## Documentation
 
-    Use clear, concise language
+### Writing Documentation
+- Use clear, concise language
+- Include code examples
+- Update when code changes
+- Use relative links within the repo
 
-    Include code examples
+### Documentation Structure
 
-    Update when code changes
-
-    Use relative links within the repo
-
-Documentation Structure
-text
+```text
 
 docs/
 ├── overview.md          # Product overview
@@ -355,8 +457,11 @@ docs/
     ├── events.md
     └── data-model.md
 
-🐛 Bug Reports
-Reporting Bugs
+```
+
+## Bug Reports
+
+### Reporting Bugs
 
     Check if the bug already exists in issues
 
@@ -374,8 +479,9 @@ Reporting Bugs
 
         Screenshots if applicable
 
-Bug Report Template
-markdown
+### Bug Report Template
+
+```markdown
 
 ## Description
 [Clear description of the bug]
@@ -400,8 +506,11 @@ markdown
 ## Additional Context
 [Logs, screenshots, etc.]
 
-💡 Feature Requests
-Suggesting Features
+```
+
+## Feature Requests
+
+### Suggesting Features
 
     Check existing feature requests
 
@@ -411,8 +520,9 @@ Suggesting Features
 
     Include use cases and benefits
 
-Feature Request Template
-markdown
+### Feature Request Template
+
+```markdown
 
 ## Problem Statement
 [Describe the problem you're trying to solve]
@@ -429,7 +539,9 @@ markdown
 ## Additional Context
 [Screenshots, mockups, etc.]
 
-🏆 Recognition
+```
+
+## Recognition
 
 Contributors are recognized in:
 
@@ -447,7 +559,7 @@ Significant contributions may receive:
 
     Invitation to join the core team
 
-❓ Getting Help
+## ❓ Getting Help
 
     GitHub Discussions: For questions and discussions
 
@@ -457,8 +569,8 @@ Significant contributions may receive:
 
     Code Comments: Read inline documentation
 
-📄 License
+##  License
 
 By contributing, you agree that your contributions will be licensed under the MIT License. See LICENSE for details.
 
-Thank you for contributing to Photo Listing SaaS! 🙏
+Thank you for contributing to SaaS Photo Listing Platform! ❤️
