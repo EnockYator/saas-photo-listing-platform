@@ -4,8 +4,10 @@
 [![CI](https://github.com/EnockYator/saas-photo-listing-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/EnockYator/saas-photo-listing-platform/actions/workflows/ci.yml)
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?logo=go)](https://golang.org/)
-[![Documentation](https://img.shields.io/badge/docs-overview-blue)](https://github.com/EnockYator/saas-photo-listing-platform/docs/overview.md)
+[![Documentation](https://img.shields.io/badge/docs-overview-blue)](./docs/overview.md)
+[![Documentation](https://img.shields.io/badge/docs-architecture-blue)](./ARCHITECTURE.md)
 
+---
 
 ## **Introduction**
 
@@ -19,458 +21,207 @@
 
 - [Photo Listing SaaS](#photo-listing-saas)
   - [Introduction](#introduction)
-  - [Table of Contents](#table-of-contents)
-  - [Project Overview](#project-overview)
-    - [Key Capabilities](#key-capabilities)
-  - [Core Features](#core-features)
-  - [Architecture \& Design Principles](#architecture--design-principles)
-    - [High-Level Flow](#high-level-flow)
-    - [Layer responsibilities](#layer-responsibilities)
-  - [Tech Stack](#tech-stack)
-  - [Project Structure](#project-structure)
-  - [Setup \& Installation](#setup--installation)
-    - [Prerequisites](#prerequisites)
-    - [Quick Start](#quick-start)
-      - [Clone the Repository](#clone-the-repository)
-      - [Start all Services](#start-all-services)
-      - [Access URLs](#access-urls)
-      - [Stopping the Application](#stopping-the-application)
-  - [Database \& SQLC](#database--sqlc)
-  - [API Documentation](#api-documentation)
-  - [Environment Variables](#environment-variables)
-    - [Server](#server)
-    - [Database](#database)
-    - [Object Storage](#object-storage)
-  - [Developer Workflow](#developer-workflow)
-  - [Contributing](#contributing)
+  - [Quick Start](#quick-start)
+  - [Features](#features)
+  - [Architecture](#architecture)
+  - [Documentation](#documentation)
+    - [Comprehensive Documentation](#comprehensive-documentation)
+    - [Architecture Documentation](#architecture-documentation)
+    - [Domain Layer Documentation](#domain-layer-documentation)
+  - [Deployment](#deployment)
+    - [Free Tier Deployment](#free-tier-deployment)
+    - [Production Deployment](#production-deployment)
+  - [Testing](#testing)
+  [Contributing](#contributing)
   - [License](#license)
-  - [Future Enhancements](#future-enhancements)
+  - [Contact & Support](#contact-support)
 
 ---
 
-## Project Overview
+## Quick Start
 
-**Photo Listing SaaS** enables individuals and organizations to manage large collections of photos efficiently while enforcing access control and subscription limits.
+```bash
+# Clone the repository
+git clone https://github.com/EnockYator/photo-listing-saas.git
+cd photo-listing-saas
 
-### Key Capabilities
+# Start development environment
+docker-compose up -d
 
-- Upload and manage photos securely
-- Group photos into structured listings(albums)
-- Apply text or image-based watermarks
-- Share photos publicly or privately
-- Enforce subscription-based upload limits
-- Expose an API-first backend for web and mobile clients
+# Run migrations
+go run cmd/migrate/main.go up
 
-The platform is designed to scale horizontally and is suitable for:
+# Start the server
+go run cmd/server/main.go
 
-- Photography portfolios
-- Real estate listings
-- Event photo delivery
-- Media agencies
-- Internal enterprise photo systems
-
----
-
-## Core Features
-
-- **Multi-Tenancy**: Isolated data per tenant
-    - Complete data isolation with Row-Level Security
-    - Tenant-aware resource allocation and limits
-    - Separate storage namespaces per tenant
-    
-- **Role-Based Access Control**: Guest, Tenant, Viewer organize listings 
-- **Photo Management**: Upload, update, delete, and organize photos into listings
-- **Watermarking**: Protect media with configurable watermarks
-- **Subscription Enforcement**: Upload and storage limits per plan
-- **Cloud Object Storage**: S3-compatible storage (AWS S3 / MinIO)
-- **RESTful API**: JSON-based, stateless endpoints
-- **Async Workers**: Background image processing and long-running tasks
-- **Docker-First Setup**: Consistent environments across development & production
-
----
-
-## Architecture & Design Principles
-
-The backend strictly follows **Clean Architecture** with clear separation of concerns.
-
-### High-Level Flow
-
-```pqsql
-HTTP (Handlers)
-      ↓
-Service Layer (Use Cases)
-      ↓
-Domain (Business Rules & Entities)
-      ↓
-Storage (Postgres / S3)
-      ↓
-Database / Object Storage
 ```
 
-### Layer responsibilities
+### Access the services
 
-- **HTTP Handlers**
-
-    - Request validation
-    - Response formatting
-    - Authentication & authorization hooks
-
-- **Service Layer**
-
-    - Business logic and workflows
-    - Coordinates domain entities and storage interfaces
-    - No framework or infrastructure dependencies
-
-- **Domain**
-
-    - Core business entities
-    - Business rules and invariants
-    - Framework-agnostic
-
-- **Storage**
-
-    - Database persistence via SQLC
-    - Object storage integrations (S3-compatible)
-
-This structure ensures:
-- Low coupling
-- High testability
-- Easy refactoring
-- Long-term maintainability
+- API http://localhost:8080
+- MinIO Console: http://localhost:9001 (admin:admin)
+- PostgreSQL: localhost:5432
+- Redis CLI: docker exec -it photo-listing-redis redis-cli
 
 ---
 
-## Tech Stack
+## Features
 
-**Backend**:
+### Multi-Tenancy
+- Complete data isolation with Row-Level Security
+- Tenant-aware resource allocation and limits
+- Separate storage namespaces per tenant
 
-- [**Go (Golang**)](https://golang.org/) – High-performance, statically typed backend language
-- [**Gin**](https://gin-gonic.com/) – Fast and minimalist HTTP framework
-- [**SQLC**](https://sqlc.dev/) – Type-safe Go code generation from raw SQL queries
-- [**PostgreSQL**](https://www.postgresql.org/) – Relational database for persistent data storage
-- [**S3 / MinIO**](https://min.io/) – Object storage for photos and media assets
-- [**Docker**](https://www.docker.com/) – Containerization for consistent runtime environments
-- [**Docker Compose**](https://docs.docker.com/compose/) – Local multi-container orchestration 
+### Professional Photography Tools
+- Curated album management with lifecycle states
+- Batch uploads with progress tracking
+- Client proofing galleries with watermarking
+- EXIF metadata preservation and search
 
-**Frontend**:
+### Business Features
+- Three-tier subscription model (Free/Pro/Studio)
+- Usage-based billing with automated enforcement
+- Client engagement analytics and reporting
+- White-label options for studios
 
-- [**React**](https://react.dev/) – Component-based UI framework
-- **Mantine / TailwindCSS** – UI styling 
-- **Redux Toolkit Query (RTK Query)** – State management & API handling  
+### Enterprise Security
+- JWT-based authentication with tenant context
+- Signed URLs for media access
+- Row-Level Security for data isolation
+- Comprehensive audit logging
 
-**Infrastructure & Tooling**:
-
-- [**NGINX**](https://nginx.org/) – Reverse proxy and API gateway  
-- **Makefile** – Developer automation and shortcut  
+### Observability
+- Structured logging with correlation IDs
+- Prometheus metrics and Grafana dashboards
+- Distributed tracing with OpenTelemetry
+- Real-time performance monitoring
 
 ---
 
-## Project Structure
+## Architecture
+
+Photo Listing SaaS follows Clean Architecture and Domain-Driven Design principles:
+
+Read [**artchitecture**](./ARCHITECTURE.md) documentation for more details on architecture.
 
 ```text
-saas-photo-listing-platform/
-├── backend/
-│   ├── cmd/
-│   │   └── api/
-│   │       └── main.go               # Application entry point
-│   │
-│   ├── deployments/
-│   │   ├── docker-compose.yml        # Local orchestration (API, DB, etc.)
-│   │   └── Dockerfile                # Backend container image
-│   │
-│   ├── go.mod                        # Go module definition
-│   ├── go.sum                        # Go dependency checksums
-│   │
-│   ├── internal/
-│   │   ├── db/
-│   │   │   ├── schema/               # Database migrations
-│   │   │   │   ├── 001_create_users.sql
-│   │   │   │   └── 002_create_photos.sql
-│   │   │   └── sqlc.yaml             # sqlc configuration
-│   │   │
-│   │   ├── domain/                   # Core business entities
-│   │   │   ├── listing.go
-│   │   │   ├── photo.go
-│   │   │   ├── subscription.go
-│   │   │   └── user.go
-│   │   │
-│   │   ├── http/
-│   │   │   ├── handlers/             # HTTP request handlers
-│   │   │   │   ├── auth_handler.go
-│   │   │   │   ├── listing_handler.go
-│   │   │   │   └── photo_handler.go
-│   │   │   ├── router.go             # Route definitions
-│   │   │   └── schemas/              # Request/response DTOs
-│   │   │       ├── auth.go
-│   │   │       ├── listing.go
-│   │   │       └── photo.go
-│   │   │
-│   │   ├── middleware/               # HTTP middlewares
-│   │   │   ├── auth.go               # Authentication middleware
-│   │   │   └── middleware.go         # Common middleware utilities
-│   │   │
-│   │   ├── service/                   # Application use cases
-│   │   │   ├── auth
-│   │   │   │   └── service.go
-│   │   │   ├── listing
-│   │   │   │   └── service.go
-│   │   │   ├── photo
-│   │   │   │   └── service.go
-│   │   │   └── subscription
-│   │   │       └── service.go
-│   │   ├── storage/
-│   │   │   ├── postgres/             # PostgreSQL persistence
-│   │   │   │   ├── db.go
-│   │   │   │   ├── queries/           # SQL queries for sqlc
-│   │   │   │   └── sqlc_generated/    # Generated Go code from sqlc
-│   │   │   │
-│   │   │   └── s3_storage/            # Object storage (S3-compatible)
-│   │   │       └── s3_storage.go
-│   │   │
-│   │   ├── util/                     # Shared utilities
-│   │   │   ├── helpers.go
-│   │   │   └── validator.go
-│   │   │
-│   │   └── worker/                   # Background jobs & async processing
-│   │
-│   └── Makefile                     # Build & dev automation
-│
-├── frontend/                         # React frontend (UI)
-│
-├── nginx/
-│   └── nginx.conf                   # Reverse proxy & static serving
-│
-└── README.md                        # Project documentation
+
+┌─────────────────────────────────────────┐
+│      Presentation Layer (API/REST)      │
+├─────────────────────────────────────────┤
+│      Application Layer (Use Cases)      │
+├─────────────────────────────────────────┤
+│        Domain Layer (Business)          │
+├─────────────────────────────────────────┤
+│ Infrastructure Layer (DB/Storage/Queue) │
+└─────────────────────────────────────────┘
+
 ```
 
----
+### Key Technologies:
 
-## Setup & Installation
-
-This project is **Docker-first**. All services (Backend, Frontend, PostgreSQL, NGINX) are containerized and orchestrated using **Docker Compose**.
-
----
-
-### Prerequisites
-
-- Docker
-- Docker Compose
-
-> You do **NOT** need Go, PostgreSQL, or Node.js installed locally.
+- **Backend**: [**Go (Golang**)](https://golang.org/), [**Gin**](https://gin-gonic.com/),
+[**SQLC**](https://sqlc.dev/), **Validator**
+- **Database**: [**PostgreSQL 18.1**](https://www.postgresql.org/) ([**Supabase**](https://supabase.com/)) with RLS
+- **Image storage**: [**R2**](https://developers.cloudflare.com/r2/) ([S3](https://aws.amazon.com/s3/)-compatible)
+- **Events**: [**NATS JetStream**](https://nats.io/) for reliable messaging
+- **Infrastructure**: [**Fly.io**](https://fly.io/), [**Docker**](https://www.docker.com/), [**Cloudflare**](https://www.cloudflare.com/)
 
 ---
 
-### Quick Start
+## Documentation
 
-#### Clone the Repository
+### Comprehensive Documentation
+
+Comprehensive documentation is available in the /docs directory:
+
+1. [**Overview**](./docs/overview.md) - Product vision and features
+2. [**Setup Guide**](./docs/setup.md) - Development environment setup
+3. [**Deployment**](./docs/deployment.md) - Production deployment guide
+4. [**Security**](./docs/security.md) - Security architecture and practices
+5. [**API Reference**](./docs/api.md) - REST API documentation
+6. [**Architecture**](./ARCHITECTURE.md)
+
+### Architecture Documentation
+
+1. [**Architecture Context**](./docs/architecture/context.md) Context - Architectural decisions and patterns
+2. [**Event System**](./docs/architecture/events.md) - Event-driven architecture details
+3. [**Data Model**](./docs/architecture/data-model.md) - Database schema and design
+
+
+### Domain Layer Documentation
+
+[**Domain Documentation**](./backend/internal/domains/README.md) - Business domain models and rules
+
+---
+
+## Deployment
+
+### Free Tier Deployment
+```bash
+# Deploy to Fly.io
+fly deploy --app photo-listing-api
+
+# Set environment secrets
+fly secrets set DATABASE_URL="postgresql://..." \
+                 R2_ACCESS_KEY="..." \
+                 JWT_SECRET="..."
+
+# Run migrations
+fly ssh console -a photo-listing-api --command "./migrate up"
+
+```
+
+### Production Deployment
+
+See [**deployment**](./docs/deployment.md) for complete deployment guide including:
+- Multi-region setup
+- Database backup strategies
+- Monitoring and alerting configuration
+- CI/CD pipeline setup
+
+---
+
+## Testing
 
 ```bash
-git clone https://github.com/EnockYator/saas-photo-listing-platform.git
-cd saas-photo-listing-platform
+# Run unit tests
+go test ./... -v
+
+# Run integration tests
+docker-compose -f docker-compose.test.yml up --abort-on-container-exit
+
+# Run end-to-end tests
+go test ./tests/e2e -v
+
 ```
-
----
-
-#### Start all Services
-
-```bash
-docker-compose up --build
-```
-
-This command will:
-
-- Build the Go backend
-
-- Start PostgreSQL
-
-- Apply database migrations
-
-- Generate SQLC code
-
-- Start the React frontend
-
-- Configure NGINX as a reverse proxy
-
----
-
-#### Access URLs
-
-| Service       | URL                          | Port |
-|---------------|------------------------------|------|
-| Frontend      | http://localhost             | 80   |
-| Backend API   | http://localhost/api         | 8080 |
-| PostgreSQL    | localhost                    | 5432 |
-
----
-
-#### Stopping the Application
-
-```bash
-docker compose down
-docker compose down -v # Removes all volumes
-```
-
----
-
-## Database & SQLC
-
-- All database schemas are defined using raw SQL
-
-- SQLC generates type-safe Go code
-
-- No ORM magic — queries are explicit and performant
-
-This approach provides:
-
-- Compile-time query validation
-
-- Predictable SQL performance
-
-- Clear ownership of database logic
-
----
-
-## API Documentation
-
-The API follows REST principles with standardized responses.
-
-**Example: Create Photo**
-
-```http
-POST /photos
-Authorization: Bearer <token>
-Content-Type: application/json
-```
-
-Request Body:
-```json
-{
-  "listing_id": 10,
-  "title": "Wedding Shot"
-}
-```
-
-Response (201 Created):
-```json
-{
-  "id": 45,
-  "title": "Wedding Shot",
-  "listing_id": 10
-}
-```
-
-All endpoints:
-
-- Return consistent HTTP status codes
-
-- Validate input data
-
-- Provide structured error responses
-
----
-
-## Environment Variables
-
-Create a .env file in the root:
-
-### Server
-```ini
-PORT=8080
-ENV=development
-```
-
-### Database
-```ini
-POSTGRES_USER=your_postgres_username
-POSTGRES_PASSWORD=your_postgres_password
-POSTGRES_DB=saas_photo_listing_db
-
-DB_HOST=postgres
-DB_PORT=5432
-DB_NAME=saas_photo_listing_db
-DB_USER=postgres
-DB_PASSWORD=your_postgres_password
-```
-
-### Object Storage
-```ini
-S3_ENDPOINT=https://s3.example.com
-S3_ACCESS_KEY=your_s3_access_key
-S3_SECRET_KEY=your_s3_secret_key
-S3_BUCKET=photos
-```
-
-- **Important Note:** Never commit secrets to version control (Git).
-
----
-
-## Developer Workflow
-
-Data flow from client to database and back:
-
-```text
-Client (Web / Mobile)
-   ↓
-HTTP Handler
-   ↓
-Service Layer (Business Logic)
-   ↓
-Domain Models
-   ↓
-Storage (SQLC / S3)
-   ↓
-Database / Object Storage
-```
-
-**Rules enforced:**
-
-    Handlers work with DTOs only
-
-    Services operate on domain models
-
-    Storage layers deal with persistence only
-
-    All conversions happen at boundaries
-
-This guarantees clean separation and long-term maintainability.
 
 ---
 
 ## Contributing
 
-  1. Fork the repository
+We welcome contributions! Please see our [**Contributing Guide**](./CONTRIBUTING.md) for details on:
 
-  2. Create a feature branch:
-  ```bash
-  git checkout -b feature/my-feature
-  ```
-
-  3. Commit changes: 
-  ```bash
-  git commit -m "Add your_feature_name"
-  ```
-
-  4. Push to branch:
-  ```bash
-  git push origin feature/your_feature_name
-  ```
-
-  5. Open a Pull Request
-
-  ---
-
-## License
-
-This project is licensed under the **MIT License**.  
-See the [LICENSE](LICENSE) file for details.
+- Code style and conventions
+- Testing requirements
+- Pull request process
+- Development workflow
 
 ---
 
-## Future Enhancements
+## License
 
-- Swagger/OpenAPI integration for API docs
-- CI/CD pipelines for automated testing and deployment
-- Multi-region cloud deployment
-- Role-based analytics dashboards
+This project is licensed under the [MIT License](https://opensource.org/license/mit) - see the [**LICENSE**](./LICENSE) file for details.
 
+The SaaS service itself is proprietary, while the core infrastructure is open-source.
 
+---
+
+## Contact Support
+
+- Website: https://photolisting.dev
+- Email: support@photolisting.dev
+- GitHub Issues: https://github.com/EnockYator/saas-photo-listing-platform/issues
+- Documentation: https://photolisting.dev/docs
+
+Built with ❤️ for photography professionals worldwide
