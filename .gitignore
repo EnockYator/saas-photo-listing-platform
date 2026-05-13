@@ -41,4 +41,5 @@ logs/
 
 # Docker
 docker-compose.override.yml
+*.yml
 EOF
