@@ -4,15 +4,15 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: saas_photo_listing
-      POSTGRES_USER: enock
-      POSTGRES_PASSWORD: Enock02psql
+      POSTGRES_DB:
+      POSTGRES_USER:
+      POSTGRES_PASSWORD:
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U enock -d saas_photo_listing"]
+      test:
       interval: 10s
       timeout: 5s
       retries: 5
