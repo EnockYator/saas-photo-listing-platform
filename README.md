@@ -9,10 +9,3 @@ A production-grade SaaS platform for photo galleries built with Go.
 - Docker
 
 ## Quick Start
-
-```bash
-# Clone and run
-make run
-
-# The server will start at http://localhost:8080
-# Health check: http://localhost:8080/health
