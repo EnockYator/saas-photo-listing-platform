@@ -38,7 +38,7 @@ func WriteError(
 	status int, code string,
 	message string,
 	details any,
-	) {
+) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 
