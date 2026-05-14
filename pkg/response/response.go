@@ -2,7 +2,6 @@ package response
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	appErrors "github.com/EnockYator/saas-photo-listing-platform/pkg/errors"
@@ -25,14 +24,12 @@ func WriteJSON(w http.ResponseWriter, status int, data any, meta any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 
-	response := APIResponse{
+	if err := json.NewEncoder(w).Encode(APIResponse{
 		Success: true,
 		Data:    data,
 		Meta:    meta,
-	}
-
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		log.Printf("failed to encode json response: %v", err)
+	}); err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
 	}
 }
 
@@ -55,7 +52,7 @@ func WriteError(
 	}
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {
-		log.Printf("failed to encode error response: %v", err)
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
 	}
 }
 

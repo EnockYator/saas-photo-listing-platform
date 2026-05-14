@@ -11,25 +11,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          go-version: "1.24"
 
-      - name: Download dependencies
+      - name: Download deps
         run: go mod download
 
-      - name: Check formatting
+      - name: Format check
         run: |
-          files=$(find . -type f -name '*.go' -not -path "./vendor/*")
-
-          unformatted=$(gofmt -l $files)
-
+          unformatted=$(gofmt -l .)
           if [ -n "$unformatted" ]; then
-            echo "Unformatted files:"
             echo "$unformatted"
             exit 1
           fi
@@ -40,10 +34,10 @@ jobs:
       - name: Lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: latest
+          version: v1.64.8
 
-      - name: Run tests
-        run: go test ./... -v -race
+      - name: Test
+        run: go test ./... -race
 
-      - name: Build API
+      - name: Build
         run: go build ./cmd/api
