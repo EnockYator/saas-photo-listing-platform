@@ -1,46 +1,122 @@
 # Binaries
+bin/
+dist/
+build/
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
-
-
-# Test binary
 *.test
-
-# Output of the go coverage tool
 *.out
+
+# Go workspace
+go.work
+go.work.sum
 
 # Dependency directories
 vendor/
 
-# IDE
+# Coverage files
+coverage.out
+coverage.html
+*.coverprofile
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# IDEs and editors
 .idea/
 .vscode/
 *.swp
 *.swo
 *~
 
-# Environment files
-.env
-.env.local
-.env.*.local
-
-# Uploads
-uploads/
-tmp/
-
-# OS
+# OS files
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
-logs/
+# Temporary files
+tmp/
+temp/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Generated files
+*.generated.go
 
 # Docker
-docker-compose.override.yml
-docker-compose.yml
-*.yml
-EOF
+docker-data/
+
+# Air live reload
+.air.toml
+
+# Test artifacts
+test-results/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Kubernetes secrets/configs
+kubeconfig
+*.pem
+*.key
+*.crt
+
+# Node modules (if frontend exists later)
+node_modules/
+
+# macOS
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+
+# Archives
+*.zip
+*.tar
+*.gz
+*.rar
+
+# Profiling
+cpu.prof
+mem.prof
+
+# Mock files
+mock/
+
+# Swagger generated docs
+docs/
+
+# Local cache
+.cache/
+
+# JetBrains
+*.iml
+
+# Delve debugger
+__debug_bin
+
+# GoLand
+.idea_modules/
+
+# Generated OpenAPI clients
+client/gen/
+
+# MinIO local data
+minio-data/
+
+# Redis dump
+dump.rdb

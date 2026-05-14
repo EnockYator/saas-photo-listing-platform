@@ -10,12 +10,23 @@ help:
 run:
 	go run cmd/api/main.go
 
-build:
-	go build -o bin/api cmd/api/main.go
+# build:
+# 	go build -o bin/api cmd/api/main.go
+
+fmt:
+	gofmt -w .
+
+vet:
+	go vet ./...
+
+lint:
+	golangci-lint run ./...
 
 test:
 	go test -v ./...
 
-clean:
-	rm -rf bin/
-	go clean
+# clean:
+# 	rm -rf bin/
+# 	go clean
+
+ci: fmt vet lint test

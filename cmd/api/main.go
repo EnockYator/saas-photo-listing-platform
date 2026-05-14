@@ -1,53 +1,22 @@
-package api
+package main
 
-// import (
-// 	"log"
-// 	"net/http"
-// 	"fmt"
-// 	"os"
+import (
+	"log"
 
-// 	"github.com/EnockYator/saas-photo-listing-platform/internal/infrastructure/interfaces/http/handlers"
-// 	"github.com/EnockYator/saas-photo-listing-platform/internal/config"
-// )
+	"github.com/EnockYator/saas-photo-listing-platform/internal/config"
+	httpserver "github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http"
+)
 
-// func main() {
-// 	// Load configuration
-// 	cfg := config.Load()
+func main() {
+	cfg := config.Load()
 
-// 	// Connect to database using GORM
+	if err := cfg.Validate(); err != nil {
+		log.Fatal("invalid config:", err)
+	}
 
-// 	// Initialize handlers
-// 	healthHandler := handlers.NewHealthHandler()
+	server := httpserver.NewServer(cfg)
 
-// 	// Set up routes
-// 	mux := http.NewServeMux()
-// 	mux.HandleFunc("/health", healthHandler.CheckHealth)
-
-// 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-// 		if r.URL.Path != "/" {
-// 			http.NotFound(w, r)
-// 			return
-// 		}
-// 		w.Header().Set("Content-Type", "text/plain")
-// 		w.Write([]byte("SaaS Photo Listing Platform API - Version 1.0.0\n"))
-// 	})
-
-// 	// Configure server
-// 	server := &http.Server{
-// 		Addr:         ":" + cfg.Server.Port,
-// 		Handler:      mux,
-// 		ReadTimeout:  cfg.Server.ReadTimeout,
-// 		WriteTimeout: cfg.Server.WriteTimeout,
-// 		IdleTimeout:  cfg.Server.IdleTimeout,
-// 	}
-
-	
-// 	// Start server
-// 	log.Printf("Server running on port %v", cfg.Server.Port)
-// 	log.Printf("Health check: http://localhost:%v/health", cfg.Server.Port)
-	
-// 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-// 		fmt.Fprintf(os.Stderr, "Could not start server: %v", err)
-// 		os.Exit(1)
-// 	}
-// }
+	if err := server.Start(); err != nil {
+		log.Fatal(err)
+	}
+}

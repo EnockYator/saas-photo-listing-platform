@@ -94,3 +94,19 @@ func Load() *Config {
 	}
 }
 
+func (c *Config) Validate() error {
+	if c.Server.Port == "" {
+		return fmt.Errorf("server port is required")
+	}
+
+	if c.Database.Host == "" {
+		return fmt.Errorf("database host is required")
+	}
+
+	if c.JWT.Secret == "" {
+		return fmt.Errorf("jwt secret is required")
+	}
+
+	return nil
+}
+
