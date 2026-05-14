@@ -1,7 +1,7 @@
 package health
 
 type HealthStatus struct {
-	Status string `json:"status"`
+	Status    string `json:"status"`
 	Timestamp string `json:"timestamp"`
-	Version string `json:"version"`
+	Version   string `json:"version"`
 }

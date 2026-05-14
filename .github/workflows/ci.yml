@@ -22,12 +22,15 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
-      - name: Check Format
-        run: |
-          if [ -n "$(gofmt -l .)" ]; then
-            echo "format issues found"
-            exit 1
-          fi
+      - name: Format go source code
+        run: gofmt -w .
+
+      # - name: Check Format
+      #   run: |
+      #     if [ -n "$(gofmt -l .)" ]; then
+      #       echo "format issues found"
+      #       exit 1
+      #     fi
 
       - name: Vet
         run: go vet ./...

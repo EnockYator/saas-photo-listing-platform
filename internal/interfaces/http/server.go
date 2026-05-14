@@ -33,7 +33,6 @@ func (s *Server) Start() error {
 		IdleTimeout:  s.cfg.Server.IdleTimeout,
 	}
 
-
 	go func() {
 		log.Printf("server running on %s", s.cfg.Server.Port)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {

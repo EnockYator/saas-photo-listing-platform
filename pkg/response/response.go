@@ -14,10 +14,10 @@ type ErrorBody struct {
 }
 
 type APIResponse struct {
-	Success bool        `json:"success"`
-	Data    any `json:"data,omitempty"`
-	Error   *ErrorBody      `json:"error,omitempty"`
-	Meta    any `json:"meta,omitempty"`
+	Success bool       `json:"success"`
+	Data    any        `json:"data,omitempty"`
+	Error   *ErrorBody `json:"error,omitempty"`
+	Meta    any        `json:"meta,omitempty"`
 }
 
 func WriteJSON(w http.ResponseWriter, status int, data any, meta any) {
@@ -27,7 +27,7 @@ func WriteJSON(w http.ResponseWriter, status int, data any, meta any) {
 	json.NewEncoder(w).Encode(APIResponse{
 		Success: true,
 		Data:    data,
-		Meta:  meta,
+		Meta:    meta,
 	})
 }
 
@@ -38,7 +38,7 @@ func WriteError(w http.ResponseWriter, status int, code string, message string, 
 	json.NewEncoder(w).Encode(APIResponse{
 		Success: false,
 		Error: &ErrorBody{
-			Code: code,
+			Code:    code,
 			Message: message,
 			Details: details,
 		},
@@ -65,9 +65,9 @@ func HandleError(w http.ResponseWriter, err error) {
 	// typed domain error
 	if appErr, ok := err.(*appErrors.AppError); ok {
 		const (
-			ErrNotFound = "NOT_FOUND"
+			ErrNotFound     = "NOT_FOUND"
 			ErrUnauthorized = "UNAUTHORIZED"
-			ErrValidation = "VALIDATION_ERROR"
+			ErrValidation   = "VALIDATION_ERROR"
 		)
 
 		switch appErr.Code {
