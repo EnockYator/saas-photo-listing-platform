@@ -1,5 +1,5 @@
 module github.com/EnockYator/saas-photo-listing-platform
 
-go 1.26
+go 1.26.2
 
 require github.com/google/uuid v1.6.0
