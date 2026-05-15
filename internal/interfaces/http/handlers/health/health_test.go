@@ -1,6 +1,7 @@
-package integration
+package health_test
 
 import (
+	"database/sql"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -9,7 +10,8 @@ import (
 )
 
 func TestHealthEndpoint(t *testing.T) {
-	router := httpserver.NewRouter()
+	var db *sql.DB = nil
+	router := httpserver.NewRouter(db)
 
 	req := httptest.NewRequest(http.MethodGet, "/health", nil)
 	rec := httptest.NewRecorder()

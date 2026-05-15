@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"net/http"
 	"os"
@@ -14,16 +15,18 @@ import (
 
 type Server struct {
 	cfg *config.Config
+	db *sql.DB
 }
 
-func NewServer(cfg *config.Config) *Server {
+func NewServer(cfg *config.Config, db *sql.DB) *Server {
 	return &Server{
 		cfg: cfg,
+		db: db,
 	}
 }
 
 func (s *Server) Start() error {
-	router := NewRouter()
+	router := NewRouter(s.db)
 
 	server := &http.Server{
 		Addr:         ":" + s.cfg.Server.Port,
@@ -33,19 +36,33 @@ func (s *Server) Start() error {
 		IdleTimeout:  s.cfg.Server.IdleTimeout,
 	}
 
+	serverErr := make(chan error, 1)
+
 	go func() {
-		log.Printf("server running on %s", s.cfg.Server.Port)
+		log.Printf(
+			"server running on %s\n\tReadTimeout: %v\n\tWriteTimeout: %v\n\tIdleTimeout: %v\n",
+			s.cfg.Server.Port,
+			s.cfg.Server.ReadTimeout,
+			s.cfg.Server.WriteTimeout,
+			s.cfg.Server.IdleTimeout,
+
+		)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatal(err)
+			serverErr <- err
 		}
 	}()
 
 	// graceful shutdown
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
-	<-stop
 
-	log.Println("shutting down server...")
+	select {
+	case err := <-serverErr:
+		return err
+
+	case <-stop:
+		log.Println("shutting down server...")
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
