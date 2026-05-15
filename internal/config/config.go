@@ -2,9 +2,12 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 type ServerConfig struct {
@@ -22,6 +25,7 @@ type DatabaseConfig struct {
 	DBName   string
 	SSLMode  string
 	URL      string
+	DBDriver string
 }
 
 type JWTConfig struct {
@@ -61,6 +65,10 @@ func getDurationEnv(key string, defaultValue time.Duration) time.Duration {
 }
 
 func Load() *Config {
+	// load .env file
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using system environment variables")
+	}
 	return &Config{
 		Server: ServerConfig{
 			Port:         getEnv("SERVER_PORT", "8080"),
@@ -78,7 +86,8 @@ func Load() *Config {
 			URL: getEnv(
 				"DB_URL",
 				fmt.Sprintf(
-					"postgres://%s:%s@%s:%d/%s?sslmode=%s",
+					"%s://%s:%s@%s:%d/%s?sslmode=%s",
+					getEnv("DB_DRIVER", "postgres"),
 					getEnv("DB_USER", "postgres"),
 					getEnv("DB_PASSWORD", ""),
 					getEnv("DB_HOST", "localhost"),
@@ -86,6 +95,7 @@ func Load() *Config {
 					getEnv("DB_NAME", "saas_photo_listing"),
 					getEnv("DB_SSLMODE", "disable")),
 			),
+			DBDriver: getEnv("DB_DRIVER", "postgres"),
 		},
 		JWT: JWTConfig{
 			Secret:     getEnv("JWT_SECRET", "secret_key"),
