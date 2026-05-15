@@ -14,9 +14,9 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }} # gitguardian:ignore
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }} # gitguardian:ignore
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }} # gitguardian:ignore
         ports:
           - 5432:5432
         options: >-
@@ -46,7 +46,7 @@ jobs:
       - name: Run migrations
         run: make migrate-up
         env:
-          DB_URL: ${{ secrets.TEST_DB_URL }}
+          DB_URL: ${{ secrets.TEST_DB_URL }} # gitguardian:ignore
 
       - name: Format check
         run: make fmt
