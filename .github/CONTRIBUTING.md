@@ -311,7 +311,7 @@ Use **GitHub Secret** for storing **credentials**
 
 ---
 
-_Updated on 16th May 2026 by Author: Enock Yator_
+_Last updated on 16th May 2026 by Author: Enock Yator_
 
 
 

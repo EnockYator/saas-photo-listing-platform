@@ -10,4 +10,4 @@ A production-grade SaaS platform for photo galleries built with Go.
 
 ## Update expected soon
 
-_Updated on 16th May 2026 by Author: Enock Yator_
+_Last updated on 16th May 2026 by Author: Enock Yator_
