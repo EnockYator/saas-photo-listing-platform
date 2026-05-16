@@ -195,12 +195,17 @@ Use the following branch naming conventions:
 
 Follow the following conventions when writing commit messages
 
-Examples:
+   Examples:
 
-   feat(domain): add authentication middleware
-   fix(domain): resolve postgres connection leak
-   refactor(domain): improve upload service architecture
-   chore: update dependencies
+      ```bash
+      git commit -m "feat(auth): add authentication middleware"
+
+      git commit -m "fix(db): resolve postgres connection leak"
+
+      git commit -m "refactor(media): improve upload service architecture"
+      
+      git commit -m "chore: update dependencies"
+      ```
 
 ---
 
@@ -302,7 +307,7 @@ Never:
 - Hardcode credentials
 - Expose internal tokens
 
-Use GitHub Secret for storing credentials
+Use **GitHub Secret** for storing **credentials**
 
 ---
 
