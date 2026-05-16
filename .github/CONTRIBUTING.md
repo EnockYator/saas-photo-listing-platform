@@ -20,6 +20,7 @@ Install the following tools:
 
 ## Project High-Level Structure
 
+```text
 saas-photo-listing-platform
 ├── .air.toml
 ├── api
@@ -164,6 +165,7 @@ saas-photo-listing-platform
 │   └── build-errors.log
 └── tools
     └── tools.go
+```
 
 ---
 
@@ -178,6 +180,7 @@ Use the following branch naming conventions:
 - `refactor/*` → refactor structure or files
 
 Examples:
+
    feat/auth-service
    feat/payment-domain
    fix/jwt-validation
@@ -190,6 +193,7 @@ Examples:
 Follow the following conventions when writing commit messages
 
 Examples:
+
    feat(domain): add authentication middleware
    fix(domain): resolve postgres connection leak
    refactor(domain): improve upload service architecture
