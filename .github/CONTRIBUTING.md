@@ -195,17 +195,17 @@ Use the following branch naming conventions:
 
 Follow the following conventions when writing commit messages
 
-   Examples:
+Examples:
 
-      ```bash
-      git commit -m "feat(auth): add authentication middleware"
+```bash
+git commit -m "feat(auth): add authentication middleware"
 
-      git commit -m "fix(db): resolve postgres connection leak"
+git commit -m "fix(db): resolve postgres connection leak"
 
-      git commit -m "refactor(media): improve upload service architecture"
-      
-      git commit -m "chore: update dependencies"
-      ```
+git commit -m "refactor(media): improve upload service architecture"
+
+git commit -m "chore: update dependencies"
+```
 
 ---
 
