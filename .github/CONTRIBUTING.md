@@ -180,12 +180,14 @@ Use the following branch naming conventions:
 - `refactor/*` → refactor structure or files
 
 Examples:
-`
+
    feat/auth-service
+
    feat/payment-domain
+
    fix/jwt-validation
+
    refactor/upload-service
-`
 
 ---
 
