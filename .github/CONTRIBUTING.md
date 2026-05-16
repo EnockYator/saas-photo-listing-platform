@@ -178,10 +178,10 @@ Use the following branch naming conventions:
 - `refactor/*` → refactor structure or files
 
 Examples:
-    feat/auth-service
-    feat/payment-domain
-    fix/jwt-validation
-    refactor/upload-service
+   feat/auth-service
+   feat/payment-domain
+   fix/jwt-validation
+   refactor/upload-service
 
 ---
 
@@ -190,10 +190,10 @@ Examples:
 Follow the following conventions when writing commit messages
 
 Examples:
-    feat(domain): add authentication middleware
-    fix(domain): resolve postgres connection leak
-    refactor(domain): improve upload service architecture
-    chore: update dependencies
+   feat(domain): add authentication middleware
+   fix(domain): resolve postgres connection leak
+   refactor(domain): improve upload service architecture
+   chore: update dependencies
 
 ---
 
