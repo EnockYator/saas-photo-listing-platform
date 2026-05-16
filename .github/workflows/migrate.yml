@@ -1,0 +1,47 @@
+# Purpose:
+#   Run database migrations safely
+#   Fail deployment if migrations fail
+#   Execute migrate CLI with arguments
+
+name: Database Migration
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  migrate:
+    name: Run Database Migrations
+    runs-on: ubuntu-latest
+
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Build migrate CLI
+        run: go build -o migrate ./cmd/migrate
+
+      - name: Make migrate executable
+        run: chmod +x migrate
+
+      - name: Run migrations
+        run: ./migrate up
+
+      - name: Verify migration version
+        run: ./migrate version

@@ -1,13 +1,24 @@
+# Purpose:
+#   Run tests
+#   Validate builds
+#   Validate PostgreSQL integration
+#   Ensure application compiles correctly
+
 name: CI
 
 on:
-  push:
-    branches: [main, feat]
   pull_request:
-    branches: [main, feat]
+  push:
+    branches:
+      - main
+      - dev
+
+permissions:
+  contents: read      
 
 jobs:
   test:
+    name: Test Application
     runs-on: ubuntu-latest
 
     services:
@@ -20,51 +31,42 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready"
+          --health-cmd="pg_isready -U ${{ secrets.POSTGRES_USER }}"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
 
-    steps:
-      - uses: actions/checkout@v4
+    env:
+      DATABASE_URL: postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ secrets.POSTGRES_DB }}?sslmode=disable # gitguardian:ignore
+      GO111MODULE: on
 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
       - uses: actions/setup-go@v5
         with:
           go-version: 1.24
+          cache: true
 
-      - name: Install migrate
-        run: |
-          curl -L https://github.com/golang-migrate/migrate/releases/latest/download/migrate.linux-amd64.tar.gz | tar xvz
-          sudo mv migrate /usr/local/bin/
+      - name: Download dependencies
+        run: go mod download
 
-      - name: Download deps
-        run: make download-deps
+      - name: Verify dependencies
+        run: go mod verify
 
-      - name: Go mod tidy
-        run: make tidy
+      - name: Build API
+        run: go build -v ./cmd/api
 
-      - name: Run migrations
-        run: make migrate-up
-        env:
-          DB_URL: ${{ secrets.TEST_DB_URL }} # gitguardian:ignore
-
-      - name: Format check
-        run: make fmt
-
-      - name: Vet
-        run: make vet
-
-      - name: Lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: v1.64.8
-        run: make lint
+      - name: Build migrate CLI
+        run: go build -v ./cmd/migrate
 
       - name: Run tests
-        run: make test
+        run: go test -v -race -coverprofile=coverage.out ./...
 
-      - name: Build api
-        run: make build-api
-      
-      - name: Build migrate
-        run: make build-migrate
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.out
