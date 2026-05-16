@@ -179,15 +179,15 @@ Use the following branch naming conventions:
 - `fix/*` → fix bugs
 - `refactor/*` → refactor structure or files
 
-Examples:
+   Examples:
 
-   feat/auth-service
+      feat/auth-service
 
-   feat/payment-domain
+      feat/payment-domain
 
-   fix/jwt-validation
+      fix/jwt-validation
 
-   refactor/upload-service
+      refactor/upload-service
 
 ---
 
