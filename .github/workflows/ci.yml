@@ -65,8 +65,7 @@ jobs:
 
       - name: Build API
         run: 
-          mkdir bin
-          go build -o bin/api ./cmd/api/
+          mkdir bin && go build -o bin/api ./cmd/api/
 
       - name: Run tests
         run: go test -v -race -coverprofile=coverage.out ./...
