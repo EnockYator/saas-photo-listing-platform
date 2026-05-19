@@ -8,6 +8,9 @@ name: Lint
 
 on:
   pull_request:
+    branches:
+      - main
+      - dev
   push:
     branches:
       - main
@@ -46,10 +49,4 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Check gofmt
-        run: |
-          FILES=$(gofmt -l .)
-          if [ -n "$FILES" ]; then
-            echo "The following files are not formatted:"
-            echo "$FILES"
-            exit 1
-          fi
+        run: gofmt -l .

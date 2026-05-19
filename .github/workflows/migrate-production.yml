@@ -44,7 +44,7 @@ jobs:
         run: ./migrate up
         env:
           APP_ENV: production
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DB_URL: ${{ secrets.DB_URL }}
 
       - name: Verify migration version
         run: ./migrate version

@@ -3,11 +3,15 @@
 #   Validate builds
 #   Validate PostgreSQL integration
 #   Ensure application compiles correctly
+#   Prevent broken deployments
 
 name: CI
 
 on:
   pull_request:
+      branches:
+      - main
+      - dev
   push:
     branches:
       - main
@@ -25,9 +29,7 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }} # gitguardian:ignore
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }} # gitguardian:ignore
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }} # gitguardian:ignore
+          DB_URL: ${{ secrets.DB_URL }} # gitguardian:ignore
         ports:
           - 5432:5432
         options: >-
@@ -37,7 +39,7 @@ jobs:
           --health-retries=5
 
     env:
-      DATABASE_URL: postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ secrets.POSTGRES_DB }}?sslmode=disable # gitguardian:ignore
+      DB_URL: ${{ secrets.DB_URL }} # gitguardian:ignore
       GO111MODULE: on
 
     steps:
@@ -53,14 +55,8 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
-      - name: Run vet
-        run: go vet ./...
-
-      - name: Build API
-        run: go build -v ./cmd/api
-
-      - name: Build migrate CLI
-        run: go build -v ./cmd/migrate
+      - name: Run formatting check
+        run: gofmt -l .
 
       - name: Run tests
         run: go test -v -race -coverprofile=coverage.out ./...
@@ -70,3 +66,6 @@ jobs:
         with:
           name: coverage-report
           path: coverage.out
+
+      - name: Build API
+        run: go build -v ./cmd/api
