@@ -75,4 +75,13 @@ jobs:
           mkdir -p bin
           go build -o bin/api ./cmd/api/
 
+      - name: Run tests
+        run: |
+          PACKAGES=$(go list ./... | grep -v '/cmd/')
+          go test -v -race -coverprofile=coverage.out $PACKAGES
 
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.out
