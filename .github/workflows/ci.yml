@@ -78,7 +78,7 @@ jobs:
       - name: Run tests
         run: |
           PACKAGES=$(go list ./... | grep -v '/cmd/')
-          go test -v -race -coverprofile=coverage.out $PACKAGES
+          go test -v -race -coverprofile=coverage.out -covermode=atomic $PACKAGES
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
