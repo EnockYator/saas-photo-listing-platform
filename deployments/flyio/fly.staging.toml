@@ -3,7 +3,7 @@
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'saas-photo-listing-platform'
+app = 'saas-photo-listing-platform-staging'
 primary_region = 'jnb'
 
 [build]

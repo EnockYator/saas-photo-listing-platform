@@ -27,13 +27,13 @@ jobs:
         uses: actions/checkout@v4
         concurrency: deploy-group
 
-      # - name: Setup Flyctl
-      #   uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Setup Flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
 
-      # - name: Deploy to production
-      #   run: |
-      #     flyctl deploy \
-      #       --config deployments/fly.production.toml \
-      #       --remote-only
-      #   env:
-      #     FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      - name: Deploy to production
+        run: |
+          flyctl deploy \
+            --config deployments/flyio/fly.production.toml \
+            --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
