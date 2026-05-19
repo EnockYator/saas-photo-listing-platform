@@ -3,7 +3,6 @@
 #   Validate builds
 #   Validate PostgreSQL integration
 #   Ensure application compiles correctly
-#   Prevent broken deployments
 
 name: CI
 
@@ -55,8 +54,14 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
-      - name: Run formatting check
-        run: gofmt -l .
+      - name: Run vet
+        run: go vet ./...
+
+      - name: Build API
+        run: go build -v ./cmd/api
+
+      - name: Build migrate CLI
+        run: go build -v ./cmd/migrate
 
       - name: Run tests
         run: go test -v -race -coverprofile=coverage.out ./...
@@ -66,6 +71,3 @@ jobs:
         with:
           name: coverage-report
           path: coverage.out
-
-      - name: Build API
-        run: go build -v ./cmd/api
