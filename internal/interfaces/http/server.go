@@ -40,8 +40,9 @@ func (s *Server) Start() error {
 
 	go func() {
 		log.Printf(
-			"server running on %s\n\tReadTimeout: %v\n\tWriteTimeout: %v\n\tIdleTimeout: %v\n",
+			"server running on %s\n\tAppEnv: %s\n\tReadTimeout: %v\n\tWriteTimeout: %v\n\tIdleTimeout: %v\n",
 			s.cfg.Server.Port,
+			s.cfg.Env,
 			s.cfg.Server.ReadTimeout,
 			s.cfg.Server.WriteTimeout,
 			s.cfg.Server.IdleTimeout,

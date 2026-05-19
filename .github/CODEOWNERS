@@ -1,0 +1,9 @@
+# =========================================================
+# Global ownership: Assign Enock Yator on everything
+# =========================================================
+* @EnockYator
+
+# Also flexible for future assignments if team grows
+#   Example :
+#       /backend/internal/infrastructure/database/ @another_team_mate
+#       /backend/internal/domains/ @another_team_mate_2

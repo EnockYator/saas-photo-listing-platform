@@ -8,4 +8,6 @@ A production-grade SaaS platform for photo galleries built with Go.
 - PostgreSQL
 - Docker
 
-## Quick Start
+## Update expected soon
+
+_Last updated on 16th May 2026 by Author: Enock Yator_

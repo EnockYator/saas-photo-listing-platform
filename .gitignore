@@ -29,7 +29,9 @@ logs/
 # Environment variables
 .env
 .env.*
-!.env.example
+
+# Config files
+*.yaml
 
 # IDEs and editors
 .idea/

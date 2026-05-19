@@ -34,6 +34,7 @@ type JWTConfig struct {
 }
 
 type Config struct {
+	Env string
 	Server   ServerConfig
 	Database DatabaseConfig
 	JWT      JWTConfig
@@ -66,10 +67,11 @@ func getDurationEnv(key string, defaultValue time.Duration) time.Duration {
 
 func Load() *Config {
 	// load .env file
-	if err := godotenv.Load(); err != nil {
+	if err := godotenv.Load(".env.development", ".env.production", ".env.staging"); err != nil {
 		log.Println("No .env file found, using system environment variables")
 	}
 	return &Config{
+		Env: getEnv("APP_ENV", "production"),
 		Server: ServerConfig{
 			Port:         getEnv("SERVER_PORT", "8080"),
 			ReadTimeout:  getDurationEnv("SERVER_READ_TIMEOUT", 5*time.Second),
@@ -77,25 +79,7 @@ func Load() *Config {
 			IdleTimeout:  getDurationEnv("SERVER_IDLE_TIMEOUT", 20*time.Second),
 		},
 		Database: DatabaseConfig{
-			Host:     getEnv("DB_HOST", "localhost"),
-			Port:     getIntEnv("DB_PORT", 5432),
-			User:     getEnv("DB_USER", "postgres"),
-			Password: getEnv("DB_PASSWORD", ""),
-			DBName:   getEnv("DB_NAME", "saas_photo_listing"),
-			SSLMode:  getEnv("DB_SSLMODE", "disable"),
-			URL: getEnv(
-				"DB_URL",
-				fmt.Sprintf(
-					"%s://%s:%s@%s:%d/%s?sslmode=%s",
-					getEnv("DB_DRIVER", "postgres"),
-					getEnv("DB_USER", "postgres"),
-					getEnv("DB_PASSWORD", ""),
-					getEnv("DB_HOST", "localhost"),
-					getIntEnv("DB_PORT", 5432),
-					getEnv("DB_NAME", "saas_photo_listing"),
-					getEnv("DB_SSLMODE", "disable")),
-			),
-			DBDriver: getEnv("DB_DRIVER", "postgres"),
+			URL: getEnv("DB_URL", ""),
 		},
 		JWT: JWTConfig{
 			Secret:     getEnv("JWT_SECRET", "secret_key"),
@@ -109,8 +93,8 @@ func (c *Config) Validate() error {
 		return fmt.Errorf("server port is required")
 	}
 
-	if c.Database.Host == "" {
-		return fmt.Errorf("database host is required")
+	if c.Database.URL == "" {
+		return fmt.Errorf("database URL is required")
 	}
 
 	if c.JWT.Secret == "" {
