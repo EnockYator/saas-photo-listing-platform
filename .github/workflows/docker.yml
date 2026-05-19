@@ -46,3 +46,4 @@ jobs:
       - name: Build migrate image
         run: |
           docker build -t ghcr.io/${{ github.repository }}/migrate:${{ github.sha }} -f ./deployments/docker/Dockerfile .
+          docker push ...
