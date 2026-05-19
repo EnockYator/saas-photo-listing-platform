@@ -45,7 +45,7 @@ jobs:
       DB_USER: postgres # gitguardian:ignore
       DB_PASSWORD: postgres # gitguardian:ignore
       DB_NAME: app_test # gitguardian:ignore
-      DB_SSLMODE: disable v
+      DB_SSLMODE: disable
 
     steps:
       - name: Checkout repository
@@ -54,7 +54,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.22'
           cache: true
 
       - name: Download dependencies
@@ -64,8 +64,9 @@ jobs:
         run: go vet ./...
 
       - name: Build API
-        run: 
-          mkdir bin && go build -o bin/api ./cmd/api/
+        run: |
+          mkdir -p bin
+          go build -o bin/api ./cmd/api/
 
       - name: Run tests
         run: go test -v -race -coverprofile=coverage.out ./...
