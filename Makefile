@@ -19,12 +19,14 @@ help:
 include .env
 export
 
-run-dev:
-	air
+run:
+	APP_ENV=development go run ./cmd/api
+	
+run-staging:
+	APP_ENV=staging go run ./cmd/api
 
-run-api:
-	go run ./cmd/api
-
+run-production:
+	APP_ENV=production go run ./cmd/api
 
 build-api:
 	mkdir -p bin
@@ -49,16 +51,8 @@ fmt:
 tidy:
 	go mod tidy
 
-#####################
 vet:
 	go vet ./...
-
-clean:
-	rm -rf bin/
-	go clean
-
-ci: fmt vet lint test
-#####################
 
 migrate-up:
 # 	migrate -path ./internal/infrastructure/database/postgres/migrations/ -database "$(DB_URL)" up
@@ -68,18 +62,18 @@ migrate-down:
 # 	migrate -path ./internal/infrastructure/database/postgres/migrations/ -database "$(DB_URL)" down
 	go run ./cmd/migrate down
 
-migrate-create:
-	migrate create -ext sql -dir ./internal/infrastructure/database/postgres/migrations/ -seq $(name)
+# migrate-create:
+# 	migrate create -ext sql -dir ./internal/infrastructure/database/postgres/migrations/ -seq $(name)
 
-migrate-version:
-	go run ./cmd/migrate version
+# migrate-version:
+# 	go run ./cmd/migrate version
 
-migrate-force:
-	go run ./cmd/migrate force $(version)
-# 	migrate -path ./internal/infrastructure/database/postgres/migrations/ -database "$(DB_URL)" force $(version)
+# migrate-force:
+# 	go run ./cmd/migrate force $(version)
+# # 	migrate -path ./internal/infrastructure/database/postgres/migrations/ -database "$(DB_URL)" force $(version)
 
-createdb:
-	createdb $(name)
+# createdb:
+# 	createdb $(name)
 
-dropdb:
-	dropdb $(name)
+# dropdb:
+# 	dropdb $(name)

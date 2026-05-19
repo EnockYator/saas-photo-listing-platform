@@ -3,24 +3,24 @@
 #   Fail deployment if migrations fail
 #   Execute migrate CLI with arguments
 
-name: Database Migration
+name: Staging Database Migration
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - dev
 
 permissions:
   contents: read
 
 jobs:
   migrate:
-    name: Run Database Migrations
+    name: Run staging Database Migrations
     runs-on: ubuntu-latest
 
-    env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    environment:
+      name: staging
 
     steps:
       - name: Checkout repository
@@ -42,6 +42,9 @@ jobs:
 
       - name: Run migrations
         run: ./migrate up
+        env:
+          APP_ENV: staging
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Verify migration version
         run: ./migrate version

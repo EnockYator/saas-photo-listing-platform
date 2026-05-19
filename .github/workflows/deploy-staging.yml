@@ -1,0 +1,40 @@
+# Staging Deployment Workflow
+# Purpose:
+#   Deploy dev branch to staging
+#   Deploy only after migrations succeed
+#   Zero-downtime Docker deployment approach
+#   Used for QA testing
+
+name: Deploy Staging
+
+on:
+  workflow_run:
+    workflows: ["Staging Database Migration"]
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    environment:
+      name: staging
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy to staging
+        run: |
+          flyctl deploy \
+            --config deployments/fly.staging.toml \
+            --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
