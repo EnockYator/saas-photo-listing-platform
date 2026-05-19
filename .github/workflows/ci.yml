@@ -64,10 +64,9 @@ jobs:
         run: go vet ./...
 
       - name: Build API
-        run: go build -v ./cmd/api
-
-      - name: Build migrate CLI
-        run: go build -v ./cmd/migrate
+        run: 
+          mkdir bin
+          go build -o bin/api ./cmd/api/
 
       - name: Run tests
         run: go test -v -race -coverprofile=coverage.out ./...
