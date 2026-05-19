@@ -75,6 +75,12 @@ jobs:
           mkdir -p bin
           go build -o bin/api ./cmd/api/
 
+      - name: Reset Go environment
+        run: |
+          unset GOTOOLCHAIN
+          unset GOROOT
+          go env -w GOTOOLCHAIN=auto
+
       - name: Run tests
         run: |
           PACKAGES=$(go list ./... | grep -v '/cmd/')
