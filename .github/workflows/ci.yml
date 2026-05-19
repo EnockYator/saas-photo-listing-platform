@@ -77,8 +77,6 @@ jobs:
 
       - name: Run tests
         run: |
-          # PACKAGES=$(go list ./... | grep -v '/cmd/')
-          # go test -v -race -coverprofile=coverage.out $PACKAGES
           go test -v -race -coverprofile=coverage.out ./...
 
       - name: Upload coverage report
