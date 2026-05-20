@@ -70,17 +70,15 @@ jobs:
       - name: Run vet
         run: go vet ./...
 
-      - name: Run go vet
-        run: go vet ./...
-
       - name: Run tests with coverage
         run: |
           mkdir -p coverage
 
           go test ./... \
+          -v \
+          -race \
             -covermode=atomic \
-            -coverprofile=coverage/coverage.out \
-            -v
+            -coverprofile=coverage/coverage.out
 
       - name: Generate coverage summary
         run: |
