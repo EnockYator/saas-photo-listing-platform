@@ -58,11 +58,11 @@ jobs:
           check-latest: true
           cache: true
 
-      # - name: Clean Go caches
-      #   run: |
-      #     go clean -cache
-      #     go clean -modcache
-      #     rm -rf cache/go-build
+      - name: Clean Go caches
+        run: |
+          go clean -cache
+          go clean -modcache
+          rm -rf cache/go-build
 
       - name: Download dependencies
         run: go mod download
