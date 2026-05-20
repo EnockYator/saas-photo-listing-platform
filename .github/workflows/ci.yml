@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   test:
-    name: Test Application
+    name: Test & Build Application
     runs-on: ubuntu-latest
 
     services:
@@ -70,19 +70,29 @@ jobs:
       - name: Run vet
         run: go vet ./...
 
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Run tests with coverage
+        run: |
+          mkdir -p coverage
+
+          go test ./... \
+            -covermode=atomic \
+            -coverprofile=coverage/coverage.out \
+            -v
+
+      - name: Generate coverage summary
+        run: |
+          go tool cover -func=coverage/coverage.out
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/coverage.out
+
       - name: Build API
         run: |
           mkdir -p bin
           go build -o bin/api ./cmd/api/
-
-      - name: Run tests
-        run: |
-          PACKAGES=$(go list ./... | grep -v '/cmd/')
-          go test -v -race $PACKAGES
-          go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
-
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: coverage.out
