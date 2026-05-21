@@ -28,9 +28,9 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_USER: postgres # gitguardian:ignore
-          POSTGRES_PASSWORD: postgres # gitguardian:ignore
-          POSTGRES_DB: app_test # gitguardian:ignore
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
         ports:
           - 5432:5432
         options: >-
@@ -40,12 +40,12 @@ jobs:
           --health-retries=5
 
     env:
-      DB_HOST: localhost # gitguardian:ignore
-      DB_PORT: 5432 # gitguardian:ignore
-      DB_USER: postgres # gitguardian:ignore
-      DB_PASSWORD: postgres # gitguardian:ignore
-      DB_NAME: app_test # gitguardian:ignore
-      DB_SSLMODE: disable
+      TEST_DB_HOST: localhost
+      TEST_DB_PORT: ${{ secrets.TEST_DB_PORT }}
+      TEST_DB_USER: ${{ secrets.TEST_DB_USER }}
+      TEST_DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+      TEST_DB_NAME: ${{ secrets.TEST_DB_NAME }}
+      TEST_DB_SSLMODE: ${{ secrets.TEST_DB_SSLMODE }}
 
     steps:
       - name: Checkout repository
