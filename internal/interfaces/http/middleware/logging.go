@@ -17,6 +17,6 @@ func Logging(next http.Handler) http.Handler {
 			r.Method,
 			r.URL.Path,
 			time.Since(start),
-		)
+		) // #nosec G706 - CLI tool with trusted input
 	})
 }

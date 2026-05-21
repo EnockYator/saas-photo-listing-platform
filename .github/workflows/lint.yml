@@ -8,6 +8,9 @@ name: Lint
 
 on:
   pull_request:
+    branches:
+      - main
+      - dev
   push:
     branches:
       - main
@@ -28,14 +31,16 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25.0'
           cache: true
 
+      - name: Install golangci-lint from source
+        run: |
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+          golangci-lint --version
+
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: latest
-          args: --timeout=5m
+        run: golangci-lint run --timeout=5m ./...
 
   gofmt:
     name: Check Formatting
@@ -45,11 +50,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.2'
+          cache: true
+
       - name: Check gofmt
-        run: |
-          FILES=$(gofmt -l .)
-          if [ -n "$FILES" ]; then
-            echo "The following files are not formatted:"
-            echo "$FILES"
-            exit 1
-          fi
+        run: gofmt -l .

@@ -30,14 +30,14 @@ func main() {
 			log.Fatal(err)
 		}
 
-		log.Println("migrations applied")
+		log.Println("migrations applied successfully")
 
 	case "down":
 		if err := migrator.Down(); err != nil {
 			log.Fatal(err)
 		}
 
-		log.Println("migrations rolled back")
+		log.Println("migrations rolled back successfully")
 
 	case "version":
 		version, dirty, err := migrator.Version()
@@ -61,9 +61,9 @@ func main() {
 			log.Fatal(err)
 		}
 
-		log.Printf("forced version to %d\n", version)
+		log.Printf("forced migration version to %d\n", version)
 
 	default:
-		log.Fatalf("unknown command: %s", command)
+		log.Fatalf("unknown command: %v", command) // #nosec G706 - CLI tool with trusted input
 	}
 }

@@ -29,7 +29,8 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25.0'
+          cache: true
 
       - name: Download dependencies
         run: go mod download
@@ -44,7 +45,7 @@ jobs:
         run: ./migrate up
         env:
           APP_ENV: staging
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DB_URL: ${{ secrets.DB_URL }}
 
       - name: Verify migration version
         run: ./migrate version

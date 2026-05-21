@@ -76,4 +76,10 @@ migrate-down:
 # 	createdb $(name)
 
 # dropdb:
-# 	dropdb $(name)
+# 	dropdb $(name
+
+run-gosec:
+	gosec ./...
+
+run-govulncheck:
+	govulncheck ./...

@@ -8,6 +8,9 @@ name: CI
 
 on:
   pull_request:
+      branches:
+      - main
+      - dev
   push:
     branches:
       - main
@@ -18,16 +21,16 @@ permissions:
 
 jobs:
   test:
-    name: Test Application
+    name: Test & Build Application
     runs-on: ubuntu-latest
 
     services:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }} # gitguardian:ignore
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }} # gitguardian:ignore
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }} # gitguardian:ignore
+          POSTGRES_USER: postgres # gitguardian: ignore
+          POSTGRES_PASSWORD: E02postgresql # gitguardian: ignore
+          POSTGRES_DB: app_test # gitguardian: ignore
         ports:
           - 5432:5432
         options: >-
@@ -37,8 +40,12 @@ jobs:
           --health-retries=5
 
     env:
-      DATABASE_URL: postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ secrets.POSTGRES_DB }}?sslmode=disable # gitguardian:ignore
-      GO111MODULE: on
+      DB_HOST: ${{ secrets.TEST_DB_HOST }} # gitguardian: ignore
+      DB_PORT: ${{ secrets.TEST_DB_PORT }} # gitguardian: ignore
+      DB_USER: ${{ secrets.TEST_DB_USER }} # gitguardian: ignore
+      DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }} # gitguardian: ignore
+      DB_NAME: ${{ secrets.TEST_DB_NAME }} # gitguardian: ignore
+      DB_SSLMODE: ${{ secrets.TEST_DB_SSLMODE }} # gitguardian: ignore
 
     steps:
       - name: Checkout repository
@@ -47,8 +54,15 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25.0'
+          check-latest: true
           cache: true
+
+      # - name: Clean Go caches
+      #   run: |
+      #     go clean -cache
+      #     go clean -modcache
+      #     rm -rf cache/go-build
 
       - name: Download dependencies
         run: go mod download
@@ -56,17 +70,27 @@ jobs:
       - name: Run vet
         run: go vet ./...
 
-      - name: Build API
-        run: go build -v ./cmd/api
+      - name: Run tests with coverage
+        run: |
+          mkdir -p coverage
 
-      - name: Build migrate CLI
-        run: go build -v ./cmd/migrate
+          go test ./... \
+          -v \
+          -race \
+            -covermode=atomic \
+            -coverprofile=coverage/coverage.out
 
-      - name: Run tests
-        run: go test -v -race -coverprofile=coverage.out ./...
+      - name: Generate coverage summary
+        run: |
+          go tool cover -func=coverage/coverage.out
 
-      - name: Upload coverage report
+      - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: coverage.out
+          path: coverage/coverage.out
+
+      - name: Build API
+        run: |
+          mkdir -p bin
+          go build -o bin/api ./cmd/api/

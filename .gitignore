@@ -20,7 +20,12 @@ vendor/
 # Coverage files
 coverage.out
 coverage.html
-*.coverprofile
+cover.out
+.coverage
+coverage/
+
+# Go test cache
+*.test
 
 # Logs
 *.log
