@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -47,14 +46,14 @@ func getEnv(key, defaultValue string) string {
 	return defaultValue
 }
 
-func getIntEnv(key string, defaultValue int) int {
-	if value := os.Getenv(key); value != "" {
-		if intVal, err := strconv.Atoi(value); err == nil {
-			return intVal
-		}
-	}
-	return defaultValue
-}
+// func getIntEnv(key string, defaultValue int) int {
+// 	if value := os.Getenv(key); value != "" {
+// 		if intVal, err := strconv.Atoi(value); err == nil {
+// 			return intVal
+// 		}
+// 	}
+// 	return defaultValue
+// }
 
 func getDurationEnv(key string, defaultValue time.Duration) time.Duration {
 	if value := os.Getenv(key); value != "" {
