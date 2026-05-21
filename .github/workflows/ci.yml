@@ -28,9 +28,9 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_USER: postgres # gitguardian: ignore
-          POSTGRES_PASSWORD: postgres # gitguardian: ignore
-          POSTGRES_DB: app_test # gitguardian: ignore
+          POSTGRES_USER: ${{ secrets.TEST_DB_USER }} # gitguardian: ignore
+          POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }} # gitguardian: ignore
+          POSTGRES_DB: ${{ secrets.TEST_DB_NAME }} # gitguardian: ignore
         ports:
           - 5432:5432
         options: >-
