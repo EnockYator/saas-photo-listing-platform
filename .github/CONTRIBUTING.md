@@ -311,7 +311,43 @@ Use **GitHub Secret** for storing **credentials**
 
 ---
 
-_Last updated on 16th May 2026 by Author: Enock Yator_
+## Development Flow
+
+### Local Development Flow
+```text
+Changes / update code
+    ↓
+Docker starts PostgreSQL
+    ↓
+Run migrations
+    ↓
+Run sqlc generate
+    ↓
+Run tests
+    ↓
+Run API
+```
+
+### Production Deployment Flow
+```text
+Push to GitHub
+    ↓
+CI validates code
+    ↓
+Docker image built
+    ↓
+Image pushed to GHCR/DockerHub
+    ↓
+Deployment workflow triggered
+    ↓
+Migration job runs
+    ↓
+Application deployed
+    ↓
+Health checks pass
+```
+
+_Last updated on 21th May 2026 by Author: Enock Yator_
 
 
 
