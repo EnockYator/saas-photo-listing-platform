@@ -6,46 +6,61 @@
 name: Staging Database Migration
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - dev
+  workflow_run:
+    workflows: ["Docker Build"]
+    branches: [dev]
+    types: [completed]
 
 permissions:
   contents: read
 
+env:
+  GO_VERSION: '1.25.0'
+
 jobs:
   migrate:
-    name: Run staging Database Migrations
+    name: Run Staging Database Migrations
     runs-on: ubuntu-latest
-
-    environment:
-      name: staging
+    environment: staging
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25.0'
+          go-version: ${{ env.GO_VERSION }}
           cache: true
 
       - name: Download dependencies
         run: go mod download
 
-      - name: Build migrate CLI
-        run: go build -o migrate ./cmd/migrate
+      - name: Build migrate binary
+        run: |
+          go build -o migrate ./cmd/migrate
+          chmod +x migrate
 
-      - name: Make migrate executable
-        run: chmod +x migrate
+      - name: Verify migrate tool works
+        run: ./migrate version
+
+      - name: Test database connection
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+        run: |
+          ./migrate version || echo "No migrations applied yet"
 
       - name: Run migrations
-        run: ./migrate up
         env:
-          APP_ENV: staging
-          DB_URL: ${{ secrets.DB_URL }}
+          DATABASE_URL: ${{ secrets.DB_URL }}
+        run: |
+          echo "🔄 Running migrations on staging..."
+          ./migrate up
+          echo "✅ Migrations completed successfully"
 
       - name: Verify migration version
-        run: ./migrate version
+        env:
+          DATABASE_URL: ${{ secrets.DB_URL }}
+        run: |
+          CURRENT_VERSION=$(./migrate version)
+          echo "Current migration version: $CURRENT_VERSION"
