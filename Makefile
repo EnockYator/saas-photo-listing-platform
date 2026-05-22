@@ -78,8 +78,14 @@ migrate-down:
 # dropdb:
 # 	dropdb $(name
 
-run-gosec:
+gosec:
 	gosec ./...
 
-run-govulncheck:
+govulncheck:
 	govulncheck ./...
+
+swagger:
+	swagger generate spec -o ./docs/swagger.yaml --scan-models
+
+sqlc:
+	sqlc generate
