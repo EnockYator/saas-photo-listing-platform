@@ -1,0 +1,52 @@
+# =========================================================
+# Docker build
+# Multi-stage build for API service
+# =========================================================
+
+FROM golang:1.25-alpine AS builder
+
+WORKDIR /app
+
+# Install build dependencies
+RUN apk add --no-cache git ca-certificates tzdata
+
+# Copy go mod files
+COPY go.mod go.sum ./
+RUN go mod download && go mod verify
+
+# Copy source code
+COPY . .
+
+# Generate sqlc code
+RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest && \
+    sqlc generate
+
+# Build the API binary
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+    -ldflags="-w -s -X main.Version=${VERSION:-dev}" \
+    -o /app/bin/api ./cmd/api
+
+
+
+# Final stage
+FROM alpine:latest
+
+RUN apk add --no-cache ca-certificates tzdata curl
+
+WORKDIR /app
+
+# Copy binary from builder
+COPY --from=builder /app/bin/api /app/api
+COPY --from=builder /app/scripts/entrypoint-api.sh /app/entrypoint.sh
+
+# Create non-root user
+RUN addgroup -g 1001 -S appgroup && \
+    adduser -u 1001 -S appuser -G appgroup && \
+    chown -R appuser:appgroup /app
+
+USER appuser
+
+EXPOSE 8080
+
+ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["/app/api"]
