@@ -11,6 +11,7 @@ primary_region = 'jnb'
     GO_VERSION = '1.25.0'
 
 [env]
+  ENVIRONMENT = "staging"
   PORT = '8080'
 
 [http_service]
