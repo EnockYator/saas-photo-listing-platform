@@ -1,1 +1,0 @@
-package sqlc_generated
