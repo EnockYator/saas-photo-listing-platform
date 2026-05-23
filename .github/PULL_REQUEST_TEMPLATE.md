@@ -1,4 +1,4 @@
-<!-- Default PR Template --> 
+<!-- Default PR Template -->
 
 ### Summary
 <!-- Describe what this PR does-->

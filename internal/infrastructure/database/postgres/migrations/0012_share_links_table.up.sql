@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS share_links (
 
     listing_id UUID NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    
+
     permission TEXT NOT NULL DEFAULT 'read',
     CONSTRAINT share_links_permission_check CHECK (permission IN ('read', 'write', 'admin')),
 
@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS share_links (
     expires_at TIMESTAMPTZ NOT NULL,
     max_views INT NOT NULL DEFAULT 0,  -- 0 means unlimited views
     view_count INT NOT NULL DEFAULT 0,
-    
+
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS share_links (
     -- Safety Constarints
     CONSTRAINT max_views_positive_check
         CHECK (max_views >= 0),
-    
+
     CONSTRAINT view_counts_positive_check
         CHECK (view_count >= 0),
 

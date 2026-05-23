@@ -8,7 +8,7 @@ name: Security Scan
 on:
   schedule:
     - cron: '0 0 * * 0' # Weekly
-  pull_request: 
+  pull_request:
     branches: [main, dev]
   push:
     branches: [main, dev]

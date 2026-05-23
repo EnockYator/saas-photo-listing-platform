@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS invoices (
     CONSTRAINT invoice_amount_positive_check CHECK(amount >= 0),
 
     currency VARCHAR(10) NOT NULL DEFAULT 'USD',
-    
+
     status TEXT NOT NULL DEFAULT 'pending'
         CONSTRAINT invoice_status_check CHECK (status IN ('pending', 'paid', 'failed')),
 
@@ -33,5 +33,3 @@ CREATE INDEX idx_invoice_subscription_id
 
 CREATE INDEX idx_invoice_status
     ON invoices(status);
-
-

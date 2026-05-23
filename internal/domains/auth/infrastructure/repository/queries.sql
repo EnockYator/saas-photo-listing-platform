@@ -7,6 +7,6 @@ VALUES ($1, $2, $3, $4, NOW(), NOW())
 RETURNING *;
 
 -- name: UpdateUserLastLogin :exec
-UPDATE users 
+UPDATE users
 SET last_login_at = NOW(), updated_at = NOW()
 WHERE id = $1;
