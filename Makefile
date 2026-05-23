@@ -21,7 +21,7 @@ export
 
 run:
 	APP_ENV=development go run ./cmd/api
-	
+
 run-staging:
 	APP_ENV=staging go run ./cmd/api
 

@@ -1,22 +1,22 @@
 
 CREATE TABLE IF NOT EXISTS files (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    
+
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     listing_id UUID NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    
+
     original_url TEXT NOT NULL,
     watermarked_url TEXT,
-    
+
     watermark_type TEXT
         CONSTRAINT files_watermark_type_check CHECK (watermark_type IN ('text', 'image')),
-    
+
     thumbnail_url TEXT,
-    
+
     file_size_bytes BIGINT NOT NULL,
     mime_type TEXT NOT NULL,
-    
+
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 
