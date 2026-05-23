@@ -236,19 +236,19 @@ git commit -m "chore: update dependencies"
 ## Running the Application
 
 1. ## Start PostgreSQL
-   
+
    ```bash
    docker compose up -d postgres
    ```
 
 2. ## Run Migrations
-      
+
    ```bash
    go run ./cmd/migrate up
    ```
-   
+
 3. ## Start API server
-      
+
    ```bash
    go run ./cmd/api
    ```
@@ -256,7 +256,7 @@ git commit -m "chore: update dependencies"
 ---
 
 ## Running Tests
-      
+
    ```bash
    go test ./...
    ```
@@ -264,7 +264,7 @@ git commit -m "chore: update dependencies"
 ---
 
 ## Linting
-      
+
    ```bash
    golangci-lint run ./...
    ```
@@ -348,6 +348,3 @@ Health checks pass
 ```
 
 _Last updated on 21th May 2026 by Author: Enock Yator_
-
-
-

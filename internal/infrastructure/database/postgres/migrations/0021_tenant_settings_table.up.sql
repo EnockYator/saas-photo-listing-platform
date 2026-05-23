@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS tenant_settings (
 CREATE TRIGGER trg_tenant_settings_updated_at
 BEFORE UPDATE ON tenant_settings
 FOR EACH ROW
-EXECUTE FUNCTION set_updated_at();  
+EXECUTE FUNCTION set_updated_at();
 
 -- Index for querying by theme
 CREATE INDEX idx_tenant_settings_theme
@@ -27,4 +27,3 @@ CREATE INDEX idx_tenant_settings_theme
 -- Index for querying by watermark_enabled
 CREATE INDEX idx_tenant_settings_watermark_enabled
     ON tenant_settings(watermark_enabled);
-

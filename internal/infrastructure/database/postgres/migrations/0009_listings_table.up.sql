@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS listings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        
+
     title VARCHAR(200) NOT NULL,
     description TEXT,
 

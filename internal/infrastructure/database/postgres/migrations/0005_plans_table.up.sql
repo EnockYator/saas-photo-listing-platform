@@ -1,15 +1,15 @@
 CREATE TABLE IF NOT EXISTS plans (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    
+
     type TEXT NOT NULL
         CONSTRAINT plan_type_check CHECK (type IN ('free', 'basic', 'business')),
-    
+
     price DECIMAL(10,2) NOT NULL
         CONSTRAINT plan_price_positive_check CHECK (price >= 0),
 
     billing_cycle TEXT NOT NULL DEFAULT 'monthly'
         CONSTRAINT plan_billing_cycle_check CHECK (billing_cycle IN ('monthly', 'yearly')),
-    
+
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

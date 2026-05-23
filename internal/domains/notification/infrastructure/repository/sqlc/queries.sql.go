@@ -64,7 +64,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const updateUserLastLogin = `-- name: UpdateUserLastLogin :exec
-UPDATE users 
+UPDATE users
 SET last_login_at = NOW(), updated_at = NOW()
 WHERE id = $1
 `

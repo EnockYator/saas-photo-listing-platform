@@ -1,8 +1,8 @@
 CREATE TABLE  IF NOT EXISTS subscriptions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    plan_id UUID NOT NULL REFERENCES plans(id) ON DELETE CASCADE,  
-    
+    plan_id UUID NOT NULL REFERENCES plans(id) ON DELETE CASCADE,
+
     status TEXT NOT NULL DEFAULT 'inactive'
         CONSTRAINT subscription_status_check
             CHECK (status IN (
@@ -11,10 +11,10 @@ CREATE TABLE  IF NOT EXISTS subscriptions (
                 'canceled',
                 'past_due'
             )),
-            
+
     started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     end_at TIMESTAMPTZ NOT NULL,
-    
+
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
