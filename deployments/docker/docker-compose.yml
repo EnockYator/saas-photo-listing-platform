@@ -1,0 +1,78 @@
+version: '3.8'
+
+# Base configuration shared across all environments
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+      target: development  # Default target, overridden in prod/staging
+      args:
+        - APP_ENV=${APP_ENV}
+    image: ${REGISTRY:-ghcr.io}/${NAMESPACE:-username}/${PROJECT_NAME:-app}:${TAG:-latest}
+    restart: unless-stopped
+    environment:
+      - APP_ENV=${APP_ENV:-development}
+      - DB_URL=${DB_URL}
+      - REDIS_URL=${REDIS_URL}
+      - API_KEY=${API_KEY}
+    env_file:
+      - /../../.env.development  # Load env vars from .env.development by default
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: ${MEMORY_LIMIT}
+          cpus: '${CPU_LIMIT}'
+        reservations:
+          memory: ${MEMORY_RESERVE}
+          cpus: '${CPU_RESERVE}'
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    name: ${PROJECT_NAME}_postgres_data
+  redis_data:
+    name: ${PROJECT_NAME}_redis_data
+
+networks:
+  app-network:
+    name: ${PROJECT_NAME}_network
+    driver: bridge

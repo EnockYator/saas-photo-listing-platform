@@ -1,46 +1,63 @@
-# =========================================================
-# Migrate Docker build
-# Multi-stage build for database migration tool
-# =========================================================
+# Multi-stage build for minimal secure Go binary
 
+# ============================================
+# STAGE 1: Builder
+# ============================================
 FROM golang:1.25-alpine AS builder
 
-WORKDIR /app
+# Install build dependencies
+RUN apk add --no-cache git ca-certificates tzdata
 
-# Install migrate tool
-RUN go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+# Set working directory
+WORKDIR /build
 
-# Copy go mod files
+# Enable Go modules and build settings
+ENV GO111MODULE=on \
+    CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64 \
+    GOFLAGS="-buildvcs=false"
+
+# Copy go mod files first for better layer caching
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify
 
 # Copy source code
 COPY . .
 
-# Build migrate binary
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
-    -ldflags="-w -s" \
-    -o /app/bin/migrate ./cmd/migrate
+ARG VERSION=dev
+ARG BUILD_TIME
 
-# Final stage
-FROM alpine:latest
+# Build the binary with optimizations
+RUN go build -ldflags="-w -s -X main.version=${VERSION} -X main.buildTime=${BUILD_TIME}" \
+    -o migrate ./cmd/migrate
 
-RUN apk add --no-cache ca-certificates tzdata postgresql-client
+# ============================================
+# STAGE 2: Production Runner
+# ============================================
+FROM alpine:3.19
+
+# Install runtime dependencies
+RUN apk add --no-cache ca-certificates tzdata curl postgresql-client
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S appgroup && \
+    adduser -S appuser -u 1001 -G appgroup
+
+# Set timezone (adjust as needed)
+ENV TZ=EAT
 
 WORKDIR /app
 
-# Copy migrate binary and tool
-COPY --from=builder /app/bin/migrate /app/migrate
-COPY --from=builder /go/bin/migrate /usr/local/bin/migrate
-COPY --from=builder /app/scripts/entrypoint-migrate.sh /app/entrypoint.sh
-COPY --from=builder /app/migrations /app/migrations
+# Copy binary from builder
+COPY --from=builder --chown=appuser:appgroup /build/migrate .
 
-# Create non-root user
-RUN addgroup -g 1001 -S appgroup && \
-    adduser -u 1001 -S appuser -G appgroup && \
-    chown -R appuser:appgroup /app
+# Copy migrations from builder
+COPY --from=builder --chown=appuser:appgroup /build/internal/infrastructure/database/postgres/migrations ./migrations
 
+# Switch to non-root user
 USER appuser
 
-ENTRYPOINT ["/app/entrypoint.sh"]
+# Run the application
+ENTRYPOINT ["./migrate"]
 CMD ["up"]
