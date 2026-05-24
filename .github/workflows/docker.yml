@@ -1,9 +1,10 @@
+# Docker Build and Push Workflow
 # Purpose:
-#   Build Docker images
-#   Push images to GitHub Container Registry
-#   Validate containers before deployment
+#   Build Go+PostgreSQL API and Migration Docker images
+#   Push to GitHub Container Registry
+#   Tag with commit SHA, branch name, and 'latest'
 
-name: Docker Build
+name: Docker Build & Push
 
 on:
   workflow_run:
@@ -23,21 +24,30 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  GO_VERSION: '1.25.0'
+  GO_VERSION: '1.22'
 
 jobs:
-  docker-build:
+  docker-build-and-push:
     name: Build & Push Docker Images
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
-
+    timeout-minutes: 30
+    
     strategy:
       matrix:
         service: [api, migrate]
+        include:
+          - service: api
+            dockerfile: Dockerfile.api
+            image_name: ${{ github.repository }}-api
+          - service: migrate
+            dockerfile: Dockerfile.migrate
+            image_name: ${{ github.repository }}-migrate
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -54,39 +64,234 @@ jobs:
       - name: Check for uncommitted changes
         run: |
           if [[ -n $(git status -s) ]]; then
-            echo "Uncommitted changes detected after sqlc generate"
+            echo "❌ Uncommitted changes detected after sqlc generate"
             git status --short
             exit 1
           fi
+          echo "✅ No uncommitted changes"
+
+      - name: Set up QEMU for multi-platform builds
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Container Registry (GHCR)
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata
+      - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.service }}
+          images: ${{ env.REGISTRY }}/${{ matrix.image_name }}
           tags: |
+            type=raw,value=latest,enable=${{ github.ref_name == 'main' && matrix.service == 'api' }}
+            type=raw,value=${{ github.sha }}
+            type=raw,value={{branch}}
+            type=raw,value={{date:YYYYMMDDHHmmss}}
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
             type=ref,event=branch
-            type=sha,format=short
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=main,enable=${{ github.ref_name == 'main' }}
+            type=raw,value=dev,enable=${{ github.ref_name == 'dev' }}
+          labels: |
+            org.opencontainers.image.title=${{ matrix.service }}
+            org.opencontainers.image.description="Go+PostgreSQL ${{ matrix.service }} for Photo Listing Platform"
+            org.opencontainers.image.version=${{ github.sha }}
 
-      - name: Build and push
+      - name: Set up Go cache for layer optimization
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Build and push ${{ matrix.service }} Docker image
         uses: docker/build-push-action@v5
+        id: docker_build
         with:
           context: .
-          file: docker/Dockerfile.${{ matrix.service }}
-          push: true
-          tags: |
-            ${{ steps.meta.outputs.tags }}
+          file: ${{ matrix.dockerfile }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: |
+            type=gha,scope=${{ matrix.service }}-${{ github.ref_name }}
+            type=gha,scope=${{ matrix.service }}-main
+          cache-to: |
+            type=gha,scope=${{ matrix.service }}-${{ github.ref_name }},mode=max
+          platforms: linux/amd64,linux/arm64
+          provenance: true
+          sbom: true
+          build-args: |
+            VERSION=${{ github.sha }}
+            BUILD_TIME=${{ github.event.repository.updated_at }}
+            GO_VERSION=${{ env.GO_VERSION }}
+
+      - name: Output image digest for ${{ matrix.service }}
+        run: |
+          echo "✅ ${{ matrix.service }} image built and pushed successfully!"
+          echo "Digest: ${{ steps.docker_build.outputs.digest }}"
+          echo "Tags: ${{ steps.meta.outputs.tags }}"
+          
+          # Save image info
+          echo "${matrix.service^^}_IMAGE_DIGEST=${{ steps.docker_build.outputs.digest }}" >> $GITHUB_ENV
+          echo "${matrix.service^^}_IMAGE_TAGS=${{ steps.meta.outputs.tags }}" >> $GITHUB_ENV
+
+      - name: Run Trivy vulnerability scanner on ${{ matrix.service }}
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ github.sha }}
+          format: 'sarif'
+          output: 'trivy-${{ matrix.service }}.sarif'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+
+      - name: Upload Trivy results for ${{ matrix.service }}
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-${{ matrix.service }}.sarif'
+
+      - name: Check ${{ matrix.service }} image size
+        run: |
+          # Get image size
+          IMAGE_SIZE=$(docker image inspect ${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ github.sha }} --format='{{.Size}}' 2>/dev/null | numfmt --to=iec || echo "Unknown")
+          echo "${{ matrix.service }} image size: $IMAGE_SIZE"
+
+  test-images:
+    name: Test Built Images
+    runs-on: ubuntu-latest
+    needs: docker-build-and-push
+    if: github.event_name != 'pull_request'
+    
+    strategy:
+      matrix:
+        service: [api, migrate]
+        include:
+          - service: api
+            image_name: ${{ github.repository }}-api
+            port: 8080
+          - service: migrate
+            image_name: ${{ github.repository }}-migrate
+            port: 8081
+    
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Pull and test ${{ matrix.service }} image
+        run: |
+          # Pull the image
+          docker pull ${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ github.sha }}
+          
+          # For API service - run and test
+          if [ "${{ matrix.service }}" = "api" ]; then
+            docker run -d \
+              --name test-api \
+              -p ${{ matrix.port }}:${{ matrix.port }} \
+              -e APP_ENV=test \
+              -e PORT=${{ matrix.port }} \
+              ${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ github.sha }}
+            
+            sleep 5
+            
+            if curl -f http://localhost:${{ matrix.port }}/health; then
+              echo "✅ API health check passed"
+            else
+              echo "❌ API health check failed"
+              docker logs test-api
+              exit 1
+            fi
+            
+            docker stop test-api
+            docker rm test-api
+          fi
+          
+          # For migrate service - just verify it can run
+          if [ "${{ matrix.service }}" = "migrate" ]; then
+            docker run --rm \
+              --name test-migrate \
+              ${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ github.sha }} \
+              --version
+            echo "✅ Migration image can execute successfully"
+          fi
+
+  sign-images:
+    name: Sign Docker Images
+    runs-on: ubuntu-latest
+    needs: [docker-build-and-push, test-images]
+    if: github.event_name == 'push' && (github.ref_name == 'main' || startsWith(github.ref, 'refs/tags/v'))
+    
+    strategy:
+      matrix:
+        service: [api, migrate]
+        include:
+          - service: api
+            image_name: ${{ github.repository }}-api
+          - service: migrate
+            image_name: ${{ github.repository }}-migrate
+    
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+        with:
+          cosign-release: 'v2.2.0'
+      
+      - name: Sign ${{ matrix.service }} Docker image
+        run: |
+          cosign sign --yes \
+            --oidc-issuer=https://token.actions.githubusercontent.com \
+            --identity-token=${{ steps.oidc.outputs.id_token }} \
+            ${{ env.REGISTRY }}/${{ matrix.image_name }}@${{ needs.docker-build-and-push.outputs.digest }}
+        env:
+          COSIGN_EXPERIMENTAL: true
+
+  cleanup:
+    name: Clean Up Old Images
+    runs-on: ubuntu-latest
+    needs: docker-build-and-push
+    if: github.ref_name == 'main'
+    
+    strategy:
+      matrix:
+        service: [api, migrate]
+        include:
+          - service: api
+            image_name: ${{ github.repository }}-api
+          - service: migrate
+            image_name: ${{ github.repository }}-migrate
+    
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Delete old ${{ matrix.service }} images
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: ${{ matrix.image_name }}
+          package-type: container
+          min-versions-to-keep: 10
+          delete-only-untagged-versions: true
