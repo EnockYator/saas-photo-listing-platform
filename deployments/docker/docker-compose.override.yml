@@ -1,0 +1,60 @@
+version: '3.8'
+
+# Development-specific overrides - hot reload, debugging, dev tools
+services:
+  app:
+    build:
+      target: development
+      args:
+        - NODE_ENV=development
+    environment:
+      - NODE_ENV=development
+      - DEBUG=app:*
+      - LOG_LEVEL=debug
+    volumes:
+      - .:/app
+      - /app/node_modules  # Don't override node_modules
+    ports:
+      - "${APP_PORT:-3000}:3000"
+      - "${DEBUG_PORT:-9229}:9229"  # Node.js inspector
+    command: npm run dev
+    stdin_open: true  # For interactive debugging
+    tty: true
+
+  postgres:
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - ./docker/dev/postgres-init:/docker-entrypoint-initdb.d  # Dev seed data
+      - postgres_dev_data:/var/lib/postgresql/data
+
+  redis:
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+
+  # Dev-only services
+  adminer:
+    image: adminer:latest
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+    environment:
+      - ADMINER_DEFAULT_SERVER=postgres
+    profiles:
+      - dev-tools
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    ports:
+      - "8081:8081"
+    networks:
+      - app-network
+    profiles:
+      - dev-tools
+
+volumes:
+  postgres_dev_data:
