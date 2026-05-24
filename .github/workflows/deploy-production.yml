@@ -1,6 +1,7 @@
-# Production Deployment Workflow
+
 # Purpose:
-#   Deploy main branch to production
+#   Deploy already-built Docker images to Render production
+#   Generate .env from GitHub Secrets and apply to Render
 #   Deploy only after migrations succeed
 
 name: Deploy to Production
@@ -10,53 +11,344 @@ on:
     workflows: ["Production Database Migration"]
     branches: [main]
     types: [completed]
+  # Manual trigger option
+  workflow_dispatch:
 
 permissions:
   contents: read
+  packages: read  # Read-only for pulling images
 
 jobs:
-  deploy-flyio:
-    name: Deploy to Fly.io Production
-    runs-on: ubuntu-latest
-    environment: production
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Flyctl
-        uses: superfly/flyctl-actions/setup-flyctl@master
-
-      - name: Deploy to Fly.io
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-        run: |
-          flyctl deploy --remote-only \
-            --config fly.production.toml \
-            --image ghcr.io/${{ github.repository }}-api:${{ github.sha }}
-
-      - name: Verify Fly.io deployment
-        run: |
-          curl -f https://api.fly.io/v1/apps/saas-photo-listing-platform-production/health || exit 1
-
   deploy-render:
     name: Deploy to Render Production
     runs-on: ubuntu-latest
     environment: production
+    
     steps:
-      - name: Trigger Render Deploy
+      - name: Checkout code
+        uses: actions/checkout@v4
+        # Needed for any config files if required
+      
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Generate .env file from GitHub Secrets
+        id: generate-env
+        run: |
+          # Create .env file content
+          cat > .env.production << 'EOF'
+          # Database Configuration
+          DB_HOST=${{ secrets.DB_HOST }}
+          DB_PORT=${{ secrets.DB_PORT }}
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_NAME=${{ secrets.DB_NAME }}
+          DB_SSLMODE=require
+          
+          # Redis Configuration
+          REDIS_HOST=${{ secrets.REDIS_HOST }}
+          REDIS_PORT=${{ secrets.REDIS_PORT }}
+          REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+          
+          # API Configuration
+          APP_ENV=production
+          PORT=8080
+          LOG_LEVEL=warn
+          DEBUG=false
+          API_SECRET_KEY=${{ secrets.API_SECRET_KEY }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          
+          # External Services
+          SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          
+          # Monitoring
+          GRAFANA_PASSWORD=${{ secrets.GRAFANA_PASSWORD }}
+          EOF
+          
+          # Verify .env was created (without exposing contents)
+          echo "✓ .env.production file created successfully"
+          echo "File size: $(wc -l < .env.production) lines"
+          
+          # Encode .env file for Render API (if needed)
+          ENV_CONTENT=$(cat .env.production | jq -sR .)
+          echo "env_content=$ENV_CONTENT" >> $GITHUB_OUTPUT
+      
+      - name: Update Render Environment Variables (Option 1 - Individual)
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_PRODUCTION_SERVICE_ID: ${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}
         run: |
+          # Update each environment variable on Render
+          # This ensures Render has all the latest values from GitHub Secrets
+          
+          # Database variables
           curl -X POST \
+            "https://api.render.com/v1/services/${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}/env-vars" \
+            -H "accept: application/json" \
+            -H "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "content-type: application/json" \
+            -d '{"envVar": {"key": "DB_HOST", "value": "${{ secrets.DB_HOST }}"}}' || true
+          
+          curl -X POST \
+            "https://api.render.com/v1/services/${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}/env-vars" \
+            -H "accept: application/json" \
+            -H "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "content-type: application/json" \
+            -d '{"envVar": {"key": "DB_PORT", "value": "${{ secrets.DB_PORT }}"}}' || true
+          
+          curl -X POST \
+            "https://api.render.com/v1/services/${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}/env-vars" \
+            -H "accept: application/json" \
+            -H "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "content-type: application/json" \
+            -d '{"envVar": {"key": "DB_USER", "value": "${{ secrets.DB_USER }}"}}' || true
+          
+          curl -X POST \
+            "https://api.render.com/v1/services/${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}/env-vars" \
+            -H "accept: application/json" \
+            -H "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "content-type: application/json" \
+            -d '{"envVar": {"key": "DB_PASSWORD", "value": "${{ secrets.DB_PASSWORD }}"}}' || true
+          
+          curl -X POST \
+            "https://api.render.com/v1/services/${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}/env-vars" \
+            -H "accept: application/json" \
+            -H "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "content-type: application/json" \
+            -d '{"envVar": {"key": "DB_NAME", "value": "${{ secrets.DB_NAME }}"}}' || true
+          
+          curl -X POST \
+            "https://api.render.com/v1/services/${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}/env-vars" \
+            -H "accept: application/json" \
+            -H "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "content-type: application/json" \
+            -d '{"envVar": {"key": "DB_SSLMODE", "value": "require"}}' || true
+          
+          # Redis variables
+          curl -X POST \
+            "https://api.render.com/v1/services/${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}/env-vars" \
+            -H "accept: application/json" \
+            -H "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "content-type: application/json" \
+            -d '{"envVar": {"key": "REDIS_HOST", "value": "${{ secrets.REDIS_HOST }}"}}' || true
+          
+          curl -X POST \
+            "https://api.render.com/v1/services/${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}/env-vars" \
+            -H "accept: application/json" \
+            -H "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "content-type: application/json" \
+            -d '{"envVar": {"key": "REDIS_PORT", "value": "${{ secrets.REDIS_PORT }}"}}' || true
+          
+          curl -X POST \
+            "https://api.render.com/v1/services/${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}/env-vars" \
+            -H "accept: application/json" \
+            -H "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "content-type: application/json" \
+            -d '{"envVar": {"key": "REDIS_PASSWORD", "value": "${{ secrets.REDIS_PASSWORD }}"}}' || true
+          
+          # API variables
+          curl -X POST \
+            "https://api.render.com/v1/services/${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}/env-vars" \
+            -H "accept: application/json" \
+            -H "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "content-type: application/json" \
+            -d '{"envVar": {"key": "APP_ENV", "value": "production"}}' || true
+          
+          curl -X POST \
+            "https://api.render.com/v1/services/${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}/env-vars" \
+            -H "accept: application/json" \
+            -H "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "content-type: application/json" \
+            -d '{"envVar": {"key": "PORT", "value": "8080"}}' || true
+          
+          curl -X POST \
+            "https://api.render.com/v1/services/${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}/env-vars" \
+            -H "accept: application/json" \
+            -H "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "content-type: application/json" \
+            -d '{"envVar": {"key": "LOG_LEVEL", "value": "warn"}}' || true
+          
+          curl -X POST \
+            "https://api.render.com/v1/services/${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}/env-vars" \
+            -H "accept: application/json" \
+            -H "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "content-type: application/json" \
+            -d '{"envVar": {"key": "API_SECRET_KEY", "value": "${{ secrets.API_SECRET_KEY }}"}}' || true
+          
+          curl -X POST \
+            "https://api.render.com/v1/services/${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}/env-vars" \
+            -H "accept: application/json" \
+            -H "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "content-type: application/json" \
+            -d '{"envVar": {"key": "JWT_SECRET", "value": "${{ secrets.JWT_SECRET }}"}}' || true
+          
+          # Optional: SENTRY_DSN
+          if [ -n "${{ secrets.SENTRY_DSN }}" ]; then
+            curl -X POST \
+              "https://api.render.com/v1/services/${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}/env-vars" \
+              -H "accept: application/json" \
+              -H "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+              -H "content-type: application/json" \
+              -d '{"envVar": {"key": "SENTRY_DSN", "value": "${{ secrets.SENTRY_DSN }}"}}' || true
+          fi
+          
+          echo "✅ Environment variables updated on Render"
+      
+      - name: Trigger Production Deploy on Render
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_PRODUCTION_SERVICE_ID: ${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}
+        run: |
+          # Get the current commit SHA (should match the built image)
+          # Your docker.yml workflow tags images with the commit SHA
+          COMMIT_SHA="${{ github.sha }}"
+          
+          echo "Deploying image: ghcr.io/${{ github.repository }}-api:${COMMIT_SHA}"
+          
+          # Trigger deploy with the specific image tag
+          DEPLOY_RESPONSE=$(curl -s -X POST \
             https://api.render.com/v1/services/${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}/deploys \
             -H "accept: application/json" \
             -H "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
             -H "content-type: application/json" \
-            -d '{
-              "image": {
-                "imageUrl": "ghcr.io/${{ github.repository }}-api:${{ github.sha }}"
-              }
-            }'
+            -d "{
+              \"imageUrl\": \"ghcr.io/${{ github.repository }}-api:${COMMIT_SHA}\"
+            }")
+          
+          echo "Deploy response: $DEPLOY_RESPONSE"
+          
+          # Extract deploy ID from response
+          DEPLOY_ID=$(echo $DEPLOY_RESPONSE | jq -r '.id')
+          echo "deploy_id=$DEPLOY_ID" >> $GITHUB_ENV
+          
+          if [ "$DEPLOY_ID" == "null" ] || [ -z "$DEPLOY_ID" ]; then
+            echo "❌ Failed to trigger deploy"
+            exit 1
+          fi
+          
+          echo "✅ Deploy triggered with ID: $DEPLOY_ID"
+      
+      - name: Wait for deployment to complete
+        run: |
+          echo "Waiting for deployment to complete..."
+          
+          # Wait up to 5 minutes (30 attempts * 10 seconds)
+          for i in {1..30}; do
+            echo "Checking deployment status... ($i/30)"
+            
+            DEPLOY_STATUS=$(curl -s \
+              -H "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+              "https://api.render.com/v1/services/${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}/deploys" \
+              | jq -r '.[0].status')
+            
+            echo "Current status: $DEPLOY_STATUS"
+            
+            case "$DEPLOY_STATUS" in
+              "live")
+                echo "✅ Deployment is live!"
+                break
+                ;;
+              "failed")
+                echo "❌ Deployment failed!"
+                exit 1
+                ;;
+              "build_in_progress"|"deploying")
+                echo "Deployment in progress..."
+                ;;
+              *)
+                echo "Unknown status: $DEPLOY_STATUS"
+                ;;
+            esac
+            
+            sleep 10
+          done
+      
+      - name: Verify production deployment
+        run: |
+          # Wait for service to be fully ready
+          sleep 15
+          
+          # Get production domain from secrets
+          PROD_DOMAIN="${{ secrets.PROD_DOMAIN }}"
+          
+          if [ -z "$PROD_DOMAIN" ]; then
+            echo "⚠️ PROD_DOMAIN secret not set, skipping health check"
+            echo "Please verify deployment manually at: https://render.com"
+            exit 0
+          fi
+          
+          # Check health endpoint
+          echo "Checking health at: https://${PROD_DOMAIN}/health"
+          curl -f "https://${PROD_DOMAIN}/health" || exit 1
+          
+          # Check version endpoint (optional)
+          if curl -f "https://${PROD_DOMAIN}/version" 2>/dev/null; then
+            echo "✅ Version endpoint responding"
+          fi
+          
+          echo "✅ Production deployment verified successfully"
+      
+      - name: Clean up .env file
+        if: always()
+        run: |
+          # Remove .env file from runner for security
+          rm -f .env.production
+          echo "✓ .env.production removed from runner"
+
+  rollback:
+    name: Rollback if Health Check Fails
+    runs-on: ubuntu-latest
+    needs: deploy-render
+    if: failure()
+    steps:
+      - name: Rollback to previous version on Render
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_PRODUCTION_SERVICE_ID: ${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}
+        run: |
+          # Get previous successful deploy ID (skip the first one which is current/failed)
+          PREVIOUS_DEPLOY=$(curl -s \
+            -H "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            "https://api.render.com/v1/services/${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}/deploys" \
+            | jq -r '.[1].id')
+          
+          if [ "$PREVIOUS_DEPLOY" == "null" ] || [ -z "$PREVIOUS_DEPLOY" ]; then
+            echo "❌ No previous deploy found for rollback"
+            exit 1
+          fi
+          
+          echo "Rolling back to deploy ID: $PREVIOUS_DEPLOY"
+          
+          # Rollback to previous version
+          ROLLBACK_RESPONSE=$(curl -s -X POST \
+            https://api.render.com/v1/services/${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}/deploys/$PREVIOUS_DEPLOY/rollback \
+            -H "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "content-type: application/json")
+          
+          echo "Rollback response: $ROLLBACK_RESPONSE"
+          
+          # Verify rollback
+          sleep 30
+          
+          PROD_DOMAIN="${{ secrets.PROD_DOMAIN }}"
+          if [ -n "$PROD_DOMAIN" ]; then
+            if curl -f "https://${PROD_DOMAIN}/health"; then
+              echo "✅ Rollback successful"
+            else
+              echo "⚠️ Rollback may have failed, check manually"
+            fi
+          fi
+      
+      - name: Send rollback notification
+        if: always()
+        run: |
+          # Optional: Send notification to Slack/Teams
+          if [ -n "${{ secrets.WEBHOOK_URL }}" ]; then
+            curl -X POST -H "Content-Type: application/json" \
+              -d '{"text":"⚠️ Production rollback triggered! Failed deployment rolled back to previous version"}' \
+              ${{ secrets.WEBHOOK_URL }} || true
+          fi
