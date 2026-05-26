@@ -67,7 +67,7 @@ jobs:
           echo "Using digest: $DIGEST"
 
       # ----------------------------
-      # Render ENV variavbles 
+      # Render ENV variavbles
       # ----------------------------
       - name: Update Render Environment Variables
         env:

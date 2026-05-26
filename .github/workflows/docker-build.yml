@@ -100,7 +100,7 @@ jobs:
             exit 1
 
           IMAGE=${{ env.IMAGE_NAME }}@${DIGEST}
-          
+
           echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
 
@@ -130,7 +130,7 @@ jobs:
           name: image-metadata
           path: .
           run-id: ${{ DOCKER_BUILD_RUN_ID }}  # Docker Build's run_id
-  
+
       # Load immutable image metadata (digest, image)
       - name: Load image metadata
         run: |
