@@ -73,7 +73,7 @@ jobs:
       - name: Pull built image (using digest)
         run: |
           echo "Pulling image: $IMAGE"
-  
+
           docker pull $IMAGE
 
       - name: Start temporary Postgres
