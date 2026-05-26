@@ -16,9 +16,10 @@ on:
 permissions:
   contents: read
   security-events: write
+  actions: read  # For some scanners
 
 env:
-  GO_VERSION: '1.25.0'
+  GO_VERSION: '1.23.0'
 
 jobs:
   govulncheck:
@@ -39,7 +40,11 @@ jobs:
         run: go install golang.org/x/vuln/cmd/govulncheck@latest
 
       - name: Run govulncheck
-        run: govulncheck ./... || true # Don't fail the job, just report vulnerabilities
+        run: |
+          govulncheck ./... || {
+            echo "⚠️ Vulnerabilities found!"
+            exit 1
+          }
 
   gosec:
     name: Security Static Analysis
@@ -52,7 +57,7 @@ jobs:
       - name: Run Gosec Security Scanner
         uses: securego/gosec@master
         with:
-          args: -no-fail -fmt sarif -out results.sarif ./...
+          args: -fmt sarif -out results.sarif ./...
 
       - name: Upload Gosec SARIF file
         uses: github/codeql-action/upload-sarif@v3
@@ -68,6 +73,6 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v8
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
