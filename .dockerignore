@@ -1,126 +1,356 @@
-# flyctl launch added from .gitignore
-# Binaries
-**/bin
-**/dist
-**/build
-**/*.exe
-**/*.exe~
-**/*.dll
-**/*.so
-**/*.dylib
-**/*.test
-**/*.out
+# .dockerignore
+# Purpose: Exclude unnecessary files from Docker build context
+# This keeps images small, secure, and build times fast
 
-# Go workspace
-**/go.work
-**/go.work.sum
+# ============================================
+# Version Control
+# ============================================
+.git/
+.gitignore
+.gitattributes
+.gitmodules
+.github/
+.gitlab/
+.gitconfig
 
-# Dependency directories
-**/vendor
+# ============================================
+# Docker related (prevent recursive includes)
+# ============================================
+Dockerfile*
+.dockerignore
+docker-compose*.yml
+docker-compose*.yaml
+.docker/
+docker/
+.dockerignore
 
-# Coverage files
-**/coverage.out
-**/coverage.html
-**/*.coverprofile
+# ============================================
+# CI/CD and Workflow files
+# ============================================
+.github/workflows/
+.gitlab-ci.yml
+.drone.yml
+.jenkins/
+circle.yml
+.travis.yml
+.woodpecker/
+.teamcity/
+.wercker/
+.taskcat.yml
+.codeclimate.yml
+.pre-commit-config.yaml
 
-# Logs
-**/*.log
-**/logs
+# ============================================
+# Go specific
+# ============================================
+# Binaries and build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.prof
+*.o
+*.a
+*.bin
+*.exe
 
-# Environment variables
-**/.env
-**/.env.*
+# Go workspace files
+go.work
+go.work.sum
 
-# Config files
-**/*.yaml
+# Dependency directories (will be re-downloaded in Docker)
+vendor/
+Godeps/
 
-# IDEs and editors
-**/.idea
-**/.vscode
-**/*.swp
-**/*.swo
-**/*~
+# Build output directory
+/bin/
+/dist/
+/build/
+/tmp/
+tmp/
 
-# OS files
-**/.DS_Store
-**/Thumbs.db
+# Go coverage files
+*.cover
+*.cov
+coverage.html
+coverage.out
+coverage.txt
+*.coverprofile
+*.cps
 
-# Temporary files
-**/tmp
-**/temp
+# ============================================
+# IDE and Editor files
+# ============================================
+# VSCode
+.vscode/
+.history/
+*.code-workspace
 
-# Database files
-**/*.db
-**/*.sqlite
-**/*.sqlite3
+# IntelliJ / GoLand
+.idea/
+*.iml
+*.ipr
+*.iws
+*.swp
 
-# Generated files
-**/*.generated.go
+# Vim
+*.swp
+*.swo
+*~
+.~*
+.*.swp
+.*.swo
 
-# Docker
-**/docker-data
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+.elc
+auto-save-list
+tramp
+.\#*
 
-# Air live reload
-**/.air.toml
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
 
-# Test artifacts
-**/test-results
+# ============================================
+# OS generated files
+# ============================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+*.tmp
+*.temp
+*.log
+*.pid
+*.seed
+*.pid.lock
+*.swp
+*.swo
 
+# ============================================
+# Environment and Secrets
+# ============================================
+.env
+.env.*
+!.env.example
+.envrc
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets/
+.secrets/
+credentials/
+.credentials/
+
+# ============================================
+# Logs and Databases
+# ============================================
+*.log
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+logs/
+*.pid
+*.seed
+*.pid.lock
+
+# ============================================
+# Testing and Coverage
+# ============================================
+*.test
+*.out
+coverage/
+.coverage
+.cover/
+.coverage.*
+.cover.*
+*.prof
+*.cps
+*.cov
+*.crypt
+*.crypto
+*_test.go
+test/
+tests/
+testing/
+*.mock.go
+mocks/
+
+# ============================================
+# Documentation
+# ============================================
+README.md
+README.*.md
+CHANGELOG.md
+CONTRIBUTING.md
+LICENSE
+LICENSE.*
+docs/
+DOCS/
+doc/
+*.md
+*.rst
+*.txt
+*.pdf
+*.doc
+*.docx
+
+# ============================================
+# Build tools and scripts
+# ============================================
+Makefile
+makefile
+*.mk
+scripts/
+bin/
+hack/
+tools/
+*.sh
+*.bash
+*.zsh
+*.fish
+*.ps1
+*.bat
+
+# ============================================
+# Kubernetes and Helm
+# ============================================
+*.kubeconfig
+kubeconfig
+helm/
+charts/
+*.tgz
+*.lock
+
+# ============================================
 # Terraform
-**/.terraform
-**/*.tfstate
-**/*.tfstate.*
+# ============================================
+*.tfstate
+*.tfstate.*
+.terraform/
+terraform.tfvars
+*.tfvars
 
-# Kubernetes secrets/configs
-**/kubeconfig
-**/*.pem
-**/*.key
-**/*.crt
+# ============================================
+# Node.js / Frontend (if applicable)
+# ============================================
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+*.min.js
+*.min.css
+dist/
+build/
+public/
+static/
+assets/
 
-# Node modules (if frontend exists later)
-**/node_modules
+# ============================================
+# Temporary and Cache files
+# ============================================
+*.cache
+.cache/
+.cache/*
+*.tmp
+*.temp
+*.bak
+*.backup
+*~
+cache/
+cached/
+temp/
+tmp/
 
-# macOS
-**/.AppleDouble
-**/.LSOverride
+# ============================================
+# Local development files
+# ============================================
+local/
+development/
+dev/
+debug/
+dumps/
+.docker/
+.railrun/
+.kube/
+.kind/
 
-# Linux
-**/*~
+# ============================================
+# Quality and Security tools
+# ============================================
+.golangci.yml
+.golangci.yaml
+.gosec.json
+.snyk
+.trivyignore
+.grype.yaml
+.codeql/
+.sonarqube/
+.sonarlint/
+.checkmarx/
+.veracode/
 
-# Archives
-**/*.zip
-**/*.tar
-**/*.gz
-**/*.rar
+# ============================================
+# SQL and Migration (but NOT migrations folder)
+# ============================================
+# IMPORTANT: Keep the migrations folder, exclude other sql files
+# migrations/ is needed for the image
+*.sql
+!migrations/*.sql  # This keeps migration files
+*.sqlc.yaml
+*.sqlc.yml
+sqlc.json
+sqlc.yaml
 
-# Profiling
-**/cpu.prof
-**/mem.prof
+# ============================================
+# Specific to your project
+# ============================================
+# Exclude API binary if built locally
+/api
+/migrate
+/app
 
-# Mock files
-**/mock
+# Exclude generated code (but sqlc will regenerate in Docker)
+*.sqlc.go
+!**/*.sqlc.go  # Keep but these will be regenerated
 
-# Swagger generated docs
-**/docs
+# Exclude local configs
+config.local.yaml
+config.dev.yaml
+config.prod.local.yaml
 
-# Local cache
-**/.cache
+# Exclude Swagger/OpenAPI docs if not needed
+swagger/
+docs/
+api/
+*.pb.go
+*.gw.go
 
-# JetBrains
-**/*.iml
-
-# Delve debugger
-**/__debug_bin
-
-# GoLand
-**/.idea_modules
-
-# Generated OpenAPI clients
-**/client/gen
-
-# MinIO local data
-**/minio-data
-
-# Redis dump
-**/dump.rdb
-fly.toml
+# ============================================
+# Kubernetes and Deployment
+# ============================================
+k8s/
+kubernetes/
+deploy/
+deployment/
+*.yaml
+*.yml
+!.github/workflows/*.yml  # Keep workflows for context

@@ -8,7 +8,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-const migrationsPath = "file://internal/infrastructure/database/postgres/migrations"
+const migrationsPath = "file://./internal/infrastructure/database/postgres/migrations"
 
 type Migrator struct {
 	m *migrate.Migrate

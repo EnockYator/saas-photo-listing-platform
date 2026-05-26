@@ -16,9 +16,7 @@ permissions:
   contents: read
 
 env:
-  GO_VERSION: '1.25.0'
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  GO_VERSION: '1.23.0'
 
 jobs:
   test:
@@ -29,11 +27,11 @@ jobs:
 
     services:
       postgres:
-        image: postgres:16
+        image: postgres:16-alpine
         env:
           POSTGRES_USER: postgres # gitguardian: ignore
-          POSTGRES_PASSWORD: postgres # gitguardian: ignore
-          POSTGRES_DB: app_test # gitguardian: ignore
+          POSTGRES_PASSWORD: testpsswd # gitguardian: ignore
+          POSTGRES_DB: testdb # gitguardian: ignore
         ports:
           - 5432:5432
         options: >-
@@ -42,14 +40,14 @@ jobs:
           --health-timeout=5s
           --health-retries=5
 
-    env:
-      # Database connection details for tests (use GitHub Secrets in production)
-      DB_HOST: localhost # gitguardian: ignore
-      DB_PORT: 5432 # gitguardian: ignore
-      DB_USER: postgres # gitguardian: ignore
-      DB_PASSWORD: postgres # gitguardian: ignore
-      DB_NAME: app_test # gitguardian: ignore
-      DB_SSLMODE: disable # gitguardian: ignore
+    # env:
+    #   # Database connection details for tests
+    #   DB_HOST: localhost # gitguardian: ignore
+    #   DB_PORT: 5432 # gitguardian: ignore
+    #   DB_USER: ${{ env.POSTGRES_USER }}
+    #   DB_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+    #   DB_NAME: ${{ env.POSTGRES_DB }}
+    #   DB_SSLMODE: disable # gitguardian: ignore
 
     steps:
       - name: Checkout code
@@ -71,17 +69,15 @@ jobs:
       - name: Run tests with coverage
         run: |
           mkdir -p coverage
-
           go test ./... \
           -v \
           -race \
-            -covermode=atomic \
-            -coverprofile=coverage/coverage.out
+          -covermode=atomic \
+          -coverprofile=coverage/coverage.out
 
       - name: Generate coverage summary
         id: coverage
         run: |
-          go tool cover -func=coverage/coverage.out | tail -1
           COVERAGE=$(go tool cover -func=coverage/coverage.out | tail -1 | awk '{print $3}' | sed 's/%//')
           echo "coverage percentage=$COVERAGE" >> $GITHUB_OUTPUT
 
@@ -95,3 +91,7 @@ jobs:
         run: |
           mkdir -p bin
           go build -o bin/api ./cmd/api/
+
+      - name: Build Migrate
+        run: |
+          go build -o bin/migrate ./cmd/migrate/

@@ -9,44 +9,114 @@ on:
     branches: [main]
     types: [completed]
 
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (optional)"
+        required: false
+        default: ""
+
 permissions:
   contents: write
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository }}/app
 
 jobs:
   release:
     name: Create GitHub Release
-    runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Get version from tag or generate
-        id: version
+      # ----------------------------
+      # Load release notes
+      # ----------------------------
+      - name: Read RELEASE_NOTES.md
+        id: notes
         run: |
-          if git describe --tags --abbrev=0 2>/dev/null; then
-            VERSION=$(git describe --tags --abbrev=0)
-          else
-            VERSION="v0.1.0"
+          if [ ! -f RELEASE_NOTES.md ]; then
+            echo "❌ RELEASE_NOTES.md not found"
+            exit 1
           fi
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
-      - name: Generate release notes
+          NOTES=$(cat RELEASE_NOTES.md | tr -d '\n')
+
+          # Multiline-safe output
+          {
+            echo "notes<<EOF"
+            echo "$NOTES"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+      # ----------------------------
+      # Determine tag
+      # ----------------------------
+      - name: Resolve release tag
+        id: tag
         run: |
-          echo "# Release ${{ steps.version.outputs.version }}" > RELEASE_NOTES.md
-          echo "" >> RELEASE_NOTES.md
-          echo "## What's Changed" >> RELEASE_NOTES.md
-          git log $(git describe --tags --abbrev=0 2>/dev/null || echo "HEAD~10")..HEAD --oneline >> RELEASE_NOTES.md
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="v$(date +%Y.%m.%d)-${GITHUB_SHA::7}"
+          fi
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      # Download image-metadata artifact from Docker Build workflow
+      - name: Download image metadata artifact
+        uses: actions/download-artifact@v4
         with:
-          tag_name: ${{ steps.version.outputs.version }}
-          name: Release ${{ steps.version.outputs.version }}
-          body_path: RELEASE_NOTES.md
+          name: image-metadata
+          path: .
+          run-id: ${{ github.event.workflow_run.id }}  # Docker Build's run_id
+
+      # Load immutable image metadata (digest, image)
+      - name: Load image metadata
+        run: |
+          DIGEST="$(cat digest.txt | tr -d '\n')"
+          if [ -z "$DIGEST" ]; then
+            echo "❌ Missing image digest artifact"
+            exit 1
+          fi
+
+          IMAGE="$(cat image.txt | tr -d '\n')"
+          if [ -z "$IMAGE" ]; then
+            echo "❌ Missing image name artifact"
+            exit 1
+          fi
+
+          echo "DIGEST=$DIGEST" >> $GITHUB_ENV
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+
+          echo "Using image: $IMAGE"
+          echo "Using digest: $DIGEST"
+
+      # ----------------------------
+      # Create GitHub Release
+      # ----------------------------
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: Release ${{ steps.tag.outputs.tag }}
+          body: |
+            ## 🚀 Release Notes
+
+            ${{ steps.notes.outputs.notes }}
+
+            ---
+
+            ## 📦 Deployment Info
+
+            - Commit: `${{ github.sha }}`
+            - Image: `${IMAGE}`
+            - Digest: `${DIGEST}`
+
+            ${{ steps.digest.outputs.image && format('- Immutable Image: `{0}`', steps.digest.outputs.image) || '' }}
+
           draft: false
           prerelease: false
-          generate_release_notes: false
