@@ -60,9 +60,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Gosec Security Scanner
-        run: |
-          go install github.com/securego/gosec/v2/cmd/gosec@latest
-          gosec -fmt sarif -out results.sarif ./cmd/... ./internal/...
+        uses: securego/gosec@v2.22.4
+        with:
+          args: -args="-fmt sarif -out results.sarif ./cmd/... ./internal/..."
 
       - name: Verify SARIF file exists
         run: ls -lah results.sarif
