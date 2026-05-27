@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 env:
-  GO_VERSION: '1.25'
+  GO_VERSION: '1.24'
 
 jobs:
   golangci:
@@ -34,9 +34,9 @@ jobs:
           cache: true
 
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.59.2
+          version: v1.64.5
           args: --timeout 5m
 
   gofmt:
