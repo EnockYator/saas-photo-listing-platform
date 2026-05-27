@@ -33,7 +33,7 @@ type JWTConfig struct {
 }
 
 type Config struct {
-	Env string
+	Env      string
 	Server   ServerConfig
 	Database DatabaseConfig
 	JWT      JWTConfig
