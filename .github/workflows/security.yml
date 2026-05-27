@@ -19,7 +19,7 @@ permissions:
   actions: read  # For some scanners
 
 env:
-  GO_VERSION: '1.25'
+  GO_VERSION: '1.24'
 
 jobs:
   govulncheck:
@@ -41,14 +41,12 @@ jobs:
 
       - name: Run govulncheck
         run: |
-          govulncheck ./... > vuln-report.txt || true
+          govulncheck ./... | tee vuln-report.txt
 
           cat vuln-report.txt
 
-          if grep -q "Your code is affected by" vuln-report.txt; then
-            echo "⚠️ Vulnerabilities detected"
-          else
-            echo "✅ No known vulnerabilities"
+          if grep -q "Vulnerability" vuln-report.txt; then
+            exit 1
           fi
 
   gosec:
@@ -62,11 +60,12 @@ jobs:
       - name: Run Gosec Security Scanner
         uses: securego/gosec@v2.22.4
         with:
-          args: -fmt sarif -out results.sarif ./...
+          args: -fmt sarif -out /github/workspace/results.sarif  ./cmd/... ./internal/...
 
       - name: Upload Gosec SARIF file
         uses: github/codeql-action/upload-sarif@v3
         with:
+          args: -fmt sarif -out /github/workspace/results.sarif ./cmd/... ./internal/...
           sarif_file: results.sarif
 
   secret-scan:
