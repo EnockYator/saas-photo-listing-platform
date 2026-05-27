@@ -12,7 +12,7 @@ import (
 func Ready(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		ctx, cancel := context.WithTimeout(r.Context(), 2 * time.Second)
+		ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
 		defer cancel()
 
 		if err := db.PingContext(ctx); err != nil {

@@ -15,13 +15,13 @@ import (
 
 type Server struct {
 	cfg *config.Config
-	db *sql.DB
+	db  *sql.DB
 }
 
 func NewServer(cfg *config.Config, db *sql.DB) *Server {
 	return &Server{
 		cfg: cfg,
-		db: db,
+		db:  db,
 	}
 }
 
@@ -46,7 +46,6 @@ func (s *Server) Start() error {
 			s.cfg.Server.ReadTimeout,
 			s.cfg.Server.WriteTimeout,
 			s.cfg.Server.IdleTimeout,
-
 		)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			serverErr <- err
