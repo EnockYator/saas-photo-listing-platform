@@ -11,7 +11,7 @@ func Logging(next http.Handler) http.Handler {
 		start := time.Now()
 
 		next.ServeHTTP(w, r)
-        
+
 		slog.Info(
 			"request completed",
 			"method", r.Method,
