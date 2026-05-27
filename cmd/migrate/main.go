@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"log/slog"
 	"os"
 	"strconv"
 
@@ -64,6 +65,6 @@ func main() {
 		log.Printf("forced migration version to %d\n", version)
 
 	default:
-		log.Fatalf("unknown command: %v", command)
+		slog.Error("unknown command", "command:", command)
 	}
 }
