@@ -88,5 +88,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          scan-path: "."
-          args:  --redact --verbose --exit-code=2
+          no-redact: false
+          report-format: sarif
+          report-name: gitleaks-results
