@@ -1,6 +1,6 @@
 module github.com/EnockYator/saas-photo-listing-platform
 
-go 1.25.0
+go 1.26.2
 
 require (
 	github.com/golang-migrate/migrate/v4 v4.19.1
