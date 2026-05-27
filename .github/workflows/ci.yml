@@ -29,9 +29,9 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: postgres # gitguardian: ignore
-          POSTGRES_PASSWORD: testpsswd # gitguardian: ignore
-          POSTGRES_DB: testdb # gitguardian: ignore
+          POSTGRES_USER: ${{secrets.TEST_DB_USER}}
+          POSTGRES_PASSWORD: ${{secrets.TEST_DB_PASSWORD}}
+          POSTGRES_DB: ${{secrets.TEST_DB_NAME}}
         ports:
           - 5432:5432
         options: >-
@@ -39,15 +39,6 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
-
-    # env:
-    #   # Database connection details for tests
-    #   DB_HOST: localhost # gitguardian: ignore
-    #   DB_PORT: 5432 # gitguardian: ignore
-    #   DB_USER: ${{ env.POSTGRES_USER }}
-    #   DB_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
-    #   DB_NAME: ${{ env.POSTGRES_DB }}
-    #   DB_SSLMODE: disable # gitguardian: ignore
 
     steps:
       - name: Checkout code
