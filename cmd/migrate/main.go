@@ -64,6 +64,6 @@ func main() {
 		log.Printf("forced migration version to %d\n", version)
 
 	default:
-		log.Fatalf("unknown command: %v", command) // #nosec G706 - CLI tool with trusted input
+		log.Fatalf("unknown command: %v", command)
 	}
 }
