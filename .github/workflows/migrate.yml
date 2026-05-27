@@ -83,15 +83,15 @@ jobs:
           docker run -d \
             --name postgres \
             --network migrate-net \
-            -e POSTGRES_USER=test \
-            -e POSTGRES_PASSWORD=test \
-            -e POSTGRES_DB=testdb \
+            -e POSTGRES_USER=${{ secrets.TEST_DB_USER }} \
+            -e POSTGRES_PASSWORD=${{ secrets.TEST_DB_PASSWORD }} \
+            -e POSTGRES_DB=${{ secrets.TEST_DB_NAME }} \
             postgres:15-alpine
 
       - name: Wait for DB
         run: |
           for i in {1..30}; do
-            if docker exec postgres pg_isready -U test; then
+            if docker exec postgres pg_isready -U ${{ secrets.TEST_DB_USER }}; then
               echo "DB ready"
               exit 0
             fi
@@ -103,13 +103,13 @@ jobs:
         run: |
           docker run --rm \
             --network migrate-net \
-            -e DATABASE_URL=postgres://test:test@postgres:5432/testdb?sslmode=disable \
+            -e DATABASE_URL=postgres://${{ secrets.TEST_DB_USER }}:${{ secrets.TEST_DB_PASSWORD }}@postgres:5432/${{ secrets.TEST_DB_NAME }}?sslmode=disable \
             ${IMAGE} \
             migrate up
 
       - name: Verify migration success
         run: |
-          docker exec postgres psql -U test -d testdb -c "\dt"
+          docker exec postgres psql -U ${{ secrets.TEST_DB_USER }} -d ${{ secrets.TEST_DB_NAME }} -c "\dt"
 
       - name: Run production migrations (UP)
         run: |
