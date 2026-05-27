@@ -55,9 +55,15 @@ jobs:
 
       - name: Check gofmt
         run: |
-          UNFORMATTED=$(gofmt -l .)
+          UNFORMATTED=$(find . -name '*.go' -type f | xargs gofmt -s -l)
+
           if [ -n "$UNFORMATTED" ]; then
             echo "❌ Files not formatted:"
             echo "$UNFORMATTED"
+            echo ""
+            echo "Run locally:"
+            echo "gofmt -s -w ."
             exit 1
           fi
+
+          echo "✅ All files properly formatted"
