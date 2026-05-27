@@ -15,8 +15,12 @@ on:
 permissions:
   contents: read
 
+# Referencing env variables that are set a runtime
 env:
   GO_VERSION: '1.25.0'
+  POSTGRES_USER: ${{ env.TEST_DB_USER }}
+  POSTGRES_PASSWORD: ${{ env.TEST_DB_PASSWORD }}
+  POSTGRES_DB: ${{ env.TEST_DB_NAME }}
 
 jobs:
   test:
@@ -28,10 +32,10 @@ jobs:
     services:
       postgres:
         image: postgres:16-alpine
-        env:
-          POSTGRES_USER: postgres # gitguardian: ignore
-          POSTGRES_PASSWORD: testdb # gitguardian: ignore
-          POSTGRES_DB: test_db # gitguardian: ignore
+      env:
+        TEST_DB_USER: ${{ secrets.TEST_POSTGRES_USER }}
+        TEST_DB_PASSWORD: ${{ secrets.TEST_POSTGRES_PASSWORD }}
+        TEST_DB_NAME: ${{ secrets.TEST_POSTGRES_DB }}
         ports:
           - 5432:5432
         options: >-
