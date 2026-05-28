@@ -68,8 +68,8 @@ jobs:
         run: ls -lah results.sarif
 
       - name: Upload SARIF to GitHub Security tab
-        if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        if: always() && hashFiles('results.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3.27.0
         with:
           sarif_file: results.sarif
           category: gosec
