@@ -26,28 +26,31 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
+    outputs:
+      digest: ${{ steps.export.outputs.digest }}
+      image: ${{ steps.export.outputs.image }}
+      docker_build_run_id: ${{ steps.export.outputs.docker_build_run_id }}
 
     steps:
-      # Get the Docker Build run ID from the triggering workflow
-      - name: Get Docker Build run ID
-      # The workflow_run event provides the run ID of the triggering workflow
-        run: |
-          DOCKER_BUILD_RUN_ID=${{ github.event.workflow_run.id }}
-          echo "DOCKER_BUILD_RUN_ID=$DOCKER_BUILD_RUN_ID" >> $GITHUB_ENV
-          echo "Downloading artifacts from Docker Build run: $DOCKER_BUILD_RUN_ID"
-
       # Download image-metadata artifact from Docker Build workflow
       - name: Download image metadata artifact
         uses: actions/download-artifact@v4
         with:
           name: image-metadata
           path: .
-          run-id: ${{ env.DOCKER_BUILD_RUN_ID }}  # Docker Build's run_id
-          github-token: ${{ secrets.GITHUB_TOKEN }}  # For cross-workflow access
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       # Load immutable image metadata
       - name: Load image metadata
+        id: export
         run: |
+          if [ ! -f digest.txt ] || [ ! -f image.txt ] || [ ! -f docker_build_run_id.txt ]; then
+            echo "❌ Missing required artifact files"
+            ls -la
+            exit 1
+          fi
+
           DIGEST="$(cat digest.txt | tr -d '\n')"
           if [ -z "$DIGEST" ]; then
             echo "❌ Missing image digest artifact"
@@ -60,11 +63,23 @@ jobs:
             exit 1
           fi
 
+          DOCKER_BUILD_RUN_ID="$(cat docker_build_run_id.txt | tr -d '\n')"
+          if [ -z "$DOCKER_BUILD_RUN_ID" ]; then
+            echo "❌ Missing docker build run ID artifact"
+            exit 1
+          fi
+
           echo "DIGEST=$DIGEST" >> $GITHUB_ENV
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+          echo "DOCKER_BUILD_RUN_ID=$DOCKER_BUILD_RUN_ID" >> $GITHUB_ENV
+
+          echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
+          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+          echo "docker_build_run_id=${DOCKER_BUILD_RUN_ID}" >> $GITHUB_OUTPUT
 
           echo "Using image: $IMAGE"
           echo "Using digest: $DIGEST"
+          echo "Using docker_build_run_id: $DOCKER_BUILD_RUN_ID"
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -73,27 +88,27 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-
       - name: Pull built image
         run: |
-          echo "Pulling image: $IMAGE"
-          docker pull $IMAGE
+          echo "Pulling image: ${IMAGE}"
+          docker pull "${IMAGE}"
 
       - name: Start temporary Postgres
         run: |
-          docker network create migrate-net || true
+          docker network create migrate-net 2>/dev/null || true
+          docker rm -f postgres 2>/dev/null || true
           docker run -d \
             --name postgres \
             --network migrate-net \
-            -e POSTGRES_USER=${{ secrets.TEST_DB_USER }} \
-            -e POSTGRES_PASSWORD=${{ secrets.TEST_DB_PASSWORD }} \
-            -e POSTGRES_DB=${{ secrets.TEST_DB_NAME }} \
+            -e POSTGRES_USER="${{ secrets.TEST_DB_USER }}" \
+            -e POSTGRES_PASSWORD="${{ secrets.TEST_DB_PASSWORD }}" \
+            -e POSTGRES_DB="${{ secrets.TEST_DB_NAME }}" \
             postgres:15-alpine
 
       - name: Wait for DB
         run: |
           for i in {1..30}; do
-            if docker exec postgres pg_isready -U ${{ secrets.TEST_DB_USER }}; then
+            if docker exec postgres pg_isready -U "${{ secrets.TEST_DB_USER }}"; then
               echo "DB ready"
               exit 0
             fi
@@ -102,23 +117,27 @@ jobs:
           exit 1
 
       - name: Run test migrations (UP)
+        id: test-migrations
         run: |
           docker run --rm \
             --network migrate-net \
-            -e DATABASE_URL=postgres://${{ secrets.TEST_DB_USER }}:${{ secrets.TEST_DB_PASSWORD }}@postgres:5432/${{ secrets.TEST_DB_NAME }}?sslmode=disable \
-            ${IMAGE} \
+            -e "DATABASE_URL=postgres://${{ secrets.TEST_DB_USER }}:${{ secrets.TEST_DB_PASSWORD }}@postgres:5432/${{ secrets.TEST_DB_NAME }}?sslmode=disable" \
+            "${IMAGE}" \
             migrate up
 
       - name: Verify migration success
         run: |
-          docker exec postgres psql -U ${{ secrets.TEST_DB_USER }} -d ${{ secrets.TEST_DB_NAME }} -c "\dt"
+          docker exec postgres psql -U "${{ secrets.TEST_DB_USER }}" -d "${{ secrets.TEST_DB_NAME }}" -c "\dt"
 
       - name: Run staging/production migrations (UP)
+        if: steps.test-migrations.outcome == 'success'
         run: |
           docker run --rm \
-            -e DATABASE_URL=${{ secrets.DB_URL }} \
-            ${IMAGE} \
+            -e DATABASE_URL \
+            "${IMAGE}" \
             migrate up
+        env:
+          DATABASE_URL: ${{ secrets.DB_URL }}
 
       - name: Cleanup
         if: always()
