@@ -95,7 +95,7 @@ jobs:
 
           # Create a temporary file to avoid exposing secrets in command line
           env_vars_file=$(mktemp)
-          
+
           cat > "$env_vars_file" << 'EOF'
           [
             {"key": "DB_HOST", "value": "${{ secrets.DB_HOST }}"},
@@ -129,14 +129,14 @@ jobs:
           jq -c '.[]' "$env_vars_file" | while read -r env_var; do
             key=$(echo "$env_var" | jq -r '.key')
             value=$(echo "$env_var" | jq -r '.value')
-            
+
             response=$(curl -s -w "%{http_code}" -X PUT \
               "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/env-vars/${key}" \
               -H "accept: application/json" \
               -H "authorization: Bearer ${RENDER_API_KEY}" \
               -H "content-type: application/json" \
               -d "{\"value\": \"${value}\"}")
-            
+
             http_code=${response: -3}
             if [ "$http_code" != "200" ]; then
               echo "❌ Failed to update env var $key (HTTP $http_code)"
@@ -150,7 +150,7 @@ jobs:
             -H "authorization: Bearer ${RENDER_API_KEY}" \
             -H "content-type: application/json" \
             -d "{\"value\": \"${RENDER_SERVICE_ID}\"}"
-          
+
           rm -f "$env_vars_file"
 
       # ----------------------------
@@ -227,7 +227,7 @@ jobs:
           if ! curl -f "https://${DOMAIN}/health"; then
             echo "⚠️ health endpoint missing"
           fi
-          
+
           if ! curl -f "https://${DOMAIN}/version"; then
             echo "⚠️ version endpoint missing"
           fi

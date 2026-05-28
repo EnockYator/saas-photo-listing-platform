@@ -87,7 +87,7 @@ jobs:
         id: export
         run: |
           IMAGE_WITH_TAG="${{ env.REGISTRY }}/${{ github.repository }}/app:${{ github.sha }}"
-          
+
           DIGEST=$(docker buildx imagetools inspect \
             "${IMAGE_WITH_TAG}" \
             --format '{{json .Manifest.Digest}}' | tr -d '"')
@@ -98,7 +98,7 @@ jobs:
           fi
 
           IMAGE="${{ env.REGISTRY }}/${{ github.repository }}/app@${DIGEST}"
-          
+
           DOCKER_BUILD_RUN_ID=${{ github.run_id }}
 
           echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
