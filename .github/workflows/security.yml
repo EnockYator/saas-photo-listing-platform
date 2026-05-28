@@ -67,12 +67,12 @@ jobs:
       - name: Verify SARIF file exists
         run: ls -lah results.sarif
 
-      - name: Upload SARIF to GitHub Security tab
+      - name: Upload SARIF as artifact (if CodeQL down)
         if: always() && hashFiles('results.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v3.27.0
+        uses: actions/upload-artifact@v4
         with:
-          sarif_file: results.sarif
-          category: gosec
+          name: gosec-results
+          path: results.sarif
 
   secret-scan:
     name: Secret Detection
