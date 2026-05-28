@@ -69,13 +69,11 @@ jobs:
 
       - name: Upload SARIF to GitHub Security tab
         if: always() && hashFiles('results.sarif') != ''
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh api repos/${{ github.repository }}/code-scanning/sarifs \
-            -f sarif=@results.sarif \
-            -f commit_sha=${{ github.sha }} \
-            -f ref=${{ github.ref }}
+        uses: github/codeql-action/upload-sarif@v3.27.0
+        with:
+          sarif_file: results.sarif
+          category: gosec
+        continue-on-error: true
 
   secret-scan:
     name: Secret Detection
