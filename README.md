@@ -1,8 +1,8 @@
 # Saas Photo Listing Platform
 
-[![Go Version](https://img.shields.io/badge/Go-1.23.0-00ADD8?style=flat&logo=go)](https://go.dev/) | 
-[![Docker](https://img.shields.io/badge/Docker-✓-2496ED?style=flat&logo=docker)](https://www.docker.com/) | 
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE) | 
+[![Go Version](https://img.shields.io/badge/Go-1.23.0-00ADD8?style=flat&logo=go)](https://go.dev/) 
+[![Docker](https://img.shields.io/badge/Docker-✓-2496ED?style=flat&logo=docker)](https://www.docker.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/YOUR_USERNAME/YOUR_REPO)](https://github.com/YOUR_USERNAME/YOUR_REPO/releases)
 
 ## CI/CD Pipeline
