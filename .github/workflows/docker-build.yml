@@ -21,7 +21,6 @@ permissions:
 env:
   GO_VERSION: "1.23.0"
   REGISTRY: ghcr.io
-  IMAGE_NAME: ghcr.io/${{ github.repository }}/app
 
 jobs:
   build:
@@ -52,7 +51,11 @@ jobs:
         run: sqlc generate
 
       - name: Ensure clean generated state
-        run: git diff --exit-code
+        run: |
+          if ! git diff --exit-code; then
+            echo "❌ Uncommitted changes after sqlc generation. Please run 'sqlc generate' locally and commit the changes.";
+            exit 1;
+          fi
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -72,19 +75,21 @@ jobs:
           file: ./Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/app:${{ github.sha }}
           provenance: true
           sbom: true
           build-args: |
             VERSION=${{ github.sha }}
-            BUILD_TIME=${{ github.event.repository.updated_at }}
+            BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
             GO_VERSION=${{ env.GO_VERSION }}
 
       - name: Resolve image digest
         id: export
         run: |
+          IMAGE_WITH_TAG="${{ env.REGISTRY }}/${{ github.repository }}/app:${{ github.sha }}"
+          
           DIGEST=$(docker buildx imagetools inspect \
-            ${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            "${IMAGE_WITH_TAG}" \
             --format '{{json .Manifest.Digest}}' | tr -d '"')
 
           if [ -z "$DIGEST" ]; then
@@ -92,14 +97,15 @@ jobs:
             exit 1
           fi
 
-          IMAGE=${{ env.IMAGE_NAME }}@${DIGEST}
+          IMAGE="${{ env.REGISTRY }}/${{ github.repository }}/app@${DIGEST}"
+          
           DOCKER_BUILD_RUN_ID=${{ github.run_id }}
 
           echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
           echo "docker_build_run_id=${DOCKER_BUILD_RUN_ID}" >> $GITHUB_OUTPUT
 
-          # persist data for downstream jobs
+          # persist data for downstream job
           echo "${DIGEST}" > digest.txt
           echo "${IMAGE}" > image.txt
           echo "${DOCKER_BUILD_RUN_ID}" > docker_build_run_id.txt
@@ -120,34 +126,6 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      # Download image-metadata artifact from Docker Build workflow
-      - name: Download image metadata artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: image-metadata
-          path: .
-
-      # Load immutable image metadata (digest, image, build run_id)
-      - name: Load image metadata
-        run: |
-          DIGEST="$(cat digest.txt | tr -d '\n')"
-          if [ -z "$DIGEST" ]; then
-            echo "❌ Missing image digest artifact"
-            exit 1
-          fi
-
-          IMAGE="$(cat image.txt | tr -d '\n')"
-          if [ -z "$IMAGE" ]; then
-            echo "❌ Missing image name artifact"
-            exit 1
-          fi
-
-          echo "DIGEST=$DIGEST" >> $GITHUB_ENV
-          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
-
-          echo "Using image: $IMAGE"
-          echo "Using digest: $DIGEST"
-
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -156,53 +134,25 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Pull image
-        run: docker pull ${IMAGE}
+        run: docker pull ${{ needs.build.outputs.image }}
 
       - name: Basic container validation (version)
         run: |
-          docker run --rm ${IMAGE} version || {
-            echo "❌ Container ${IMAGE} failed to run"
+          docker run --rm ${{ needs.build.outputs.image }} version || {
+            echo "❌ Container ${{ needs.build.outputs.image }} failed to run"
             exit 1
           }
 
   sign-images:
     name: Sign Docker Image
     runs-on: ubuntu-latest
-    needs: [build, test-image]
+    needs: [build]
 
     permissions:
       packages: write
       id-token: write   # REQUIRED for cosign OIDC
 
     steps:
-      # Download image-metadata artifact
-      - name: Download image metadata artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: image-metadata
-          path: .
-
-      # Load immutable image metadata (digest, image)
-      - name: Load image metadata
-        run: |
-          DIGEST="$(cat digest.txt | tr -d '\n')"
-          if [ -z "$DIGEST" ]; then
-            echo "❌ Missing image digest artifact"
-            exit 1
-          fi
-
-          IMAGE="$(cat image.txt | tr -d '\n')"
-          if [ -z "$IMAGE" ]; then
-            echo "❌ Missing image name artifact"
-            exit 1
-          fi
-
-          echo "DIGEST=$DIGEST" >> $GITHUB_ENV
-          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
-
-          echo "Using image: $IMAGE"
-          echo "Using digest: $DIGEST"
-
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -221,12 +171,12 @@ jobs:
         run: |
           cosign sign --yes \
             --oidc-issuer=https://token.actions.githubusercontent.com \
-            ${IMAGE}
+            ${{ needs.build.outputs.image }}
 
   cleanup:
     name: Cleanup Old Images
     runs-on: ubuntu-latest
-    needs: [build, test-image]
+    needs: [build]
     if: always() && !cancelled()
 
     steps:
@@ -244,3 +194,4 @@ jobs:
           package-type: container
           min-versions-to-keep: 10
           delete-only-untagged-versions: true
+        continue-on-error: true
