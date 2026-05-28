@@ -71,21 +71,21 @@ jobs:
         id: get-run-id
         run: |
           DEPLOY_RUN_ID=${{ github.event.workflow_run.id }}
-          
+
           DEPLOY_RUN=$(gh api repos/${{ github.repository }}/actions/runs/$DEPLOY_RUN_ID)
-          
+
           MIGRATIONS_RUN_ID=$(gh api repos/${{ github.repository }}/actions/runs/$DEPLOY_RUN_ID --jq '.event.workflow_run.id')
-          
+
           DOCKER_BUILD_RUN_ID=$(gh api repos/${{ github.repository }}/actions/runs/$MIGRATIONS_RUN_ID --jq '.event.workflow_run.id')
-          
+
           if [ -z "$DOCKER_BUILD_RUN_ID" ]; then
             echo "❌ Could not find Docker Build run ID"
             exit 1
           fi
-          
+
           echo "DOCKER_BUILD_RUN_ID=$DOCKER_BUILD_RUN_ID" >> $GITHUB_ENV
           echo "Docker Build run ID: $DOCKER_BUILD_RUN_ID"
-        
+
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
