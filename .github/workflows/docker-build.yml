@@ -46,7 +46,7 @@ jobs:
           cache: true
 
       - name: Install sqlc
-        run: go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+        run: go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0
 
       - name: Generate sqlc code
         run: sqlc generate
@@ -72,22 +72,13 @@ jobs:
           file: ./Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          tags: ${{ github.sha }}
           provenance: true
           sbom: true
           build-args: |
             VERSION=${{ github.sha }}
             BUILD_TIME=${{ github.event.repository.updated_at }}
             GO_VERSION=${{ env.GO_VERSION }}
-
-      - name: Store Docker Build run_id
-        run: |
-          echo "DOCKER_BUILD_RUN_ID=${{ github.run_id }}" >> $GITHUB_ENV
-
-      - name: Save docker run_id to repo (using gh CLI)
-        run: |
-          echo "${{ github.run_id }}" > /tmp/docker_build_run_id.txt
-          gh variable set DOCKER_BUILD_RUN_ID --body "${{ github.run_id }}"
 
       - name: Resolve image digest
         id: export
@@ -99,9 +90,9 @@ jobs:
           if [ -z "$DIGEST" ]; then
             echo "❌ Failed to retrieve image digest"
             exit 1
+          fi
 
           IMAGE=${{ env.IMAGE_NAME }}@${DIGEST}
-
           DOCKER_BUILD_RUN_ID=${{ github.run_id }}
 
           echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
@@ -113,7 +104,7 @@ jobs:
           echo "${IMAGE}" > image.txt
           echo "${DOCKER_BUILD_RUN_ID}" > docker_build_run_id.txt
 
-      - name: Upload digest artifact
+      - name: Upload image metadata artifact
         uses: actions/upload-artifact@v4
         with:
           name: image-metadata
@@ -135,9 +126,8 @@ jobs:
         with:
           name: image-metadata
           path: .
-          run-id: ${{ steps.export.outputs.docker_build_run_id }}  # Docker Build's run_id
 
-      # Load immutable image metadata (digest, image)
+      # Load immutable image metadata (digest, image, build run_id)
       - name: Load image metadata
         run: |
           DIGEST="$(cat digest.txt | tr -d '\n')"
@@ -165,16 +155,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Pull image (using name attached to digest)
+      - name: Pull image
         run: docker pull ${IMAGE}
 
-      - name: Basic container validation
+      - name: Basic container validation (version)
         run: |
-          docker run --rm ${IMAGE} version || true
-          docker run --rm ${IMAGE} --help || true
+          docker run --rm ${IMAGE} version || {
+            echo "❌ Container ${IMAGE} failed to run"
+            exit 1
+          }
 
   sign-images:
-    name: Sign Docker Image (by digest)
+    name: Sign Docker Image
     runs-on: ubuntu-latest
     needs: [build, test-image]
 
@@ -183,13 +175,12 @@ jobs:
       id-token: write   # REQUIRED for cosign OIDC
 
     steps:
-      # Download image-metadata artifact from Docker Build workflow
+      # Download image-metadata artifact
       - name: Download image metadata artifact
         uses: actions/download-artifact@v4
         with:
           name: image-metadata
           path: .
-          run-id: ${{ steps.export.outputs.docker_build_run_id }}  # Docker Build's run_id
 
       # Load immutable image metadata (digest, image)
       - name: Load image metadata
@@ -224,7 +215,7 @@ jobs:
         with:
           cosign-release: "v2.2.0"
 
-      - name: Sign image using cosign (with OIDC)
+      - name: Sign image using cosign
         env:
           COSIGN_EXPERIMENTAL: "true"
         run: |
@@ -236,7 +227,7 @@ jobs:
     name: Cleanup Old Images
     runs-on: ubuntu-latest
     needs: [build, test-image]
-    if: github.ref_name == 'main'
+    if: always() && !cancelled()
 
     steps:
       - name: Login to GHCR
