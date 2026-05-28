@@ -17,6 +17,7 @@ on:
 permissions:
   contents: read
   packages: read
+  actions: read  # Needed when downloading artifacts from another workflow run
 
 env:
   REGISTRY: ghcr.io
@@ -29,14 +30,26 @@ jobs:
     environment: production
 
     steps:
-      - name: Get stored Docker Build run_id
+      # Get the Docker Build run ID from the triggering workflow
+      # Get the run ID from the upstream Docker Build workflow
+      - name: Get Docker Build run ID
+        id: get-run-id
         run: |
-          DOCKER_BUILD_RUN_ID=$(gh variable get DOCKER_BUILD_RUN_ID)
+          MIGRATIONS_RUN_ID=${{ github.event.workflow_run.id }}
+          
+          MIGRATIONS_RUN=$(gh api repos/${{ github.repository }}/actions/runs/$MIGRATIONS_RUN_ID)
+          
+          DOCKER_BUILD_RUN_ID=$(gh api repos/${{ github.repository }}/actions/runs/$MIGRATIONS_RUN_ID --jq '.event.workflow_run.id')
+          
           if [ -z "$DOCKER_BUILD_RUN_ID" ]; then
-            echo "❌ Missing DOCKER_BUILD_RUN_ID variable"
+            echo "❌ Could not find Docker Build run ID"
             exit 1
           fi
+          
           echo "DOCKER_BUILD_RUN_ID=$DOCKER_BUILD_RUN_ID" >> $GITHUB_ENV
+          echo "Docker Build run ID: $DOCKER_BUILD_RUN_ID"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Download image-metadata artifact from Docker Build workflow
       - name: Download image metadata artifact
@@ -44,7 +57,8 @@ jobs:
         with:
           name: image-metadata
           path: .
-          run-id: ${{ DOCKER_BUILD_RUN_ID }}  # Docker Build's run_id
+          run-id: ${{ env.DOCKER_BUILD_RUN_ID }}  # Docker Build's run_id
+          github-token: ${{ secrets.GITHUB_TOKEN }}  # For cross-workflow access
 
       # Load immutable image metadata (digest, image)
       - name: Load image metadata
@@ -61,15 +75,8 @@ jobs:
             exit 1
           fi
 
-          DOCKER_BUILD_RUN_ID="$(cat docker_build_run_id.txt | tr -d '\n')"
-          if [ -z "$DOCKER_BUILD_RUN_ID" ]; then
-            echo "❌ Missing Docker Build run_id artifact"
-            exit 1
-          fi
-
           echo "DIGEST=$DIGEST" >> $GITHUB_ENV
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
-          echo "DOCKER_BUILD_RUN_ID=$DOCKER_BUILD_RUN_ID" >> $GITHUB_ENV
 
           echo "Using image: $IMAGE"
           echo "Using digest: $DIGEST"
