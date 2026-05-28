@@ -19,7 +19,7 @@ permissions:
   actions: read  # For some scanners
 
 env:
-  GO_VERSION: '1.25'
+  GO_VERSION: '1.22.5'
 
 jobs:
   govulncheck:
