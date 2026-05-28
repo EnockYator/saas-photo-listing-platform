@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 env:
-  GO_VERSION: '1.25.0'
+  GO_VERSION: '1.23.0'
 
 jobs:
   test:
@@ -29,13 +29,13 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: ${{ secrets.TEST_DB_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.TEST_DB_NAME }}
+          POSTGRES_USER: postgres  # Default postgres user
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: testdb
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U ${{ secrets.TEST_DB_USER }}"
+          --health-cmd="pg_isready -U postgres"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -53,7 +53,7 @@ jobs:
 
       - name: Wait for Postgres
         run: |
-          until pg_isready -h localhost -p 5432 -U ${{ secrets.TEST_DB_USER }}; do
+          until pg_isready -h localhost -p 5432 -U postgres; do
             echo "waiting for postgres..."
             sleep 2
           done
@@ -66,9 +66,9 @@ jobs:
 
       - name: Run tests with coverage
         env:
-          POSTGRES_USER: ${{ secrets.TEST_DB_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.TEST_DB_NAME }}
+          POSTGRES_USER: postgres  # Test credentials
+          POSTGRES_PASSWORD: postgres  # Default test credentials
+          POSTGRES_DB: testdb  # Simple test database
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
         run: |
@@ -82,8 +82,8 @@ jobs:
       - name: Generate coverage summary
         id: coverage
         run: |
-          COVERAGE=$(go tool cover -func=coverage/coverage.out | tail -1 | awk '{print $3}' | sed 's/%//')
-          echo "coverage percentage=$COVERAGE" >> $GITHUB_OUTPUT
+          COVERAGE=$(go tool cover -func=coverage/coverage.out | tail -n 1 | awk '{print $3}' | sed 's/%//')  # Fixed: tail -n 1
+          echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT  # Fixed: Output name without spaces
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
