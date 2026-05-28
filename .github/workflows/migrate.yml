@@ -24,15 +24,6 @@ jobs:
 
 
     steps:
-      - name: Get stored Docker Build run_id
-        run: |
-          DOCKER_BUILD_RUN_ID=$(gh variable get DOCKER_BUILD_RUN_ID)
-          if [ -z "$DOCKER_BUILD_RUN_ID" ]; then
-            echo "❌ Missing DOCKER_BUILD_RUN_ID variable"
-            exit 1
-          fi
-          echo "DOCKER_BUILD_RUN_ID=$DOCKER_BUILD_RUN_ID" >> $GITHUB_ENV
-
       # Download image-metadata artifact from Docker Build workflow
       - name: Download image metadata artifact
         uses: actions/download-artifact@v4
@@ -56,8 +47,15 @@ jobs:
             exit 1
           fi
 
+          DOCKER_BUILD_RUN_ID="$(cat docker_build_run_id.txt | tr -d '\n')"
+          if [ -z "$DOCKER_BUILD_RUN_ID" ]; then
+            echo "❌ Missing Docker Build run_id artifact"
+            exit 1
+          fi
+
           echo "DIGEST=$DIGEST" >> $GITHUB_ENV
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+          echo "DOCKER_BUILD_RUN_ID=$DOCKER_BUILD_RUN_ID" >> $GITHUB_ENV
 
           echo "Using image: $IMAGE"
           echo "Using digest: $DIGEST"
