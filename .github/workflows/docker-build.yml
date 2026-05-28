@@ -33,6 +33,7 @@ jobs:
     outputs:
       digest: ${{ steps.export.outputs.digest }}
       image: ${{ steps.export.outputs.image }}
+      docker_build_run_id: ${{ steps.export.outputs.docker_build_run_id }}
 
     steps:
       - name: Checkout code
@@ -101,20 +102,25 @@ jobs:
 
           IMAGE=${{ env.IMAGE_NAME }}@${DIGEST}
 
+          DOCKER_BUILD_RUN_ID=${{ github.run_id }}
+
           echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+          echo "docker_build_run_id=${DOCKER_BUILD_RUN_ID}" >> $GITHUB_OUTPUT
 
-          # persist digest for downstream jobs
+          # persist data for downstream jobs
           echo "${DIGEST}" > digest.txt
           echo "${IMAGE}" > image.txt
+          echo "${DOCKER_BUILD_RUN_ID}" > docker_build_run_id.txt
 
       - name: Upload digest artifact
         uses: actions/upload-artifact@v4
         with:
-          name: image-metadata-${{ github.run_id }}
+          name: image-metadata
           path: |
             digest.txt
             image.txt
+            docker_build_run_id.txt
 
   test-image:
     name: Test Docker Image
@@ -129,7 +135,7 @@ jobs:
         with:
           name: image-metadata
           path: .
-          run-id: ${{ DOCKER_BUILD_RUN_ID }}  # Docker Build's run_id
+          run-id: ${{ steps.export.outputs.docker_build_run_id }}  # Docker Build's run_id
 
       # Load immutable image metadata (digest, image)
       - name: Load image metadata
@@ -183,7 +189,7 @@ jobs:
         with:
           name: image-metadata
           path: .
-          run-id: ${{ DOCKER_BUILD_RUN_ID }}  # Docker Build's run_id
+          run-id: ${{ steps.export.outputs.docker_build_run_id }}  # Docker Build's run_id
 
       # Load immutable image metadata (digest, image)
       - name: Load image metadata
