@@ -29,7 +29,61 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
+    outputs:
+      digest: ${{ steps.export.outputs.digest }}
+      image: ${{ steps.export.outputs.image }}
+      docker_build_run_id: ${{ steps.export.outputs.docker_build_run_id }}
+
     steps:
+      # Download image-metadata artifact from Docker Build workflow
+      - name: Download image metadata artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: image-metadata
+          path: .
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Load immutable image metadata
+      - name: Load image metadata
+        id: export
+        run: |
+          if [ ! -f digest.txt ] || [ ! -f image.txt ] || [ ! -f docker_build_run_id.txt ]; then
+            echo "❌ Missing required artifact files"
+            ls -la
+            exit 1
+          fi
+
+          DIGEST="$(cat digest.txt | tr -d '\n')"
+          if [ -z "$DIGEST" ]; then
+            echo "❌ Missing image digest artifact"
+            exit 1
+          fi
+
+          IMAGE="$(cat image.txt | tr -d '\n')"
+          if [ -z "$IMAGE" ]; then
+            echo "❌ Missing image name artifact"
+            exit 1
+          fi
+
+          DOCKER_BUILD_RUN_ID="$(cat docker_build_run_id.txt | tr -d '\n')"
+          if [ -z "$DOCKER_BUILD_RUN_ID" ]; then
+            echo "❌ Missing docker build run ID artifact"
+            exit 1
+          fi
+
+          echo "DIGEST=$DIGEST" >> $GITHUB_ENV
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+          echo "DOCKER_BUILD_RUN_ID=$DOCKER_BUILD_RUN_ID" >> $GITHUB_ENV
+
+          echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
+          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+          echo "docker_build_run_id=${DOCKER_BUILD_RUN_ID}" >> $GITHUB_OUTPUT
+
+          echo "Using image: $IMAGE"
+          echo "Using digest: $DIGEST"
+          echo "Using docker_build_run_id: $DOCKER_BUILD_RUN_ID"
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -44,13 +98,11 @@ jobs:
             exit 1
           fi
 
-          NOTES=$(cat RELEASE_NOTES.md | tr -d '\n')
-
-          {
-            echo "notes<<EOF"
-            echo "$NOTES"
-            echo "EOF"
-          } >> $GITHUB_OUTPUT
+          # Use environment variable to safely handle multiline content
+          NOTES=$(cat RELEASE_NOTES.md)
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$NOTES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       # ----------------------------
       # Determine tag
@@ -65,59 +117,6 @@ jobs:
           fi
 
           echo "tag=$TAG" >> $GITHUB_OUTPUT
-
-
-      - name: Get Docker Build run ID
-        id: get-run-id
-        run: |
-          DEPLOY_RUN_ID=${{ github.event.workflow_run.id }}
-
-          DEPLOY_RUN=$(gh api repos/${{ github.repository }}/actions/runs/$DEPLOY_RUN_ID)
-
-          MIGRATIONS_RUN_ID=$(gh api repos/${{ github.repository }}/actions/runs/$DEPLOY_RUN_ID --jq '.event.workflow_run.id')
-
-          DOCKER_BUILD_RUN_ID=$(gh api repos/${{ github.repository }}/actions/runs/$MIGRATIONS_RUN_ID --jq '.event.workflow_run.id')
-
-          if [ -z "$DOCKER_BUILD_RUN_ID" ]; then
-            echo "❌ Could not find Docker Build run ID"
-            exit 1
-          fi
-
-          echo "DOCKER_BUILD_RUN_ID=$DOCKER_BUILD_RUN_ID" >> $GITHUB_ENV
-          echo "Docker Build run ID: $DOCKER_BUILD_RUN_ID"
-
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Download image-metadata artifact from Docker Build workflow
-      - name: Download image metadata artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: image-metadata
-          path: .
-          run-id: ${{ env.DOCKER_BUILD_RUN_ID }}  # Docker Build's run_id
-          github-token: ${{ secrets.GITHUB_TOKEN }}  # For cross-workflow access
-
-      # Load immutable image metadata (digest, image)
-      - name: Load image metadata
-        run: |
-          DIGEST="$(cat digest.txt | tr -d '\n')"
-          if [ -z "$DIGEST" ]; then
-            echo "❌ Missing image digest artifact"
-            exit 1
-          fi
-
-          IMAGE="$(cat image.txt | tr -d '\n')"
-          if [ -z "$IMAGE" ]; then
-            echo "❌ Missing image name artifact"
-            exit 1
-          fi
-
-          echo "DIGEST=$DIGEST" >> $GITHUB_ENV
-          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
-
-          echo "Using image: $IMAGE"
-          echo "Using digest: $DIGEST"
 
       # ----------------------------
       # Create GitHub Release
@@ -137,8 +136,8 @@ jobs:
             ## Deployment Info
 
             - Commit: `${{ github.sha }}`
-            - Image: `${IMAGE}`
-            - Digest: `${DIGEST}`
+            - Image: `${{ env.IMAGE }}`
+            - Digest: `${{ env.DIGEST }}`
 
           draft: false
           prerelease: false

@@ -15,12 +15,8 @@ on:
 permissions:
   contents: read
 
-# Referencing env variables that are set a runtime
 env:
   GO_VERSION: '1.25.0'
-  POSTGRES_USER: ${{ env.TEST_DB_USER }}
-  POSTGRES_PASSWORD: ${{ env.TEST_DB_PASSWORD }}
-  POSTGRES_DB: ${{ env.TEST_DB_NAME }}
 
 jobs:
   test:
@@ -32,14 +28,14 @@ jobs:
     services:
       postgres:
         image: postgres:16-alpine
-      env:
-        TEST_DB_USER: ${{ secrets.TEST_POSTGRES_USER }}
-        TEST_DB_PASSWORD: ${{ secrets.TEST_POSTGRES_PASSWORD }}
-        TEST_DB_NAME: ${{ secrets.TEST_POSTGRES_DB }}
+        env:
+          POSTGRES_USER: ${{ secrets.TEST_DB_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.TEST_DB_NAME }}
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U postgres"
+          --health-cmd="pg_isready -U ${{ secrets.TEST_DB_USER }}"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -57,7 +53,7 @@ jobs:
 
       - name: Wait for Postgres
         run: |
-          until pg_isready -h localhost -p 5432 -U postgres; do
+          until pg_isready -h localhost -p 5432 -U ${{ secrets.TEST_DB_USER }}; do
             echo "waiting for postgres..."
             sleep 2
           done
@@ -69,6 +65,12 @@ jobs:
         run: go vet ./...
 
       - name: Run tests with coverage
+        env:
+          POSTGRES_USER: ${{ secrets.TEST_DB_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.TEST_DB_NAME }}
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
         run: |
           mkdir -p coverage
           go test ./... \
