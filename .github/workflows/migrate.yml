@@ -1,3 +1,6 @@
+# This workflow runs database migrations after a successful Docker Build & Push.
+# It ensures that migrations run against the exact image that was built and tested.
+# It runs test migrations against a temporary Postgres instance before applying to staging/production.
 name: Migrations
 
 on:
@@ -11,6 +14,7 @@ on:
 permissions:
   contents: read
   packages: read
+  actions: read  # Needed when downloading artifacts from another workflow run
 
 env:
   REGISTRY: ghcr.io
@@ -24,15 +28,24 @@ jobs:
 
 
     steps:
+      # Get the Docker Build run ID from the triggering workflow
+      - name: Get Docker Build run ID
+      # The workflow_run event provides the run ID of the triggering workflow
+        run: |
+          DOCKER_BUILD_RUN_ID=${{ github.event.workflow_run.id }}
+          echo "DOCKER_BUILD_RUN_ID=$DOCKER_BUILD_RUN_ID" >> $GITHUB_ENV
+          echo "Downloading artifacts from Docker Build run: $DOCKER_BUILD_RUN_ID"
+
       # Download image-metadata artifact from Docker Build workflow
       - name: Download image metadata artifact
         uses: actions/download-artifact@v4
         with:
           name: image-metadata
-          path: /tmp/metadata
-          run-id: ${{ DOCKER_BUILD_RUN_ID }}  # Docker Build's run_id
+          path: .
+          run-id: ${{ env.DOCKER_BUILD_RUN_ID }}  # Docker Build's run_id
+          github-token: ${{ secrets.GITHUB_TOKEN }}  # For cross-workflow access
 
-      # Load immutable image metadata (digest, image)
+      # Load immutable image metadata
       - name: Load image metadata
         run: |
           DIGEST="$(cat digest.txt | tr -d '\n')"
@@ -47,15 +60,8 @@ jobs:
             exit 1
           fi
 
-          DOCKER_BUILD_RUN_ID="$(cat docker_build_run_id.txt | tr -d '\n')"
-          if [ -z "$DOCKER_BUILD_RUN_ID" ]; then
-            echo "❌ Missing Docker Build run_id artifact"
-            exit 1
-          fi
-
           echo "DIGEST=$DIGEST" >> $GITHUB_ENV
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
-          echo "DOCKER_BUILD_RUN_ID=$DOCKER_BUILD_RUN_ID" >> $GITHUB_ENV
 
           echo "Using image: $IMAGE"
           echo "Using digest: $DIGEST"
@@ -68,16 +74,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
 
-      - name: Pull built image (using digest)
+      - name: Pull built image
         run: |
           echo "Pulling image: $IMAGE"
-
           docker pull $IMAGE
 
       - name: Start temporary Postgres
         run: |
           docker network create migrate-net || true
-
           docker run -d \
             --name postgres \
             --network migrate-net \
@@ -109,7 +113,7 @@ jobs:
         run: |
           docker exec postgres psql -U ${{ secrets.TEST_DB_USER }} -d ${{ secrets.TEST_DB_NAME }} -c "\dt"
 
-      - name: Run production migrations (UP)
+      - name: Run staging/production migrations (UP)
         run: |
           docker run --rm \
             -e DATABASE_URL=${{ secrets.DB_URL }} \
