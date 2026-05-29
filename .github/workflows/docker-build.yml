@@ -89,7 +89,7 @@ jobs:
             exit 1
           fi
 
-          IMAGE="${{ env.REGISTRY }}/${{ toLower(github.repository }}/app@${DIGEST}"
+          IMAGE="${{ env.REGISTRY }}/${{ toLower(github.repository) }}/app@${DIGEST}"
 
           DOCKER_BUILD_RUN_ID=${{ github.run_id }}
 
