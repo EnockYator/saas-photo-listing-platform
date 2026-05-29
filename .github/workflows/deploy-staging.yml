@@ -10,7 +10,6 @@ on:
     workflows: ["Migrations"]
     branches: [dev]
     types: [completed]
-  workflow_dispatch:
 
 permissions:
   contents: read

@@ -1,0 +1,299 @@
+
+# SQLC Configuration File
+
+    version: "2"
+
+    sql:
+
+  ##########################################
+  # # Auth Domain
+  ##########################################
+
+    #  Users table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/domains/auth/infrastructure/repository/queries.sql"
+        gen:
+          go:
+            package: "auth_sqlc"
+            out: "internal/domains/auth/infrastructure/repository/sqlc"
+            sql_package: "pgx/v5"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+    #  Roles table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/domains/auth/infrastructure/repository/queries.sql"
+        gen:
+          go:
+            package: "auth_sqlc"
+            out: "internal/domains/auth/infrastructure/repository/sqlc"
+            sql_package: "pgx/v5"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+    #  User_roles table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/domains/auth/infrastructure/repository/queries.sql"
+        gen:
+          go:
+            package: "auth_sqlc"
+            out: "internal/domains/auth/infrastructure/repository/sqlc"
+            sql_package: "pgx/v5"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+    #  Auth_sessions table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/domains/auth/infrastructure/repository/queries.sql"
+        gen:
+          go:
+            package: "auth_sqlc"
+            out: "internal/domains/auth/infrastructure/repository/sqlc"
+            sql_package: "pgx/v5"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+
+
+
+  ##########################################
+  # # Audit Domain
+  ##########################################
+
+    #  Audit_logs table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/domains/audit/infrastructure/repository/queries.sql"
+        gen:
+          go:
+            package: "audit_sqlc"
+            out: "internal/domains/audit/infrastructure/repository/sqlc"
+            sql_package: "pgx/v5"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+    #  Usage_stats table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/domains/audit/infrastructure/repository/queries.sql"
+        gen:
+          go:
+            package: "audit_sqlc"
+            out: "internal/domains/audit/infrastructure/repository/sqlc"
+            sql_package: "pgx/v5"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+
+
+##########################################
+  # # Tenant Domain
+  ##########################################
+
+    #  Files table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/domains/tenant/infrastructure/repository/queries.sql"
+        gen:
+          go:
+            package: "tenant_sqlc"
+            out: "internal/domains/tenant/infrastructure/repository/sqlc"
+            sql_package: "pgx/v5"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+    #  Listing_photos table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/domains/tenant/infrastructure/repository/queries.sql"
+        gen:
+          go:
+            package: "tenant_sqlc"
+            out: "internal/domains/tenant/infrastructure/repository/sqlc"
+            sql_package: "pgx/v5"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+    #  Listings table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/domains/tenant/infrastructure/repository/queries.sql"
+        gen:
+          go:
+            package: "tenant_sqlc"
+            out: "internal/domains/tenant/infrastructure/repository/sqlc"
+            sql_package: "pgx/v5"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+    #  Tenant_settings table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/domains/tenant/infrastructure/repository/queries.sql"
+        gen:
+          go:
+            package: "tenant_sqlc"
+            out: "internal/domains/tenant/infrastructure/repository/sqlc"
+            sql_package: "pgx/v5"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+    #  Tenant_storage_usage table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/domains/tenant/infrastructure/repository/queries.sql"
+        gen:
+          go:
+            package: "tenant_sqlc"
+            out: "internal/domains/tenant/infrastructure/repository/sqlc"
+            sql_package: "pgx/v5"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+    #  Tenant_users table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/domains/tenant/infrastructure/repository/queries.sql"
+        gen:
+          go:
+            package: "tenant_sqlc"
+            out: "internal/domains/tenant/infrastructure/repository/sqlc"
+            sql_package: "pgx/v5"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+    #  Tenants table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/domains/tenant/infrastructure/repository/queries.sql"
+        gen:
+          go:
+            package: "tenant_sqlc"
+            out: "internal/domains/tenant/infrastructure/repository/sqlc"
+            sql_package: "pgx/v5"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+
+
+  ##########################################
+  # # Sharing Domain
+  ##########################################
+
+    #  Share_links table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/domains/sharing/infrastructure/repository/queries.sql"
+        gen:
+          go:
+            package: "sharing_sqlc"
+            out: "internal/domains/sharing/infrastructure/repository/sqlc"
+            sql_package: "pgx/v5"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+
+
+  ##########################################
+  # # Notifications Domain
+  ##########################################
+
+    #  Notifications table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/domains/notification/infrastructure/repository/queries.sql"
+        gen:
+          go:
+            package: "notifications_sqlc"
+            out: "internal/domains/notification/infrastructure/repository/sqlc"
+            sql_package: "pgx/v5"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+
+
+##########################################
+  # # Subscriptions Domain
+  ##########################################
+
+    #  Subscriptions table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/domains/subscription/infrastructure/repository/queries.sql"
+        gen:
+          go:
+            package: "subscriptions_sqlc"
+            out: "internal/domains/subscription/infrastructure/repository/sqlc"
+            sql_package: "pgx/v5"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+    #  Plans table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/domains/subscription/infrastructure/repository/queries.sql"
+        gen:
+          go:
+            package: "subscriptions_sqlc"
+            out: "internal/domains/subscription/infrastructure/repository/sqlc"
+            sql_package: "pgx/v5"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+    #  Plan_limits table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/domains/subscription/infrastructure/repository/queries.sql"
+        gen:
+          go:
+            package: "subscriptions_sqlc"
+            out: "internal/domains/subscription/infrastructure/repository/sqlc"
+            sql_package: "pgx/v5"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+
+
+  ##########################################
+  # # Payments Domain
+  ##########################################
+
+    #  Payments table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/domains/payment/infrastructure/repository/queries.sql"
+        gen:
+          go:
+            package: "payments_sqlc"
+            out: "internal/domains/payment/infrastructure/repository/sqlc"
+            sql_package: "pgx/v5"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+    #  Invoices table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/domains/payment/infrastructure/repository/queries.sql"
+        gen:
+          go:
+            package: "payments_sqlc"
+            out: "internal/domains/payment/infrastructure/repository/sqlc"
+            sql_package: "pgx/v5"
+            emit_json_tags: true
+            emit_prepared_queries: true
+
+    #  Refunds table
+      - engine: "postgresql"
+        schema: "internal/infrastructure/database/postgres/migrations/*.sql"
+        queries: "internal/domains/payment/infrastructure/repository/queries.sql"
+        gen:
+          go:
+            package: "payments_sqlc"
+            out: "internal/domains/payment/infrastructure/repository/sqlc"
+            sql_package: "pgx/v5"
+            emit_json_tags: true
+            emit_prepared_queries: true

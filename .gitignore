@@ -38,6 +38,7 @@ logs/
 
 # Config files
 *.yaml
+!sqlc.yaml
 
 # IDEs and editors
 .idea/

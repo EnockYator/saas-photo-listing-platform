@@ -8,11 +8,17 @@
 name: Docker Build & Push
 
 on:
-  workflow_run:
-    workflows: ["CI", "Lint", "Security Scan"]
-    branches: [main, dev]
-    types: [completed]
-  workflow_dispatch:
+  workflow_call: # Called by CI
+    outputs:
+      digest:
+        description: "Image digest"
+        value: ${{ jobs.build.outputs.digest }}
+      image:
+        description: "Full image reference (with digest)"
+        value: ${{ jobs.build.outputs.image }}
+      docker_build_run_id:
+        description: "Run ID of the docker build workflow"
+        value: ${{ jobs.build.outputs.docker_build_run_id }}
 
 permissions:
   contents: read
@@ -25,7 +31,6 @@ env:
 jobs:
   build:
     name: Build & Push Image
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -43,19 +48,6 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
           cache: true
-
-      - name: Install sqlc
-        run: go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0
-
-      - name: Generate sqlc code
-        run: sqlc generate
-
-      - name: Ensure clean generated state
-        run: |
-          if ! git diff --exit-code; then
-            echo "❌ Uncommitted changes after sqlc generation. Please run 'sqlc generate' locally and commit the changes.";
-            exit 1;
-          fi
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -75,7 +67,7 @@ jobs:
           file: ./Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ${{ env.REGISTRY }}/${{ github.repository }}/app:${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ toLower(github.repository) }}/app:${{ github.sha }}
           provenance: true
           sbom: true
           build-args: |
@@ -86,7 +78,7 @@ jobs:
       - name: Resolve image digest
         id: export
         run: |
-          IMAGE_WITH_TAG="${{ env.REGISTRY }}/${{ github.repository }}/app:${{ github.sha }}"
+          IMAGE_WITH_TAG="${{ env.REGISTRY }}/${{ toLower(github.repository) }}/app:${{ github.sha }}"
 
           DIGEST=$(docker buildx imagetools inspect \
             "${IMAGE_WITH_TAG}" \
@@ -97,7 +89,7 @@ jobs:
             exit 1
           fi
 
-          IMAGE="${{ env.REGISTRY }}/${{ github.repository }}/app@${DIGEST}"
+          IMAGE="${{ env.REGISTRY }}/${{ toLower(github.repository) }}/app@${DIGEST}"
 
           DOCKER_BUILD_RUN_ID=${{ github.run_id }}
 
@@ -190,7 +182,7 @@ jobs:
       - name: Delete old image versions
         uses: actions/delete-package-versions@v5
         with:
-          package-name: ${{ github.repository }}/app
+          package-name: ${{ toLower(github.repository) }}/app
           package-type: container
           min-versions-to-keep: 10
           delete-only-untagged-versions: true

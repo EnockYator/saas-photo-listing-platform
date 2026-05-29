@@ -11,7 +11,6 @@ on:
     workflows: ["Migrations"]
     branches: [main]
     types: [completed]
-  workflow_dispatch:
 
 permissions:
   contents: read
