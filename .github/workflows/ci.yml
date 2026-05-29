@@ -108,4 +108,4 @@ jobs:
     needs: [test]               # Wait for the main test job
     if: success()               # Only run if 'test' succeeded
     uses: ./.github/workflows/docker-build.yml
-    secrets: inherit 
+    secrets: inherit
