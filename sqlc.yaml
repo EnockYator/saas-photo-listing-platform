@@ -4,11 +4,11 @@
     version: "2"
 
     sql:
-  
+
   ##########################################
   # # Auth Domain
   ##########################################
-  
+
     #  Users table
       - engine: "postgresql"
         schema: "internal/infrastructure/database/postgres/migrations/*.sql"
@@ -57,13 +57,13 @@
             emit_json_tags: true
             emit_prepared_queries: true
 
-  
-  
-  
+
+
+
   ##########################################
   # # Audit Domain
   ##########################################
-  
+
     #  Audit_logs table
       - engine: "postgresql"
         schema: "internal/infrastructure/database/postgres/migrations/*.sql"
@@ -93,7 +93,7 @@
 ##########################################
   # # Tenant Domain
   ##########################################
-  
+
     #  Files table
       - engine: "postgresql"
         schema: "internal/infrastructure/database/postgres/migrations/*.sql"
@@ -141,7 +141,7 @@
             sql_package: "pgx/v5"
             emit_json_tags: true
             emit_prepared_queries: true
-    
+
     #  Tenant_storage_usage table
       - engine: "postgresql"
         schema: "internal/infrastructure/database/postgres/migrations/*.sql"
@@ -153,7 +153,7 @@
             sql_package: "pgx/v5"
             emit_json_tags: true
             emit_prepared_queries: true
-    
+
     #  Tenant_users table
       - engine: "postgresql"
         schema: "internal/infrastructure/database/postgres/migrations/*.sql"
@@ -165,7 +165,7 @@
             sql_package: "pgx/v5"
             emit_json_tags: true
             emit_prepared_queries: true
-    
+
     #  Tenants table
       - engine: "postgresql"
         schema: "internal/infrastructure/database/postgres/migrations/*.sql"
@@ -177,13 +177,13 @@
             sql_package: "pgx/v5"
             emit_json_tags: true
             emit_prepared_queries: true
-  
+
 
 
   ##########################################
   # # Sharing Domain
   ##########################################
-  
+
     #  Share_links table
       - engine: "postgresql"
         schema: "internal/infrastructure/database/postgres/migrations/*.sql"
@@ -201,7 +201,7 @@
   ##########################################
   # # Notifications Domain
   ##########################################
-  
+
     #  Notifications table
       - engine: "postgresql"
         schema: "internal/infrastructure/database/postgres/migrations/*.sql"
@@ -219,7 +219,7 @@
 ##########################################
   # # Subscriptions Domain
   ##########################################
-  
+
     #  Subscriptions table
       - engine: "postgresql"
         schema: "internal/infrastructure/database/postgres/migrations/*.sql"
@@ -261,7 +261,7 @@
   ##########################################
   # # Payments Domain
   ##########################################
-  
+
     #  Payments table
       - engine: "postgresql"
         schema: "internal/infrastructure/database/postgres/migrations/*.sql"
