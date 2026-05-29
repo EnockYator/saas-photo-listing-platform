@@ -8,7 +8,7 @@
 name: Docker Build & Push
 
 on:
-  workflow_call: # Called by CI, Lint, and Security Scan
+  workflow_call: # Called by CI
     outputs:
       digest:
         description: "Image digest"
@@ -48,19 +48,6 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
           cache: true
-
-      - name: Install sqlc
-        run: go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0
-
-      - name: Generate sqlc code
-        run: sqlc generate
-
-      - name: Ensure clean generated state
-        run: |
-          if ! git diff --exit-code; then
-            echo "❌ Uncommitted changes after sqlc generation. Please run 'sqlc generate' locally and commit the changes.";
-            exit 1;
-          fi
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
