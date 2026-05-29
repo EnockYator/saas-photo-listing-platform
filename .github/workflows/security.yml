@@ -98,6 +98,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          config: default          # Use built-in rules
           no-redact: false
           report-format: sarif
-          report-name: gitleaks-results
+          report-name: gitleaks-results.sarif
