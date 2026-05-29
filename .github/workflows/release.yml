@@ -14,7 +14,7 @@ permissions:
   actions: read  # Needed when downloading artifacts from another workflow run
 
 env:
-  IMAGE_NAME: ghcr.io/${{ toLower(github.repository) }}/app
+  IMAGE_NAME: ghcr.io/${{ github.repository,, }}
 
 jobs:
   release:
