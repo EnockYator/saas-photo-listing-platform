@@ -14,6 +14,8 @@ on:
 
 permissions:
   contents: read
+  packages: write   # Required by called workflow docker-build.yml
+  id-token: write   # Required by cosign signing inside docker-build.yml
 
 env:
   GO_VERSION: '1.25.0'
