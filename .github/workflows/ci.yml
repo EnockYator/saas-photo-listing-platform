@@ -102,3 +102,10 @@ jobs:
       - name: Build Migrate
         run: |
           go build -o bin/migrate ./cmd/migrate/
+
+  call-docker-build:
+    name: Build Docker Image
+    needs: [test]               # Wait for the main test job
+    if: success()               # Only run if 'test' succeeded
+    uses: ./.github/workflows/docker-build.yml
+    secrets: inherit 
