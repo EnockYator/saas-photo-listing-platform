@@ -19,7 +19,6 @@ on:
       docker_build_run_id:
         description: "Run ID of the docker build workflow"
         value: ${{ jobs.build.outputs.docker_build_run_id }}
-  workflow_dispatch: # Manual trigger
 
 permissions:
   contents: read
