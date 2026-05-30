@@ -59,13 +59,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Convert repository name to lowercase
-        id: lowercase
-        run: |
-          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          echo "repo_lower=${REPO_LOWER}" >> $GITHUB_OUTPUT
-          echo "REPO_LOWER=${REPO_LOWER}" >>$GITHUB_ENV
-
       - name: Build and push Docker image
         id: build
         uses: docker/build-push-action@v5
@@ -74,7 +67,7 @@ jobs:
           file: ./Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ${{ env.REGISTRY }}/${{ steps.lowercase.outputs.repo_lower }}:${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ github.repository.toLowerCase() }}:${{ github.sha }}
           provenance: true
           sbom: true
           build-args: |
@@ -85,7 +78,7 @@ jobs:
       - name: Resolve image digest
         id: export
         run: |
-          IMAGE_WITH_TAG="${{ env.REGISTRY }}/${{ steps.lowercase.outputs.repo_lower }}:${{ github.sha }}"
+          IMAGE_WITH_TAG="${{ env.REGISTRY }}/${{ github.repository.toLowerCase() }}:${{ github.sha }}"
 
           DIGEST=$(docker buildx imagetools inspect \
             "${IMAGE_WITH_TAG}" \
@@ -96,7 +89,7 @@ jobs:
             exit 1
           fi
 
-          IMAGE="${{ env.REGISTRY }}/${{ steps.lowercase.outputs.repo_lower }}@${DIGEST}"
+          IMAGE="${{ env.REGISTRY }}/${{ github.repository.toLowerCase() }}@${DIGEST}"
 
           DOCKER_BUILD_RUN_ID=${{ github.run_id }}
 
@@ -189,7 +182,7 @@ jobs:
       - name: Delete old image versions
         uses: actions/delete-package-versions@v5
         with:
-          package-name: ${{ needs.build.outputs.repo_lower }}
+          package-name: ${{ github.repository.toLowerCase() }}
           package-type: container
           min-versions-to-keep: 10
           delete-only-untagged-versions: true
