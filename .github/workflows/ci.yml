@@ -99,7 +99,7 @@ jobs:
       - name: Build API
         run: |
           mkdir -p bin
-          go build -o bin/api ./cmd/api/
+          go build -o bin/api ./cmd/app/
 
       - name: Build Migrate
         run: |
