@@ -1,20 +1,25 @@
-version: '3.8'
-
 # Staging configuration - mirrors production but with staging-specific overrides
+
 services:
   app:
     build:
-      target: staging
+      context: ../../
+      dockerfile: Dockerfile
       args:
-        - APP_ENV=staging
-    image: ${REGISTRY:-ghcr.io}/${NAMESPACE:-username}/${PROJECT_NAME:-app}:staging-${GIT_COMMIT:-latest}
+        - APP_ENV=${APP_ENV}
+    image: ${REGISTRY:-ghcr.io}/${NAMESPACE:-username}/${PROJECT_NAME}:${TAG:-latest}
+    restart: unless-stopped
     environment:
-      - APP_ENV=staging
-      - LOG_LEVEL=info
-      - SENTRY_ENVIRONMENT=staging
-    ports:
-      - "3000:3000"
-    restart: always
+      - APP_ENV=${APP_ENV:-development}
+      - DB_URL=${DB_URL}
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     logging:
       driver: "json-file"
       options:
@@ -25,11 +30,11 @@ services:
       replicas: 1  # Single replica for staging
       resources:
         limits:
-          memory: 1G
-          cpus: '0.75'
+          memory: ${MEMORY_LIMIT}
+          cpus: '${CPU_LIMIT}'
         reservations:
-          memory: 512M
-          cpus: '0.5'
+          memory: ${MEMORY_LIMIT}
+          cpus: '${CPU_LIMIT}'
       update_config:
         parallelism: 1
         delay: 10s
@@ -41,25 +46,28 @@ services:
         window: 120s
 
   postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
     volumes:
-      - postgres_staging_data:/var/lib/postgresql/data
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-          cpus: '0.5'
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
 
-  redis:
-    volumes:
-      - redis_staging_data:/data
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-          cpus: '0.25'
 
 volumes:
-  postgres_staging_data:
-    name: ${PROJECT_NAME:-app}_postgres_staging
-  redis_staging_data:
-    name: ${PROJECT_NAME:-app}_redis_staging
+  postgres_data:
+    name: ${PROJECT_NAME}_postgres_data
+
+networks:
+  app-network:
+    name: ${PROJECT_NAME}_network
+    driver: bridge

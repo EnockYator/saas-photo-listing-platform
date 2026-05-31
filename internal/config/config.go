@@ -65,10 +65,13 @@ func getDurationEnv(key string, defaultValue time.Duration) time.Duration {
 }
 
 func Load() *Config {
-	// load .env file
-	if err := godotenv.Load(".env.development", ".env.production", ".env.staging"); err != nil {
-		log.Println("No .env file found, using system environment variables")
+	// ONLY load dotenv in local development
+	if os.Getenv("APP_ENV") == "" || os.Getenv("APP_ENV") == "development" {
+		if err := godotenv.Load(".env.development"); err != nil {
+			log.Println("No .env file found, using system environment variables")
+		}
 	}
+
 	return &Config{
 		Env: getEnv("APP_ENV", "production"),
 		Server: ServerConfig{
