@@ -101,10 +101,6 @@ jobs:
           mkdir -p bin
           go build -o bin/api ./cmd/app/
 
-      - name: Build Migrate
-        run: |
-          go build -o bin/migrate ./cmd/migrate/
-
   call-docker-build:
     name: Build Docker Image
     needs: [test]               # Wait for the main test job
