@@ -2,41 +2,33 @@
 ############################
 # 1. Builder stage
 ############################
-FROM golang:1.23-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
-WORKDIR /app
+WORKDIR /build
 
-# System deps (for migrations and git-based versioning)
-RUN apk add --no-cache git ca-certificates
-
-# Dependencies first (better caching)
+# Dependencies
 COPY go.mod go.sum ./
 RUN go mod download
 
 # Copy full source code
 COPY . .
 
-# Build single binary with CLI support (api + migrate)
+# Build single binary with CLI support
 RUN CGO_ENABLED=0 \
     GOOS=linux \
     GOARCH=amd64 \
-    go build -o app ./cmd/api
+    go build -o app ./cmd/app
 
 ############################
-# 2. Runtime stage
+# 2. Runtime stage (distroless)
 ############################
+
 FROM alpine:3.20
-
-RUN apk add --no-cache ca-certificates
 
 WORKDIR /app
 
 # Copy binary only
-COPY --from=builder /app/app .
-
-# Copy migrations
-COPY --from=builder /app/internal/infrastructure/database/postgres/migrations \
-    ./internal/infrastructure/database/postgres/migrations
+COPY --from=builder /build/app .
 
 # Non-root user (security best practice)
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
@@ -47,6 +39,3 @@ EXPOSE 8080
 
 # Default entrypoint
 ENTRYPOINT ["./app"]
-
-# Default command (API mode)
-CMD ["api"]

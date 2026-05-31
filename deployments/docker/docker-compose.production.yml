@@ -1,167 +1,73 @@
-version: '3.8'
+# Staging configuration - mirrors production but with staging-specific overrides
 
-# Production configuration - high availability, security, monitoring
 services:
   app:
     build:
-      target: production
+      context: ../../
+      dockerfile: Dockerfile
       args:
-        - NODE_ENV=production
-    image: ${REGISTRY:-ghcr.io}/${NAMESPACE:-username}/${PROJECT_NAME:-app}:${TAG:-latest}
+        - APP_ENV=${APP_ENV}
+    image: ${REGISTRY:-ghcr.io}/${NAMESPACE:-username}/${PROJECT_NAME}:${TAG:-latest}
+    restart: unless-stopped
     environment:
-      - NODE_ENV=production
-      - LOG_LEVEL=warn
-      - SENTRY_ENVIRONMENT=production
-    ports:
-      - "3000:3000"
-    restart: always
+      - APP_ENV=${APP_ENV:-development}
+      - DB_URL=${DB_URL}
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     logging:
       driver: "json-file"
       options:
-        max-size: "100m"
-        max-file: "10"
-        compress: "true"
+        max-size: "50m"
+        max-file: "5"
     deploy:
       mode: replicated
-      replicas: ${REPLICAS:-3}
+      replicas: 1  # Single replica for staging
       resources:
         limits:
-          memory: ${PROD_MEMORY_LIMIT:-2G}
-          cpus: '${PROD_CPU_LIMIT:-1.5}'
+          memory: ${MEMORY_LIMIT}
+          cpus: '${CPU_LIMIT}'
         reservations:
-          memory: ${PROD_MEMORY_RESERVE:-1G}
-          cpus: '${PROD_CPU_RESERVE:-0.75}'
+          memory: ${MEMORY_LIMIT}
+          cpus: '${CPU_LIMIT}'
       update_config:
         parallelism: 1
-        delay: 30s
+        delay: 10s
         order: start-first
-        failure_action: rollback
       restart_policy:
         condition: on-failure
-        delay: 10s
-        max_attempts: 5
-        window: 180s
-      rollback_config:
-        parallelism: 1
-        delay: 10s
-        failure_action: pause
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.app.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.services.app.loadbalancer.server.port=3000"
-    secrets:
-      - db_password
-      - redis_password
-      - api_key
+        delay: 5s
+        max_attempts: 3
+        window: 120s
 
   postgres:
     image: postgres:15-alpine
     environment:
       - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
     volumes:
-      - postgres_prod_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - app-network
-    deploy:
-      mode: replicated
-      replicas: 1
-      resources:
-        limits:
-          memory: ${DB_MEMORY_LIMIT:-4G}
-          cpus: '${DB_CPU_LIMIT:-2}'
-        reservations:
-          memory: ${DB_MEMORY_RESERVE:-2G}
-          cpus: '${DB_CPU_RESERVE:-1}'
-      placement:
-        constraints:
-          - node.role == manager
-    secrets:
-      - db_password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
 
-  redis:
-    image: redis:7-alpine
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
-    volumes:
-      - redis_prod_data:/data
-    networks:
-      - app-network
-    deploy:
-      mode: replicated
-      replicas: 1
-      resources:
-        limits:
-          memory: 2G
-          cpus: '1'
-        reservations:
-          memory: 1G
-          cpus: '0.5'
-    secrets:
-      - redis_password
-
-  # Production monitoring
-  prometheus:
-    image: prom/prometheus:latest
-    volumes:
-      - ./docker/prod/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-    deploy:
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
-    ports:
-      - "9090:9090"
-
-  grafana:
-    image: grafana/grafana:latest
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
-    volumes:
-      - ./docker/prod/grafana/datasources:/etc/grafana/provisioning/datasources
-      - grafana_data:/var/lib/grafana
-    deploy:
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
-    ports:
-      - "3001:3000"
 
 volumes:
-  postgres_prod_data:
-    name: ${PROJECT_NAME:-app}_postgres_production
-    driver: local
-    driver_opts:
-      type: none
-      device: /mnt/prod_data/postgres
-      o: bind
-  redis_prod_data:
-    name: ${PROJECT_NAME:-app}_redis_production
-  prometheus_data:
-    name: ${PROJECT_NAME:-app}_prometheus
-  grafana_data:
-    name: ${PROJECT_NAME:-app}_grafana
+  postgres_data:
+    name: ${PROJECT_NAME}_postgres_data
 
 networks:
   app-network:
-    name: ${PROJECT_NAME:-app}_production_network
-    driver: overlay
-    attachable: true
-
-secrets:
-  db_password:
-    external: true
-    name: ${PROJECT_NAME}_db_password
-  redis_password:
-    external: true
-    name: ${PROJECT_NAME}_redis_password
-  api_key:
-    external: true
-    name: ${PROJECT_NAME}_api_key
+    name: ${PROJECT_NAME}_network
+    driver: bridge

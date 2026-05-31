@@ -1,27 +1,20 @@
-version: '3.8'
-
 # Base configuration shared across all environments
 services:
   app:
     build:
-      context: .
-      dockerfile: Dockerfile.api
-      target: development  # Default target, overridden in prod/staging
+      context: ../../
+      dockerfile: Dockerfile
       args:
         - APP_ENV=${APP_ENV}
-    image: ${REGISTRY:-ghcr.io}/${NAMESPACE:-username}/${PROJECT_NAME:-app}:${TAG:-latest}
+    image: ${REGISTRY:-ghcr.io}/${NAMESPACE:-username}/${PROJECT_NAME}:${TAG:-latest}
     restart: unless-stopped
     environment:
       - APP_ENV=${APP_ENV:-development}
       - DB_URL=${DB_URL}
-      - REDIS_URL=${REDIS_URL}
-      - API_KEY=${API_KEY}
-    env_file:
-      - /../../.env.development  # Load env vars from .env.development by default
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -52,25 +45,10 @@ services:
       retries: 5
     restart: unless-stopped
 
-  redis:
-    image: redis:7-alpine
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
-    volumes:
-      - redis_data:/data
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    restart: unless-stopped
 
 volumes:
   postgres_data:
     name: ${PROJECT_NAME}_postgres_data
-  redis_data:
-    name: ${PROJECT_NAME}_redis_data
 
 networks:
   app-network:
