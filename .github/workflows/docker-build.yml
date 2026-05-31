@@ -67,7 +67,7 @@ jobs:
           file: ./Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ${{ env.REGISTRY }}/${{ github.repository }}:${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ github.sha }}
           provenance: true
           sbom: true
           build-args: |
@@ -89,7 +89,7 @@ jobs:
             exit 1
           fi
 
-          IMAGE="${{ env.REGISTRY }}/${{ github.repository }}@${DIGEST}"
+          IMAGE="${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ github.event.repository.name }}@${DIGEST}"
 
           DOCKER_BUILD_RUN_ID=${{ github.run_id }}
 
