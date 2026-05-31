@@ -62,7 +62,7 @@ func runMigrate(command string, arg string) {
 	switch command {
 
 	case "up":
-	err := migrator.Up()
+		err := migrator.Up()
 		if errors.Is(err, migrate.ErrNoChange) {
 			slog.Info("No new migrations to apply")
 			return
