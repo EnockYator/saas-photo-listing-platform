@@ -185,7 +185,7 @@ jobs:
           docker logs $CONTAINER_ID
           docker stop $CONTAINER_ID
           exit 1
-          
+
   sign-images:
     name: Sign Docker Image
     runs-on: ubuntu-latest
