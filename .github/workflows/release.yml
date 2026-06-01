@@ -13,9 +13,6 @@ permissions:
   contents: write
   actions: read  # Needed when downloading artifacts from another workflow run
 
-env:
-  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
-
 jobs:
   release:
     name: Create GitHub Release
@@ -28,6 +25,12 @@ jobs:
       docker_build_run_id: ${{ steps.export.outputs.docker_build_run_id }}
 
     steps:
+      - name: Lowercase repository name
+        run: |
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          echo "REPO_LOWER=$REPO_LOWER" >> $GITHUB_ENV
+          echo "IMAGE_NAME=ghcr.io/$REPO_LOWER" >> $GITHUB_ENV
+
       # Download image-metadata artifact from Docker Build workflow
       - name: Download image metadata artifact
         uses: actions/download-artifact@v4
