@@ -162,7 +162,7 @@ jobs:
           echo "Starting container..."
           CONTAINER_ID=$( \
             docker run -d \
-            --network ${{ needs.build.outputs.image }} \
+            --network ${{ job.services.postgres.network }} \
             -e DATABASE_URL="postgres://postgres:postgres@postgres:5432/testdb?sslmode=disable" \
             -e DB_HOST=postgres \
             -p 8080:8080 \
