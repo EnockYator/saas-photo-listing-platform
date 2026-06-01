@@ -146,10 +146,10 @@ jobs:
         run: |
           echo "Starting container..."
           CONTAINER_ID=$(docker run -d ${{ needs.build.outputs.image }})
-          
+
           echo "Waiting for container to initialize..."
           sleep 5
-          
+
           # Check if container is still running
           if docker ps -q --filter "id=$CONTAINER_ID" | grep -q .; then
             echo "✅ Container started successfully"
