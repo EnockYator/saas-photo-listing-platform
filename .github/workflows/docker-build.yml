@@ -72,7 +72,7 @@ jobs:
           file: ./Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ${{ env.REGISTRY }}/${{ REPO_LOWER }}:${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}:${{ github.sha }}
           provenance: true
           sbom: true
           build-args: |
@@ -83,7 +83,7 @@ jobs:
       - name: Resolve image digest
         id: export
         run: |
-          IMAGE_WITH_TAG="${{ env.REGISTRY }}/${{ REPO_LOWER }}:${{ github.sha }}"
+          IMAGE_WITH_TAG="${{ env.REGISTRY }}/${{ env.REPO_LOWER }}:${{ github.sha }}"
 
           DIGEST=$(docker buildx imagetools inspect \
             "${IMAGE_WITH_TAG}" \
@@ -94,7 +94,7 @@ jobs:
             exit 1
           fi
 
-          IMAGE="${{ env.REGISTRY }}/${{ REPO_LOWER }}@${DIGEST}"
+          IMAGE="${{ env.REGISTRY }}/${{ env.REPO_LOWER }}@${DIGEST}"
 
           DOCKER_BUILD_RUN_ID=${{ github.run_id }}
 
@@ -187,7 +187,7 @@ jobs:
       - name: Delete old image versions
         uses: actions/delete-package-versions@v5
         with:
-          package-name: ${{ REPO_LOWER }}
+          package-name: ${{ env.REPO_LOWER }}
           package-type: container
           min-versions-to-keep: 10
           delete-only-untagged-versions: true
