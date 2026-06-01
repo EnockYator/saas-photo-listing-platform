@@ -148,33 +148,28 @@ jobs:
       - name: Pull image
         run: docker pull ${{ needs.build.outputs.image }}
 
-      - name: Validate image structure
-        run: |
-          docker inspect ${{ needs.build.outputs.image }} > /dev/null && {
-            echo "✅ Image is valid and accessible"
-          } || {
-            echo "❌ Image inspection failed"
-            exit 1
-          }
-
-            # Debug: Print environment variables inside the container
+      # Debug: bypass ENTRYPOINT to see if DATABASE_URL is injected
       - name: Debug environment variables
         run: |
+          echo "Checking environment variables inside the container..."
           docker run --rm \
             --network ${{ job.services.postgres.network }} \
-            -e DATABASE_URL=postgres://postgres:postgres@postgres:5432/testdb?sslmode=disable \
-            ${{ needs.build.outputs.image }} env | grep DATABASE_URL || echo "DATABASE_URL not found"
+            --entrypoint="" \
+            -e 'DATABASE_URL=postgres://postgres:postgres@postgres:5432/testdb?sslmode=disable' \
+            ${{ needs.build.outputs.image }} \
+            sh -c 'echo "DATABASE_URL=$DATABASE_URL"'
 
+      # Actual test – also try the --database-url flag as fallback
       - name: Test container startup
         run: |
           echo "Starting container..."
-          CONTAINER_ID=$( \
-            docker run -d \
+          CONTAINER_ID=$(docker run -d \
             --network ${{ job.services.postgres.network }} \
-            -e DATABASE_URL=postgres://postgres:postgres@postgres:5432/testdb?sslmode=disable \
-            -e DB_HOST=postgres \
+            -e 'DATABASE_URL=postgres://postgres:postgres@postgres:5432/testdb?sslmode=disable' \
             -p 8080:8080 \
-            ${{ needs.build.outputs.image }} api )
+            ${{ needs.build.outputs.image }} api \
+            --database-url='postgres://postgres:postgres@postgres:5432/testdb?sslmode=disable' \
+          )
 
           echo "Waiting for API to be ready..."
           for i in {1..15}; do
