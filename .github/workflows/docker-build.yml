@@ -133,12 +133,19 @@ jobs:
       - name: Pull image
         run: docker pull ${{ needs.build.outputs.image }}
 
-      - name: Basic container validation (version)
+      - name: Basic container validation (startup)
         run: |
-          docker run --rm ${{ needs.build.outputs.image }} version || {
-            echo "❌ Container ${{ needs.build.outputs.image }} failed to run"
+          # Run container in background, check if it starts, then stop it
+          CONTAINER_ID=$(docker run -d ${{ needs.build.outputs.image }})
+          sleep 2
+          if docker ps -q --filter "id=$CONTAINER_ID" | grep -q .; then
+            echo "✅ Container started successfully"
+            docker stop $CONTAINER_ID
+          else
+            echo "❌ Container failed to start"
+            docker rm $CONTAINER_ID 2>/dev/null || true
             exit 1
-          }
+          fi
 
   sign-images:
     name: Sign Docker Image
