@@ -39,3 +39,4 @@ EXPOSE 8080
 
 # Default entrypoint
 ENTRYPOINT ["./app"]
+CMD [ "api" ]
