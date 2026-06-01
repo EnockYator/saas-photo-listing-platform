@@ -161,7 +161,7 @@ jobs:
             echo "Waiting... ($i/10)"
             sleep 2
           done
-          
+
           echo "❌ Container failed to become healthy"
           echo "Container logs:"
           docker logs $CONTAINER_ID
