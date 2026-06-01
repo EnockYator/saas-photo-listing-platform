@@ -120,6 +120,7 @@ jobs:
     name: Test Docker Image
     runs-on: ubuntu-latest
     needs: [build]
+    if: success()
     timeout-minutes: 15
 
     services:
@@ -159,6 +160,13 @@ jobs:
             ${{ needs.build.outputs.image }} \
             sh -c 'echo "DATABASE_URL=$DATABASE_URL"'
 
+      - name: Inspect API command flags
+        run: |
+          docker run --rm \
+            --entrypoint="" \
+            ${{ needs.build.outputs.image }} \
+            app api --help
+
       # Actual test – also try the --database-url flag as fallback
       - name: Test container startup
         run: |
@@ -193,7 +201,7 @@ jobs:
     name: Sign Docker Image
     runs-on: ubuntu-latest
     needs: [build]
-
+    if: success()
     permissions:
       packages: write
       id-token: write   # REQUIRED for cosign OIDC
@@ -223,6 +231,7 @@ jobs:
     name: Cleanup Old Images
     runs-on: ubuntu-latest
     needs: [build]
+    if: success()
     if: always() && !cancelled()
 
     steps:
