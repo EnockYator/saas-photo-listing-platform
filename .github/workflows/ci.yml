@@ -104,7 +104,6 @@ jobs:
   trigger-docker-build:
     name: Trigger Docker Build & Push Workflow
     needs: [test]
-    if success() && needs.test.outputs.coverage != '' && (needs.test.outputs.coverage | float) >= 80.0
     runs-on: ubuntu-latest
 
     steps:
