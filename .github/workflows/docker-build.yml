@@ -9,7 +9,7 @@ name: Docker Build & Push
 
 on:
   workflow_run:
-    workflows: ["CI", "Lint", "Security Scan"]
+    workflows: ["CI"]
     branches: [main, dev]
     types: [completed]
 
