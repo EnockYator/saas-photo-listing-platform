@@ -8,7 +8,12 @@
 name: Docker Build & Push
 
 on:
-  workflow_call: # Called by CI
+  on:
+  workflow_run:
+    workflows: ["CI", "Lint", "Security Scan"]
+    branches: [main, dev]
+    types: [completed]
+
     outputs:
       digest:
         description: "Image digest"
