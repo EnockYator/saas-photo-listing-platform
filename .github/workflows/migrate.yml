@@ -5,10 +5,8 @@
 name: Migrations
 
 on:
-  workflow_run:
-    workflows: ["Docker Build & Push"]
-    branches: [main, dev]
-    types: [completed]
+  workflow_call:
+  branches: [main, dev]
 
 permissions:
   contents: read
