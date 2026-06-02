@@ -9,7 +9,6 @@ name: Docker Build & Push
 
 on:
   workflow_call: # Called by CI
-  branches: [main, dev]
     # outputs:
     #   digest:
     #     description: "Image digest"
