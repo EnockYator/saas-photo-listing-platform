@@ -6,7 +6,6 @@ name: Migrations
 
 on:
   workflow_call:
-  branches: [main, dev]
 
 permissions:
   contents: read
