@@ -8,7 +8,7 @@ name: CI
 
 on:
   pull_request:
-      branches: [main, dev]
+    branches: [main, dev]
   push:
     branches: [main, dev]
 
@@ -118,9 +118,9 @@ jobs:
             https://api.github.com/repos/${{ github.repository }}/dispatches \
             -d '{
               "event_type": "run_docker_build",
-              "client_payload": {
-                "image": "${{ needs.build.outputs.image }}",
-                "digest": "${{ needs.build.outputs.digest }}",
-                "run_id": "${{ github.run_id }}"
+              # "client_payload": {
+              #   "image": "${{ needs.build.outputs.image }}",
+              #   "digest": "${{ needs.build.outputs.digest }}",
+              #   "run_id": "${{ github.run_id }}"
               }
             }'
