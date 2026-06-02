@@ -9,16 +9,16 @@ name: Docker Build & Push
 
 on:
   workflow_call: # Called by CI
-    # outputs:
-    #   digest:
-    #     description: "Image digest"
-    #     value: ${{ jobs.build.outputs.digest }}
-    #   image:
-    #     description: "Full image reference (with digest)"
-    #     value: ${{ jobs.build.outputs.image }}
-    #   docker_build_run_id:
-    #     description: "Run ID of the docker build workflow"
-    #     value: ${{ jobs.build.outputs.docker_build_run_id }}
+    outputs:
+      digest:
+        description: "Image digest"
+        value: ${{ jobs.build.outputs.digest }}
+      image:
+        description: "Full image reference (with digest)"
+        value: ${{ jobs.build.outputs.image }}
+      docker_build_run_id:
+        description: "Run ID of the docker build workflow"
+        value: ${{ jobs.build.outputs.docker_build_run_id }}
 
 permissions:
   contents: read
