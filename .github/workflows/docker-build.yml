@@ -148,23 +148,38 @@ jobs:
       - name: Pull image
         run: docker pull ${{ needs.build.outputs.image }}
 
-      # Debug: bypass ENTRYPOINT to see if DATABASE_URL is injected
-      - name: Debug environment variables
+      - name: Validate image structure
         run: |
-          echo "Checking environment variables inside the container..."
-          docker run --rm \
-            --network ${{ job.services.postgres.network }} \
-            --entrypoint="" \
-            -e 'DATABASE_URL=postgres://postgres:postgres@postgres:5432/testdb?sslmode=disable' \
-            ${{ needs.build.outputs.image }} \
-            sh -c 'echo "DATABASE_URL=$DATABASE_URL"'
+          docker inspect ${{ needs.build.outputs.image }} > /dev/null && {
+            echo "✅ Image is valid and accessible"
+          } || {
+            echo "❌ Image inspection failed"
+            exit 1
+          }
 
       - name: Inspect API command flags
         run: |
           docker run --rm \
-            --entrypoint="" \
             ${{ needs.build.outputs.image }} \
-            app api --help
+            api --help
+
+                  # Discover the correct environment variable name
+
+      - name: Discover database env var
+        run: |
+          echo "Testing which environment variable the application accepts..."
+          for VAR in DB_URL DSN DATABASE_DSN PG_URL POSTGRES_URL DATABASE_URL; do
+            printf "Trying %-20s … " "$VAR"
+            OUTPUT=$(docker run --rm \
+              --network ${{ job.services.postgres.network }} \
+              -e ${VAR}='postgres://postgres:postgres@postgres:5432/testdb?sslmode=disable' \
+              ${{ needs.build.outputs.image }} api 2>&1 | head -1)
+            if echo "$OUTPUT" | grep -q "invalid config"; then
+              echo "❌ not recognised"
+            else
+              echo "✅ SUCCESS - app output: $OUTPUT"
+            fi
+          done
 
       # Actual test – also try the --database-url flag as fallback
       - name: Test container startup
@@ -172,11 +187,9 @@ jobs:
           echo "Starting container..."
           CONTAINER_ID=$(docker run -d \
             --network ${{ job.services.postgres.network }} \
-            -e 'DATABASE_URL=postgres://postgres:postgres@postgres:5432/testdb?sslmode=disable' \
+            -e DB_URL='postgres://postgres:postgres@postgres:5432/testdb?sslmode=disable' \
             -p 8080:8080 \
-            ${{ needs.build.outputs.image }} api \
-            --database-url='postgres://postgres:postgres@postgres:5432/testdb?sslmode=disable' \
-          )
+            ${{ needs.build.outputs.image }} api)
 
           echo "Waiting for API to be ready..."
           for i in {1..15}; do
