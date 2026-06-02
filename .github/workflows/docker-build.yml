@@ -9,7 +9,7 @@ name: Docker Build & Push
 
 on:
   repository_dispatch:
-  types: [run_docker_build]
+    types: [run_docker_build]
 
 permissions:
   contents: read
