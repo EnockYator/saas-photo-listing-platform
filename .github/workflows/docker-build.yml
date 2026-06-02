@@ -8,10 +8,10 @@
 name: Docker Build & Push
 
 on:
-workflow_run:
-  workflows: ["CI", "Lint", "Security Scan"]
-  branches: [main, dev]
-  types: [completed]
+  workflow_run:
+    workflows: ["CI", "Lint", "Security Scan"]
+    branches: [main, dev]
+    types: [completed]
 
 permissions:
   contents: read
