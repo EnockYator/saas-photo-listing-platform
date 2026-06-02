@@ -101,9 +101,25 @@ jobs:
           mkdir -p bin
           go build -o bin/api ./cmd/app/
 
-  call-docker-build:
-    name: Build Docker Image
-    needs: [test]               # Wait for the main test job
-    if: success()               # Only run if 'test' succeeded
-    uses: ./.github/workflows/docker-build.yml
-    secrets: inherit
+  trigger-docker-build:
+    name: Trigger Docker Build & Push Workflow
+    needs: [test]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger docker build via repository_dispatch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -L -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            https://api.github.com/repos/${{ github.repository }}/dispatches \
+            -d '{
+              "event_type": "run_docker_build",
+              # "client_payload": {
+              #   "image": "${{ needs.build.outputs.image }}",
+              #   "digest": "${{ needs.build.outputs.digest }}",
+              #   "run_id": "${{ github.run_id }}"
+              }
+            }'
