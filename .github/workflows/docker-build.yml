@@ -157,31 +157,6 @@ jobs:
             exit 1
           }
 
-      - name: Inspect API command flags
-        run: |
-          docker run --rm \
-            ${{ needs.build.outputs.image }} \
-            api --help
-
-                  # Discover the correct environment variable name
-
-      - name: Discover database env var
-        run: |
-          echo "Testing which environment variable the application accepts..."
-          for VAR in DB_URL DSN DATABASE_DSN PG_URL POSTGRES_URL DATABASE_URL; do
-            printf "Trying %-20s … " "$VAR"
-            OUTPUT=$(docker run --rm \
-              --network ${{ job.services.postgres.network }} \
-              -e ${VAR}='postgres://postgres:postgres@postgres:5432/testdb?sslmode=disable' \
-              ${{ needs.build.outputs.image }} api 2>&1 | head -1)
-            if echo "$OUTPUT" | grep -q "invalid config"; then
-              echo "❌ not recognised"
-            else
-              echo "✅ SUCCESS - app output: $OUTPUT"
-            fi
-          done
-
-      # Actual test – also try the --database-url flag as fallback
       - name: Test container startup
         run: |
           echo "Starting container..."
