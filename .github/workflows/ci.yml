@@ -23,7 +23,6 @@ env:
 jobs:
   test:
     name: Test & Build Application
-    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
     runs-on: ubuntu-latest
     outputs:
       coverage: ${{ steps.coverage.outputs.percentage }}
