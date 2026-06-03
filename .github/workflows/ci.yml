@@ -105,6 +105,8 @@ jobs:
     name: Repository Dispatch
     needs: [test]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to trigger repository dispatch
 
     steps:
       - name: Trigger Docker Build
