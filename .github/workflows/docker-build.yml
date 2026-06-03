@@ -229,7 +229,7 @@ jobs:
           delete-only-untagged-versions: true
         continue-on-error: true
 
-    trigger-migrate:
+  trigger-migrate:
     name: Repository Dispatch
     needs: [build, test-image, sign-image]
     runs-on: ubuntu-latest
