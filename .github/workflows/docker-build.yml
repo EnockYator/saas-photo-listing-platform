@@ -34,7 +34,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.client_payload.ref }}
+          ref: ${{ github.event.client_payload.sha }}
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -46,6 +46,7 @@ jobs:
         run: |
           REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           echo "REPO_LOWER=$REPO_LOWER" >> $GITHUB_ENV
+          echo "repo_lower=$REPO_LOWER" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -88,7 +89,6 @@ jobs:
           fi
 
           IMAGE="${{ env.REGISTRY }}/${{ env.REPO_LOWER }}@${DIGEST}"
-
           DOCKER_BUILD_RUN_ID=${{ github.run_id }}
 
           echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
@@ -223,7 +223,7 @@ jobs:
       - name: Delete old image versions
         uses: actions/delete-package-versions@v5
         with:
-          package-name: ${{ env.REPO_LOWER }}
+          package-name: ${{ needs.build.outputs.repo_lower }}
           package-type: container
           min-versions-to-keep: 10
           delete-only-untagged-versions: true
@@ -244,7 +244,7 @@ jobs:
           repository: ${{ github.repository }}
           event-type: run-migrations
           client-payload: '{
-            "ref": "${{ github.ref }}",
-            "sha": "${{ github.sha }}",
+            "sha": "${{ github.event.client_payload.sha }}",
             "run_id": "${{ needs.build.outputs.docker_build_run_id }}",
+            "branch": "${{ github.event.client_payload.branch }}"
           }'

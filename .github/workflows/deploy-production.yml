@@ -7,10 +7,8 @@
 name: Deploy to Production
 
 on:
-  workflow_run:
-    workflows: ["Migrations"]
-    branches: [main]
-    types: [completed]
+  repository_dispatch:
+    types: [run-production-deployment]
 
 permissions:
   contents: read
@@ -23,7 +21,8 @@ env:
 jobs:
   deploy-render-production:
     name: Deploy to Render Production
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # This job only runs if the payload branch matches 'main'
+    if: github.event.client_payload.branch == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: production
 
@@ -33,13 +32,18 @@ jobs:
       docker_build_run_id: ${{ steps.export.outputs.docker_build_run_id }}
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.client_payload.sha }}
+
       # Download image-metadata artifact from Docker Build workflow
       - name: Download image metadata artifact
         uses: actions/download-artifact@v4
         with:
           name: image-metadata
           path: .
-          run-id: ${{ github.event.workflow_run.id }}
+          run-id: ${{ github.event.client_payload.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       # Load immutable image metadata
@@ -230,3 +234,23 @@ jobs:
           if ! curl -f "https://${DOMAIN}/version"; then
             echo "⚠️ version endpoint missing"
           fi
+
+  trigger-release:
+    name: Repository Dispatch
+    needs: [deploy-render-production]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to trigger repository dispatch
+
+    steps:
+      - name: Trigger release workflow
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          event-type: run-release
+          client-payload: '{
+            "sha": "${{ github.event.client_payload.sha }}",
+            "run_id": "${{ needs.deploy-render-production.outputs.docker_build_run_id }}",
+            "branch": "${{ github.event.client_payload.branch }}"
+          }'

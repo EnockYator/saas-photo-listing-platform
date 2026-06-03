@@ -21,7 +21,7 @@ jobs:
   deploy-render-staging:
     name: Deploy to Render Staging
     # This job only runs if the payload branch matches 'dev'
-    if: github.event.client_payload.branch == 'dev'
+    if: github.event.client_payload.branch == 'refs/heads/dev'
     runs-on: ubuntu-latest
     environment: staging
 
@@ -34,7 +34,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.client_payload.branch }}
+          ref: ${{ github.event.client_payload.sha }}
 
       # Download image-metadata artifact from Docker Build workflow
       - name: Download image metadata artifact
@@ -132,12 +132,15 @@ jobs:
             key=$(echo "$env_var" | jq -r '.key')
             value=$(echo "$env_var" | jq -r '.value')
 
+            # Build safe JSON payload
+            json_payload=$(jq -nc --arg val "$value" '{value: $val}')
+
             response=$(curl -s -w "%{http_code}" -X PUT \
               "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/env-vars/${key}" \
               -H "accept: application/json" \
               -H "authorization: Bearer ${RENDER_API_KEY}" \
               -H "content-type: application/json" \
-              -d "{\"value\": \"${value}\"}")
+              -d "$json_payload")
 
             http_code=${response: -3}
             if [ "$http_code" != "200" ]; then
@@ -249,6 +252,7 @@ jobs:
           repository: ${{ github.repository }}
           event-type: run-production-deployment
           client-payload: '{
+            "sha": "${{ github.event.client_payload.sha }}",
             "run_id": "${{ needs.deploy-render-staging.outputs.docker_build_run_id }}",
-            "branch": "main",
+            "branch": "${{ github.event.client_payload.branch }}"
           }'
