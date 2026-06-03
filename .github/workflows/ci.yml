@@ -109,13 +109,13 @@ jobs:
     steps:
       - name: Trigger Docker Build
         uses: peter-evans/repository-dispatch@v2
-          with:
-            token: ${{ secrets.GITHUB_TOKEN }}
-            repository: ${{ github.repository }}
-            event-type: docker-build
-            client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
-            # client_payload: '{
-            #   "image": "${{ needs.build.outputs.image }}",
-            #   "digest": "${{ needs.build.outputs.digest }}",
-            #   "run_id": "${{ github.run_id }}"
-            # }'
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          event-type: docker-build
+          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
+          # client_payload: '{
+          #   "image": "${{ needs.build.outputs.image }}",
+          #   "digest": "${{ needs.build.outputs.digest }}",
+          #   "run_id": "${{ github.run_id }}"
+          # }'
