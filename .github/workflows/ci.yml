@@ -115,7 +115,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
           event-type: docker-build
-          client-payload: '{
-            "sha": "${{ github.sha }}",
-            "branch": "${{ github.ref }}"
-          }'
+          client-payload: |
+            {
+              "sha": "${{ github.sha }}",
+              "branch": "${{ github.ref }}"
+            }
