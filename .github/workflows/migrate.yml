@@ -109,6 +109,11 @@ jobs:
           DB_URL: ${{ secrets.DB_URL }}
         run: |
           echo "Applying migrations to production database..."
+          if [ -z "$DB_URL" ]; then
+            echo "DB_URL is empty"
+          else
+            echo "DB_URL is set (length: ${#DB_URL})"
+          fi
           docker run --rm \
             -e DB_URL \
             "${IMAGE}" migrate up
