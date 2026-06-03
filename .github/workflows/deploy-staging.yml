@@ -251,8 +251,9 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
           event-type: run-production-deployment
-          client-payload: '{
-            "sha": "${{ github.event.client_payload.sha }}",
-            "run_id": "${{ needs.deploy-render-staging.outputs.docker_build_run_id }}",
-            "branch": "${{ github.event.client_payload.branch }}"
-          }'
+          client-payload: |
+            {
+              "sha": "${{ github.event.client_payload.sha }}",
+              "run_id": "${{ needs.deploy-render-staging.outputs.docker_build_run_id }}",
+              "branch": "${{ github.event.client_payload.branch }}"
+            }
