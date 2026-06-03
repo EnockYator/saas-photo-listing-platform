@@ -20,6 +20,7 @@ env:
 jobs:
   deploy-render-staging:
     name: Deploy to Render Staging
+    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
     # This job only runs if the payload branch matches 'dev'
     if: github.event.client_payload.branch == 'refs/heads/dev'
     runs-on: ubuntu-latest

@@ -15,6 +15,7 @@ permissions:
 jobs:
   release:
     name: Create GitHub Release
+    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
     # This job only runs if the payload branch matches 'main'
     if: github.event.client_payload.branch == 'refs/heads/main'
     runs-on: ubuntu-latest
