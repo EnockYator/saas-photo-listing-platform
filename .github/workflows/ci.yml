@@ -116,8 +116,3 @@ jobs:
           repository: ${{ github.repository }}
           event-type: docker-build
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
-          # client_payload: '{
-          #   "image": "${{ needs.build.outputs.image }}",
-          #   "digest": "${{ needs.build.outputs.digest }}",
-          #   "run_id": "${{ github.run_id }}"
-          # }'

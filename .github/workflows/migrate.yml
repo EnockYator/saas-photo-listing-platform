@@ -5,12 +5,12 @@
 name: Migrations
 
 on:
-  workflow_call:
+  repository_dispatch:
+    types: [run-migrations]
 
 permissions:
   contents: read
   packages: read
-  actions: read
 
 env:
   REGISTRY: ghcr.io
@@ -18,9 +18,13 @@ env:
 jobs:
   migrate:
     name: Run Database Migrations
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
+    outputs:
+      digest: ${{ steps.export.outputs.digest }}
+      image: ${{ steps.export.outputs.image }}
+      docker_build_run_id: ${{ steps.export.outputs.docker_build_run_id }}
 
     services:
       postgres:
@@ -38,18 +42,23 @@ jobs:
           --health-retries=5
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.client_payload.ref }}
+
       - name: Download image metadata artifact
         uses: actions/download-artifact@v4
         with:
           name: image-metadata
           path: .
-          run-id: ${{ github.event.workflow_run.id }}
+          run-id: ${{ github.event.client_payload.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Load image metadata
         id: export
         run: |
-          if [ ! -f digest.txt ] || [ ! -f image.txt ]; then
+          if [ ! -f digest.txt ] || [ ! -f image.txt || ! -f docker_build_run_id.txt ]; then
             echo "❌ Missing required artifact files"
             ls -la
             exit 1
@@ -57,11 +66,15 @@ jobs:
 
           DIGEST="$(cat digest.txt | tr -d '\n')"
           IMAGE="$(cat image.txt | tr -d '\n')"
+          DOCKER_BUILD_RUN_ID="$(cat docker_build_run_id.txt | tr -d '\n')"
 
           echo "DIGEST=$DIGEST" >> $GITHUB_ENV
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+          echo "DOCKER_BUILD_RUN_ID=$DOCKER_BUILD_RUN_ID" >> $GITHUB_ENV
+
           echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+          echo "docker_build_run_id=${DOCKER_BUILD_RUN_ID}" >> $GITHUB_OUTPUT
 
           echo "✅ Using image: $IMAGE"
 
@@ -104,3 +117,22 @@ jobs:
         run: |
           # No manual containers to clean up — the service container is managed by GitHub
           echo "Cleanup complete"
+
+  trigger-staging-deployment:
+    name: Repository Dispatch
+    needs: [migrate]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to trigger repository dispatch
+
+    steps:
+      - name: Trigger staging deployment workflow
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          event-type: run-staging-deployment
+          client-payload: '{
+            "run_id": "${{ needs.migrate.outputs.docker_build_run_id }}",
+            "branch": "dev",
+          }'

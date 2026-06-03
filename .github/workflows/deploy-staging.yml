@@ -6,10 +6,8 @@
 name: Deploy to Staging
 
 on:
-  workflow_run:
-    workflows: ["Migrations"]
-    branches: [dev]
-    types: [completed]
+  repository_dispatch:
+    types: [run-staging-deployment]
 
 permissions:
   contents: read
@@ -22,7 +20,8 @@ env:
 jobs:
   deploy-render-staging:
     name: Deploy to Render Staging
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # This job only runs if the payload branch matches 'dev'
+    if: github.event.client_payload.branch == 'dev'
     runs-on: ubuntu-latest
     environment: staging
 
@@ -32,13 +31,18 @@ jobs:
       docker_build_run_id: ${{ steps.export.outputs.docker_build_run_id }}
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.client_payload.branch }}
+
       # Download image-metadata artifact from Docker Build workflow
       - name: Download image metadata artifact
         uses: actions/download-artifact@v4
         with:
           name: image-metadata
           path: .
-          run-id: ${{ github.event.workflow_run.id }}
+          run-id: ${{ github.event.client_payload.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       # Load immutable image metadata
@@ -229,3 +233,22 @@ jobs:
           if ! curl -f "https://${DOMAIN}/version"; then
             echo "⚠️ version endpoint missing"
           fi
+
+  trigger-production-deployment:
+    name: Repository Dispatch
+    needs: [deploy-render-staging]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to trigger repository dispatch
+
+    steps:
+      - name: Trigger production deployment workflow
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          event-type: run-production-deployment
+          client-payload: '{
+            "run_id": "${{ needs.deploy-render-staging.outputs.docker_build_run_id }}",
+            "branch": "main",
+          }'

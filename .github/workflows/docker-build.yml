@@ -177,7 +177,7 @@ jobs:
           docker stop $CONTAINER_ID
           exit 1
 
-  sign-images:
+  sign-image:
     name: Sign Docker Image
     runs-on: ubuntu-latest
     needs: [build]
@@ -228,3 +228,23 @@ jobs:
           min-versions-to-keep: 10
           delete-only-untagged-versions: true
         continue-on-error: true
+
+    trigger-migrate:
+    name: Repository Dispatch
+    needs: [build, test-image, sign-image]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to trigger repository dispatch
+
+    steps:
+      - name: Trigger migration workflow
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          event-type: run-migrations
+          client-payload: '{
+            "ref": "${{ github.ref }}",
+            "sha": "${{ github.sha }}",
+            "run_id": "${{ needs.build.outputs.docker_build_run_id }}",
+          }'
