@@ -24,8 +24,7 @@ jobs:
     # This job only runs if the payload branch matches 'dev'
     if: github.event.client_payload.branch == 'refs/heads/dev'
     runs-on: ubuntu-latest
-    environment: staging
-
+    
     outputs:
       digest: ${{ steps.export.outputs.digest }}
       image: ${{ steps.export.outputs.image }}
