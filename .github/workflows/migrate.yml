@@ -11,6 +11,7 @@ on:
 permissions:
   contents: read
   packages: read
+  actions: read  # Needed when downloading artifacts from another workflow run
 
 env:
   REGISTRY: ghcr.io
@@ -45,7 +46,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.client_payload.ref }}
+          ref: ${{ github.event.client_payload.sha }}
 
       - name: Download image metadata artifact
         uses: actions/download-artifact@v4
@@ -58,7 +59,7 @@ jobs:
       - name: Load image metadata
         id: export
         run: |
-          if [ ! -f digest.txt ] || [ ! -f image.txt || ! -f docker_build_run_id.txt ]; then
+          if [ ! -f digest.txt ] || [ ! -f image.txt ] || [ ! -f docker_build_run_id.txt ]; then
             echo "❌ Missing required artifact files"
             ls -la
             exit 1
@@ -133,6 +134,7 @@ jobs:
           repository: ${{ github.repository }}
           event-type: run-staging-deployment
           client-payload: '{
+            "sha": "${{ github.event.client_payload.sha }}",
             "run_id": "${{ needs.migrate.outputs.docker_build_run_id }}",
-            "branch": "dev",
+            "branch": "${{ github.event.client_payload.branch }}"
           }'
