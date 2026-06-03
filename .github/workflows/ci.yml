@@ -116,6 +116,6 @@ jobs:
           repository: ${{ github.repository }}
           event-type: docker-build
           client-payload: '{
-            "sha": "${{ github.sha }}"
+            "sha": "${{ github.sha }}",
             "branch": "${{ github.ref }}"
           }'
