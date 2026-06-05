@@ -22,7 +22,6 @@ env:
 jobs:
   build:
     name: Build & Push Image
-    environment: ${{ github.event.client_payload.branch == 'refs/heads/main' && 'production' || 'staging' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
