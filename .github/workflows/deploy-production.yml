@@ -8,7 +8,9 @@ name: Deploy to Production
 
 on:
   repository_dispatch:
-    types: [run-production-deployment]
+    types: [run-deployment]
+  dispatch: # Allow manual trigger from GitHub UI
+    branches: [main]
 
 permissions:
   contents: read
