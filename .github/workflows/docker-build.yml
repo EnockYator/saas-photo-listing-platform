@@ -73,6 +73,14 @@ jobs:
 
           # Analyse commits since last tag for bump type
           MAJOR=0; MINOR=0; PATCH=0
+          if [ "$LAST_TAG" = "v0.0.0" ]; then
+            # If no real tag exists, analyze all commits
+            COMMIT_RANGE="HEAD"
+          else
+            # If a tag exists, analyze commits since that tag
+            COMMIT_RANGE="$LAST_TAG..HEAD"
+          fi
+
           while IFS= read -r msg; do
             case "$msg" in
               *"BREAKING CHANGE:"*|*"BREAKING-CHANGE:"*|*!:*)
@@ -82,7 +90,7 @@ jobs:
               fix:*|fix\(*\):*)
                 PATCH=1 ;;
             esac
-          done < <(git log --pretty=format:%s "$LAST_TAG..HEAD")
+          done < <(git log --pretty=format:%s "$COMMIT_RANGE")
 
           if [ $MAJOR -eq 1 ]; then BUMP="major"
           elif [ $MINOR -eq 1 ]; then BUMP="minor"
