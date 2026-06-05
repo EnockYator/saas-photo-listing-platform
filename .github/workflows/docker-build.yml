@@ -8,6 +8,10 @@
 name: Docker Build & Push
 
 on:
+  pull_request:
+    branches: [main, dev]
+  push:
+    branches: [main, dev]
   repository_dispatch:
     types: [docker-build]
 
@@ -35,7 +39,8 @@ jobs:
       - name: Checkout full history (to compute version)
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.client_payload.sha }}
+          # For push events, use the pushed branch; for dispatch, use the SHA from payload.
+          ref: ${{ github.event_name == 'push' && github.ref || github.event.client_payload.sha }}
           fetch-depth: 0   # full history needed to find tags
 
       - name: Setup Go

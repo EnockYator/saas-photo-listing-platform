@@ -6,6 +6,10 @@
 name: Deploy to Staging
 
 on:
+  pull_request:
+    branches: [dev]
+  push:
+    branches: [dev]
   repository_dispatch:
     types: [run-deployment]
 
@@ -33,7 +37,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.client_payload.sha }}
+          # For push events, use the pushed branch; for dispatch, use the SHA from payload.
+          ref: ${{ github.event_name == 'push' && github.ref || github.event.client_payload.sha }}
 
       # Download image-metadata artifact from Docker Build workflow
       - name: Download image metadata artifact
