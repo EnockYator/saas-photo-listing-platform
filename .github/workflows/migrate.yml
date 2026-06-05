@@ -5,6 +5,10 @@
 name: Migrations
 
 on:
+  pull_request:
+      branches: [main, dev]
+  push:
+    branches: [main, dev]
   repository_dispatch:
     types: [run-migrations]
 
@@ -47,7 +51,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.client_payload.sha }}
+          # For push events, use the pushed branch; for dispatch, use the SHA from payload.
+          ref: ${{ github.event_name == 'push' && github.ref || github.event.client_payload.sha }}
 
       - name: Download image metadata artifact
         uses: actions/download-artifact@v4
