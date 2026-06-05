@@ -38,11 +38,6 @@ jobs:
           ref: ${{ github.event.client_payload.sha }}
           fetch-depth: 0   # full history needed to find tags
 
-      - name: Clear Go cache
-        run: |
-          go clean -cache -modcache
-        continue-on-error: true
-
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
@@ -67,25 +62,32 @@ jobs:
 
       - name: Determine next version
         id: next_version
+        shell: bash
         run: |
-          # Find latest semver tag
+          # If the repository has no commits at all, output the initial version
+          if ! git rev-parse HEAD >/dev/null 2>&1; then
+            echo "No commits found – using initial version v0.0.1"
+            echo "version=v0.0.1" >> "$GITHUB_OUTPUT"
+            echo "NEW_VERSION=v0.0.1" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          # Find latest semver tag (e.g. v1.2.3)
           LAST_TAG=$(git tag --sort=-v:refname --merged HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' | head -n1)
           if [ -z "$LAST_TAG" ]; then
             LAST_TAG="v0.0.0"
           fi
-
           echo "Last tag: $LAST_TAG"
 
-          # Analyse commits since last tag for bump type
+          # Set the commit range to analyse
           MAJOR=0; MINOR=0; PATCH=0
           if [ "$LAST_TAG" = "v0.0.0" ]; then
-            # If no real tag exists, analyze all commits
             COMMIT_RANGE="HEAD"
           else
-            # If a tag exists, analyze commits since that tag
             COMMIT_RANGE="$LAST_TAG..HEAD"
           fi
 
+          # Scan commit messages – guard against git log failure with || true
           while IFS= read -r msg; do
             case "$msg" in
               *"BREAKING CHANGE:"*|*"BREAKING-CHANGE:"*|*!:*)
@@ -95,14 +97,16 @@ jobs:
               fix:*|fix\(*\):*)
                 PATCH=1 ;;
             esac
-          done < <(git log --pretty=format:%s "$COMMIT_RANGE")
+          done < <(git log --pretty=format:%s "$COMMIT_RANGE" || true)
 
-          if [ $MAJOR -eq 1 ]; then BUMP="major"
+          # Determine the bump type
+          if   [ $MAJOR -eq 1 ]; then BUMP="major"
           elif [ $MINOR -eq 1 ]; then BUMP="minor"
           elif [ $PATCH -eq 1 ]; then BUMP="patch"
           else BUMP="patch" && echo "⚠️  No conventional commits, defaulting to patch"
           fi
 
+          # Bump the semantic version
           V="${LAST_TAG#v}"
           IFS='.' read -r v_major v_minor v_patch <<< "$V"
           case $BUMP in
@@ -112,8 +116,9 @@ jobs:
           esac
           NEW_VERSION="v$v_major.$v_minor.$v_patch"
 
-          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          # Output the new version
+          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "NEW_VERSION=$NEW_VERSION" >> "$GITHUB_ENV"
 
       - name: Build and push Docker image
         id: build
