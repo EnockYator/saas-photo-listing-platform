@@ -19,7 +19,7 @@ env:
 jobs:
   migrate:
     name: Run Database Migrations
-    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+    environment: ${{ github.event.client_payload.branch == 'refs/heads/main' && 'production' || 'staging' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -125,7 +125,7 @@ jobs:
           # No manual containers to clean up — the service container is managed by GitHub
           echo "Cleanup complete"
 
-  trigger-staging-deployment:
+  trigger-deployment:
     name: Repository Dispatch
     needs: [migrate]
     runs-on: ubuntu-latest
@@ -133,7 +133,7 @@ jobs:
       contents: write  # Required to trigger repository dispatch
 
     steps:
-      - name: Trigger staging deployment workflow
+      - name: Trigger deployment workflows
         uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
