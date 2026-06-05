@@ -8,140 +8,130 @@ on:
     types: [run-release]
 
 permissions:
-  contents: read
-  packages: read
-  actions: read
+  contents: write      # to create tags and releases
+  actions: read        # Needed when downloading artifacts from another workflow run
 
 jobs:
   release:
     name: Create GitHub Release
-    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
-    # This job only runs if the payload branch matches 'main'
     if: github.event.client_payload.branch == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     outputs:
-      digest: ${{ steps.export.outputs.digest }}
-      image: ${{ steps.export.outputs.image }}
-      docker_build_run_id: ${{ steps.export.outputs.docker_build_run_id }}
+      digest:  ${{ steps.export.outputs.digest }}
+      image:   ${{ steps.export.outputs.image }}
+      version: ${{ steps.validate.outputs.version }}
 
     steps:
+      # ---------- 1. Validate payload ----------
+      - name: Validate dispatch payload
+        run: |
+          for key in sha run_id branch version; do
+            [ -n "${{ github.event.client_payload[key] }}" ] || {
+              echo "❌ Missing '$key' in client_payload"
+              exit 1
+            }
+          done
+          NEW_TAG="${{ github.event.client_payload.version }}"
+          if [[ ! "$NEW_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Invalid version format: $NEW_TAG"
+            exit 1
+          fi
+          echo "version=$NEW_TAG" >> $GITHUB_OUTPUT
+
+      # ---------- 2. Checkout full history ----------
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.client_payload.sha }}
+          fetch-depth: 0
 
-      - name: Lowercase repository name
-        run: |
-          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          echo "REPO_LOWER=$REPO_LOWER" >> $GITHUB_ENV
-          echo "IMAGE_NAME=ghcr.io/$REPO_LOWER" >> $GITHUB_ENV
-
-      # Download image-metadata artifact from Docker Build workflow
+      # ---------- 3. Download image metadata ----------
       - name: Download image metadata artifact
         uses: actions/download-artifact@v4
         with:
           name: image-metadata
           path: .
-          run-id: ${{ github.event.workflow_run.id }}
+          run-id: ${{ github.event.client_payload.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Load immutable image metadata
       - name: Load image metadata
         id: export
         run: |
-          if [ ! -f digest.txt ] || [ ! -f image.txt ] || [ ! -f docker_build_run_id.txt ]; then
-            echo "❌ Missing required artifact files"
-            ls -la
-            exit 1
-          fi
+          for f in digest.txt image.txt docker_build_run_id.txt; do
+            [ -f "$f" ] || { echo "❌ Missing $f"; exit 1; }
+          done
 
-          DIGEST="$(cat digest.txt | tr -d '\n')"
-          if [ -z "$DIGEST" ]; then
-            echo "❌ Missing image digest artifact"
-            exit 1
-          fi
+          DIGEST=$(tr -d '\n' < digest.txt)
+          IMAGE=$(tr -d '\n' < image.txt)
+          DOCKER_BUILD_RUN_ID=$(tr -d '\n' < docker_build_run_id.txt)
 
-          IMAGE="$(cat image.txt | tr -d '\n')"
-          if [ -z "$IMAGE" ]; then
-            echo "❌ Missing image name artifact"
-            exit 1
-          fi
-
-          DOCKER_BUILD_RUN_ID="$(cat docker_build_run_id.txt | tr -d '\n')"
-          if [ -z "$DOCKER_BUILD_RUN_ID" ]; then
-            echo "❌ Missing docker build run ID artifact"
-            exit 1
-          fi
-
-          SHA="${{ github.event.client_payload.sha }}"
-          REF="${{ github.event.client_payload.ref }}"
+          echo "digest=$DIGEST" >> $GITHUB_OUTPUT
+          echo "image=$IMAGE" >> $GITHUB_OUTPUT
+          echo "docker_build_run_id=$DOCKER_BUILD_RUN_ID" >> $GITHUB_OUTPUT
 
           echo "DIGEST=$DIGEST" >> $GITHUB_ENV
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
           echo "DOCKER_BUILD_RUN_ID=$DOCKER_BUILD_RUN_ID" >> $GITHUB_ENV
 
-          echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
-          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
-          echo "docker_build_run_id=${DOCKER_BUILD_RUN_ID}" >> $GITHUB_OUTPUT
-
-          echo "ref=${REF}" >> $GITHUB_OUTPUT
-          echo "sha=${SHA}" >> $GITHUB_OUTPUT
-
-          echo "Using image: $IMAGE"
-          echo "Using digest: $DIGEST"
-          echo "Using docker_build_run_id: $DOCKER_BUILD_RUN_ID"
-
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      # ----------------------------
-      # Load release notes
-      # ----------------------------
-      - name: Read RELEASE_NOTES.md
-        id: notes
+      # ---------- 4. Create tag ----------
+      - name: Create tag
         run: |
-          if [ ! -f RELEASE_NOTES.md ]; then
-            echo "❌ RELEASE_NOTES.md not found"
-            exit 1
-          fi
+          git tag "${{ steps.validate.outputs.version }}"
+          git push origin "${{ steps.validate.outputs.version }}"
 
-          # Use environment variable to safely handle multiline content
-          NOTES=$(cat RELEASE_NOTES.md)
-          echo "notes<<EOF" >> $GITHUB_OUTPUT
-          echo "$NOTES" >> $GITHUB_OUTPUT
+      # ---------- 5. Generate changelog (commits since last tag) ----------
+      - name: Generate changelog
+        id: changelog
+        run: |
+          LAST_TAG=$(git tag --sort=-v:refname --merged HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' | head -n1)
+          if [ -z "$LAST_TAG" ]; then
+            LOG=$(git log --pretty=format:"- %s (%h)")
+          else
+            LOG=$(git log --pretty=format:"- %s (%h)" "$LAST_TAG..HEAD")
+          fi
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$LOG" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      # ----------------------------
-      # Determine tag
-      # ----------------------------
-      - name: Resolve release tag
-        id: tag
+      # ---------- 7. (Optional) RELEASE_NOTES.md ----------
+      - name: Read RELEASE_NOTES.md if present
+        id: manual_notes
         run: |
-          TAG="v$(date +%Y.%m.%d)-${GITHUB_SHA::7}"
+          if [ -f RELEASE_NOTES.md ]; then
+            NOTES=$(cat RELEASE_NOTES.md)
+            echo "notes<<EOF" >> $GITHUB_OUTPUT
+            echo "$NOTES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "notes=" >> $GITHUB_OUTPUT
+          fi
 
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-
-      # ----------------------------
-      # Create GitHub Release
-      # ----------------------------
+      # ---------- 8. Create Release ----------
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.tag.outputs.tag }}
-          name: Release ${{ steps.tag.outputs.tag }}
+          tag_name: ${{ steps.validate.outputs.version }}
+          name: Release ${{ steps.validate.outputs.version }}
           body: |
-            ## Release Notes
+            # Release ${{ steps.validate.outputs.version }}
 
-            ${{ steps.notes.outputs.notes }}
+            ## 🚀 Deployment Details
+            - **Commit**: `${{ github.event.client_payload.sha }}`
+            - **Image**: `${{ env.IMAGE }}`
+            - **Digest**: `${{ env.DIGEST }}`
+            - **Build workflow run**: [View](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ env.DOCKER_BUILD_RUN_ID }})
+            - **Production deploy run**: [View](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
             ---
 
-            ## Deployment Info
+            ## 📝 Changes since last release
+            ${{ steps.changelog.outputs.changelog }}
 
-            - Commit: `${{ github.sha }}`
-            - Image: `${{ env.IMAGE }}`
-            - Digest: `${{ env.DIGEST }}`
+            ${{ steps.manual_notes.outputs.notes != '' && format('---\n\n## 📋 Manual Release Notes\n\n{0}', steps.manual_notes.outputs.notes) || '' }}
 
+            ---
+
+            *Released by GitHub Actions – immutable image pinned by digest.*
           draft: false
           prerelease: false

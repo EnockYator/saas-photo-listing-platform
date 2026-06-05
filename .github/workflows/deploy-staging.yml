@@ -20,8 +20,7 @@ env:
 jobs:
   deploy-render-staging:
     name: Deploy to Render Staging
-    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
-    # This job only runs if the payload branch matches 'dev'
+    environment: ${{ github.event.client_payload.branch == 'refs/heads/main' && 'production' || 'staging' }}
     if: github.event.client_payload.branch == 'refs/heads/dev'
     runs-on: ubuntu-latest
 
@@ -236,24 +235,3 @@ jobs:
           if ! curl -f "https://${DOMAIN}/version"; then
             echo "⚠️ version endpoint missing"
           fi
-
-  trigger-production-deployment:
-    name: Repository Dispatch
-    needs: [deploy-render-staging]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write  # Required to trigger repository dispatch
-
-    steps:
-      - name: Trigger production deployment workflow
-        uses: peter-evans/repository-dispatch@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
-          event-type: run-production-deployment
-          client-payload: |
-            {
-              "sha": "${{ github.event.client_payload.sha }}",
-              "run_id": "${{ needs.deploy-render-staging.outputs.docker_build_run_id }}",
-              "branch": "${{ github.event.client_payload.branch }}"
-            }
