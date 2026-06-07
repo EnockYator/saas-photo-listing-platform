@@ -13,7 +13,7 @@ jobs:
     with:
       sha: ${{ github.sha }}
       branch: ${{ github.ref }}
-  
+
   security:
     name: Run Security Checks
     needs: lint
@@ -78,4 +78,3 @@ jobs:
       digest: ${{ needs.build.outputs.digest }}
       image: ${{ needs.build.outputs.image }}
       version: ${{ needs.build.outputs.version }}
-

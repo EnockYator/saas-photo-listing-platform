@@ -64,7 +64,7 @@ jobs:
         id: export
         run: |
           IMAGE=${{ inputs.image }}
-          
+
           if [ -z "$IMAGE" ]; then
             echo "❌ Missing image input"
             exit 1
