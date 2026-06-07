@@ -5,10 +5,10 @@
 name: Migrations
 
 on:
-  pull_request:
-      branches: [main, dev]
-  push:
-    branches: [main, dev]
+  # pull_request:
+  #     branches: [main, dev]
+  # push:
+  #   branches: [main, dev]
   repository_dispatch:
     types: [run-migrations]
 
