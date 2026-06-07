@@ -6,17 +6,24 @@
 name: Deploy to Staging
 
 on:
-  # pull_request:
-  #   branches: [dev]
-  # push:
-  #   branches: [dev]
-  repository_dispatch:
-    types: [run-deployment]
+  workflow_call:
+    inputs:
+      sha:
+        description: 'The commit SHA that triggered the build / from orchestrator workflow'
+        required: true
+        type: string
+      image:
+        description: 'The Docker image to use for migrations'
+        required: true
+        type: string
+      environment:
+        description: 'The target environment for migrations (e.g. staging, production)'
+        required: true
+        type: string
 
 permissions:
   contents: read
   packages: read
-  actions: read  # Needed when downloading artifacts from another workflow run
 
 env:
   REGISTRY: ghcr.io
@@ -24,70 +31,30 @@ env:
 jobs:
   deploy-render-staging:
     name: Deploy to Render Staging
-    environment: ${{ github.event.client_payload.branch == 'refs/heads/main' && 'production' || 'staging' }}
-    if: github.event.client_payload.branch == 'refs/heads/dev'
+    environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
-
-    outputs:
-      digest: ${{ steps.export.outputs.digest }}
-      image: ${{ steps.export.outputs.image }}
-      docker_build_run_id: ${{ steps.export.outputs.docker_build_run_id }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          # For push events, use the pushed branch; for dispatch, use the SHA from payload.
-          ref: ${{ github.event_name == 'push' && github.ref || github.event.client_payload.sha }}
+          ref: ${{ inputs.sha }}
 
-      # Download image-metadata artifact from Docker Build workflow
-      - name: Download image metadata artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: image-metadata
-          path: .
-          run-id: ${{ github.event.client_payload.run_id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      # Load immutable image metadata
       - name: Load image metadata
         id: export
         run: |
-          if [ ! -f digest.txt ] || [ ! -f image.txt ] || [ ! -f docker_build_run_id.txt ]; then
-            echo "❌ Missing required artifact files"
-            ls -la
-            exit 1
-          fi
+          IMAGE=${{ inputs.image }}
 
-          DIGEST="$(cat digest.txt | tr -d '\n')"
-          if [ -z "$DIGEST" ]; then
-            echo "❌ Missing image digest artifact"
-            exit 1
-          fi
-
-          IMAGE="$(cat image.txt | tr -d '\n')"
           if [ -z "$IMAGE" ]; then
-            echo "❌ Missing image name artifact"
+            echo "❌ Missing image input"
             exit 1
           fi
 
-          DOCKER_BUILD_RUN_ID="$(cat docker_build_run_id.txt | tr -d '\n')"
-          if [ -z "$DOCKER_BUILD_RUN_ID" ]; then
-            echo "❌ Missing docker build run ID artifact"
-            exit 1
-          fi
-
-          echo "DIGEST=$DIGEST" >> $GITHUB_ENV
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
-          echo "DOCKER_BUILD_RUN_ID=$DOCKER_BUILD_RUN_ID" >> $GITHUB_ENV
 
-          echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
-          echo "docker_build_run_id=${DOCKER_BUILD_RUN_ID}" >> $GITHUB_OUTPUT
 
           echo "Using image: $IMAGE"
-          echo "Using digest: $DIGEST"
-          echo "Using docker_build_run_id: $DOCKER_BUILD_RUN_ID"
 
       # ----------------------------
       # Render ENV variables
@@ -96,47 +63,46 @@ jobs:
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_SSLMODE: ${{ secrets.DB_SSLMODE }}
+          CHANNEL_BINDING: ${{ secrets.CHANNEL_BINDING }}
+          DB_DRIVER: ${{ secrets.DB_DRIVER }}
+          APP_ENV: ${{ secrets.APP_ENV }}
+          PROJECT_NAME: ${{ secrets.PROJECT_NAME }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT }}
+          SERVER_READ_TIMEOUT: ${{ secrets.SERVER_READ_TIMEOUT }}
+          SERVER_WRITE_TIMEOUT: ${{ secrets.SERVER_WRITE_TIMEOUT }}
+          SERVER_IDLE_TIMEOUT: ${{ secrets.SERVER_IDLE_TIMEOUT }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_EXPIRATION: ${{ secrets.JWT_EXPIRATION }}
+          LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
+          DEBUG: ${{ secrets.DEBUG }}
+          APP_PORT: ${{ secrets.APP_PORT }}
+          MEMORY_LIMIT: ${{ secrets.MEMORY_LIMIT }}
+          CPU_LIMIT: ${{ secrets.CPU_LIMIT }}
+          MEMORY_RESERVE: ${{ secrets.MEMORY_RESERVE }}
+          CPU_RESERVE: ${{ secrets.CPU_RESERVE }}
+          REPLICAS: ${{ secrets.REPLICAS }}
         run: |
           set -e
+          # List of variable names that will be sent to Render
+          VAR_NAMES=(
+            DB_HOST DB_URL DB_USER DB_PASSWORD DB_NAME DB_SSLMODE
+            CHANNEL_BINDING DB_DRIVER APP_ENV PROJECT_NAME
+            SERVER_PORT SERVER_READ_TIMEOUT SERVER_WRITE_TIMEOUT SERVER_IDLE_TIMEOUT
+            JWT_SECRET JWT_EXPIRATION LOG_LEVEL DEBUG APP_PORT
+            MEMORY_LIMIT CPU_LIMIT MEMORY_RESERVE CPU_RESERVE REPLICAS
+          )
 
-          # Create a temporary file to avoid exposing secrets in command line
-          env_vars_file=$(mktemp)
+          for key in "${VAR_NAMES[@]}"; do
+            # Retrieve the value from the environment (empty if not set)
+            value="${!key}"
 
-          cat > "$env_vars_file" << 'EOF'
-          [
-            {"key": "DB_HOST", "value": "${{ secrets.DB_HOST }}"},
-            {"key": "DB_URL", "value": "${{ secrets.DB_URL }}"},
-            {"key": "DB_USER", "value": "${{ secrets.DB_USER }}"},
-            {"key": "DB_PASSWORD", "value": "${{ secrets.DB_PASSWORD }}"},
-            {"key": "DB_NAME", "value": "${{ secrets.DB_NAME }}"},
-            {"key": "DB_SSLMODE", "value": "${{ secrets.DB_SSLMODE }}"},
-            {"key": "CHANNEL_BINDING", "value": "${{ secrets.CHANNEL_BINDING }}"},
-            {"key": "DB_DRIVER", "value": "${{ secrets.DB_DRIVER }}"},
-            {"key": "APP_ENV", "value": "${{ secrets.APP_ENV }}"},
-            {"key": "PROJECT_NAME", "value": "${{ secrets.PROJECT_NAME }}"},
-            {"key": "SERVER_PORT", "value": "${{ secrets.SERVER_PORT }}"},
-            {"key": "SERVER_READ_TIMEOUT", "value": "${{ secrets.SERVER_READ_TIMEOUT }}"},
-            {"key": "SERVER_WRITE_TIMEOUT", "value": "${{ secrets.SERVER_WRITE_TIMEOUT }}"},
-            {"key": "SERVER_IDLE_TIMEOUT", "value": "${{ secrets.SERVER_IDLE_TIMEOUT }}"},
-            {"key": "JWT_SECRET", "value": "${{ secrets.JWT_SECRET }}"},
-            {"key": "JWT_EXPIRATION", "value": "${{ secrets.JWT_EXPIRATION }}"},
-            {"key": "LOG_LEVEL", "value": "${{ secrets.LOG_LEVEL }}"},
-            {"key": "DEBUG", "value": "${{ secrets.DEBUG }}"},
-            {"key": "APP_PORT", "value": "${{ secrets.APP_PORT }}"},
-            {"key": "MEMORY_LIMIT", "value": "${{ secrets.MEMORY_LIMIT }}"},
-            {"key": "CPU_LIMIT", "value": "${{ secrets.CPU_LIMIT }}"},
-            {"key": "MEMORY_RESERVE", "value": "${{ secrets.MEMORY_RESERVE }}"},
-            {"key": "CPU_RESERVE", "value": "${{ secrets.CPU_RESERVE }}"},
-            {"key": "REPLICAS", "value": "${{ secrets.REPLICAS }}"}
-          ]
-          EOF
-
-          # Use jq to process each variable
-          jq -c '.[]' "$env_vars_file" | while read -r env_var; do
-            key=$(echo "$env_var" | jq -r '.key')
-            value=$(echo "$env_var" | jq -r '.value')
-
-            # Build safe JSON payload
+            # Safely build the JSON payload with jq (no string interpolation)
             json_payload=$(jq -nc --arg val "$value" '{value: $val}')
 
             response=$(curl -s -w "%{http_code}" -X PUT \
@@ -148,20 +114,18 @@ jobs:
 
             http_code=${response: -3}
             if [ "$http_code" != "200" ]; then
-              echo "❌ Failed to update env var $key (HTTP $http_code)"
+              echo "❌ Failed to update env var ${key} (HTTP ${http_code})"
               exit 1
             fi
           done
 
-          # Add RENDER_SERVICE_ID
+          # Also set RENDER_SERVICE_ID (no secret needed, value is already in env)
           curl -s -X PUT \
             "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/env-vars/RENDER_SERVICE_ID" \
             -H "authorization: Bearer ${RENDER_API_KEY}" \
             -H "content-type: application/json" \
             -d "{\"value\": \"${RENDER_SERVICE_ID}\"}"
-
-          rm -f "$env_vars_file"
-
+            
       # ----------------------------
       # Deploy image using name (attached to immutable digest)
       # ----------------------------

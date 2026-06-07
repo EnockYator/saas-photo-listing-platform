@@ -7,15 +7,15 @@
 name: CI
 
 on:
-  pull_request:
-      branches: [main, dev]
-  push:
-    branches: [main, dev]
+  workflow_call:
+    inputs:
+      sha:
+        description: 'The commit SHA that triggered the build / from orchestrator workflow'
+        required: true
+        type: string
 
 permissions:
   contents: read
-  packages: write   # Required by called workflow docker-build.yml
-  id-token: write   # Required by cosign signing inside docker-build.yml
 
 env:
   GO_VERSION: '1.25.0'
@@ -45,6 +45,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha }}
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -100,23 +102,3 @@ jobs:
         run: |
           mkdir -p bin
           go build -o bin/api ./cmd/app/
-
-  trigger-docker-build:
-    name: Repository Dispatch
-    needs: [test]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write  # Required to trigger repository dispatch
-
-    steps:
-      - name: Trigger Docker Build
-        uses: peter-evans/repository-dispatch@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
-          event-type: docker-build
-          client-payload: |
-            {
-              "sha": "${{ github.sha }}",
-              "branch": "${{ github.ref }}"
-            }
