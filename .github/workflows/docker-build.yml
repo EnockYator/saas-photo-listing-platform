@@ -8,10 +8,10 @@
 name: Docker Build & Push
 
 on:
-  pull_request:
-    branches: [main, dev]
-  push:
-    branches: [main, dev]
+  # pull_request:
+  #   branches: [main, dev]
+  # push:
+  #   branches: [main, dev]
   repository_dispatch:
     types: [docker-build]
 
