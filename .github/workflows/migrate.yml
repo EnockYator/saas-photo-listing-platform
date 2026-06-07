@@ -5,17 +5,25 @@
 name: Migrations
 
 on:
-  # pull_request:
-  #     branches: [main, dev]
-  # push:
-  #   branches: [main, dev]
-  repository_dispatch:
-    types: [run-migrations]
+  workflow_call:
+    inputs:
+      sha:
+        description: 'The commit SHA that triggered the build / from orchestrator workflow'
+        required: true
+        type: string
+      image:
+        description: 'The Docker image to use for migrations'
+        required: true
+        type: string
+      environment:
+        description: 'The target environment for migrations (e.g. staging, production)'
+        required: true
+        type: string
 
 permissions:
   contents: read
   packages: read
-  actions: read  # Needed when downloading artifacts from another workflow run
+  actions: read
 
 env:
   REGISTRY: ghcr.io
@@ -23,14 +31,9 @@ env:
 jobs:
   migrate:
     name: Run Database Migrations
-    environment: ${{ github.event.client_payload.branch == 'refs/heads/main' && 'production' || 'staging' }}
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
     timeout-minutes: 15
-
-    outputs:
-      digest: ${{ steps.export.outputs.digest }}
-      image: ${{ steps.export.outputs.image }}
-      docker_build_run_id: ${{ steps.export.outputs.docker_build_run_id }}
 
     services:
       postgres:
@@ -51,37 +54,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          # For push events, use the pushed branch; for dispatch, use the SHA from payload.
-          ref: ${{ github.event_name == 'push' && github.ref || github.event.client_payload.sha }}
-
-      - name: Download image metadata artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: image-metadata
-          path: .
-          run-id: ${{ github.event.client_payload.run_id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ inputs.sha }}
 
       - name: Load image metadata
         id: export
         run: |
-          if [ ! -f digest.txt ] || [ ! -f image.txt ] || [ ! -f docker_build_run_id.txt ]; then
-            echo "❌ Missing required artifact files"
-            ls -la
+
+          IMAGE=${{ inputs.image }}
+
+          if [ -z "$IMAGE" ]; then
+            echo "❌ Missing image input"
             exit 1
           fi
 
-          DIGEST="$(cat digest.txt | tr -d '\n')"
-          IMAGE="$(cat image.txt | tr -d '\n')"
-          DOCKER_BUILD_RUN_ID="$(cat docker_build_run_id.txt | tr -d '\n')"
-
-          echo "DIGEST=$DIGEST" >> $GITHUB_ENV
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
-          echo "DOCKER_BUILD_RUN_ID=$DOCKER_BUILD_RUN_ID" >> $GITHUB_ENV
 
-          echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
-          echo "docker_build_run_id=${DOCKER_BUILD_RUN_ID}" >> $GITHUB_OUTPUT
 
           echo "✅ Using image: $IMAGE"
 
@@ -129,24 +117,3 @@ jobs:
         run: |
           # No manual containers to clean up — the service container is managed by GitHub
           echo "Cleanup complete"
-
-  trigger-deployment:
-    name: Repository Dispatch
-    needs: [migrate]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write  # Required to trigger repository dispatch
-
-    steps:
-      - name: Trigger deployment workflows
-        uses: peter-evans/repository-dispatch@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
-          event-type: run-deployment
-          client-payload: |
-            {
-              "sha": "${{ github.event.client_payload.sha }}",
-              "run_id": "${{ needs.migrate.outputs.docker_build_run_id }}",
-              "branch": "${{ github.event.client_payload.branch }}"
-            }

@@ -1,0 +1,81 @@
+name: Orchestrator CI/CD
+
+on:
+  push :
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  lint:
+    name: Lint Codebase
+    uses: ./.github/workflows/lint.yml
+    with:
+      sha: ${{ github.sha }}
+      branch: ${{ github.ref }}
+  
+  security:
+    name: Run Security Checks
+    needs: lint
+    uses: ./.github/workflows/security.yml
+    with:
+      sha: ${{ github.sha }}
+      branch: ${{ github.ref }}
+
+  ci:
+    name: Run CI Workflow
+    needs: security
+    uses: ./.github/workflows/ci.yml
+    with:
+      sha: ${{ github.sha }}
+
+  build:
+    name: Run Docker Build Workflow
+    needs: ci
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
+    uses: ./.github/workflows/docker-build.yml
+    with:
+      sha: ${{ github.sha }}
+
+  migrate:
+    name: Run Migrations Workflow
+    needs: build
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
+    uses: ./.github/workflows/migrate.yml
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+    with:
+      sha: ${{ github.sha }}
+      image: ${{ needs.build.outputs.image }}
+
+  deploy-staging:
+    name: Run Deploy Staging Workflow
+    needs: migrate
+    if: github.ref == 'refs/heads/dev'
+    uses: ./.github/workflows/deploy-staging.yml
+    environment: staging
+    with:
+      sha: ${{ github.sha }}
+      image: ${{ needs.build.outputs.image }}
+
+  deploy-production:
+    name: Run Deploy Production Workflow
+    needs: migrate
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/deploy-production.yml
+    environment: production
+    with:
+      sha: ${{ github.sha }}
+      image: ${{ needs.build.outputs.image }}
+
+  release:
+    name: Run Release Workflow
+    needs: deploy-production
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/release.yml
+    environment: production
+    with:
+      sha: ${{ github.sha }}
+      digest: ${{ needs.build.outputs.digest }}
+      image: ${{ needs.build.outputs.image }}
+      version: ${{ needs.build.outputs.version }}
+

@@ -4,75 +4,73 @@
 name: Create Release
 
 on:
-  repository_dispatch:
-    types: [run-release]
+  workflow_call:
+    inputs:
+      sha:
+        description: 'The commit SHA that triggered the build / from orchestrator workflow'
+        required: true
+        type: string
+      digest:
+        description: 'The Docker image digest (immutable reference)'
+        required: true
+        type: string
+      image:
+        description: 'The Docker image to use for migrations'
+        required: true
+        type: string
+      version:
+        description: 'The version to release - computed from docker-build (e.g. v1.2.3)'
+        required: true
+        type: string
+      environment:
+        description: 'The target environment for migrations (e.g. staging, production)'
+        required: true
+        type: string
 
 permissions:
   contents: write      # to create tags and releases
-  actions: read        # Needed when downloading artifacts from another workflow run
+  actions: read
 
 jobs:
   release:
     name: Create GitHub Release
-    if: github.event.client_payload.branch == 'refs/heads/main'
     runs-on: ubuntu-latest
-
-    outputs:
-      digest:  ${{ steps.export.outputs.digest }}
-      image:   ${{ steps.export.outputs.image }}
-      version: ${{ steps.validate.outputs.version }}
+    environment: ${{ inputs.environment }}
 
     steps:
       # ---------- 1. Validate payload ----------
       - name: Validate dispatch payload
+        id: validate
         run: |
-          for key in sha run_id branch version; do
-            [ -n "${{ github.event.client_payload[key] }}" ] || {
-              echo "❌ Missing '$key' in client_payload"
-              exit 1
-            }
-          done
-          NEW_TAG="${{ github.event.client_payload.version }}"
+          NEW_TAG=${{ inputs.version }}
+
           if [[ ! "$NEW_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "❌ Invalid version format: $NEW_TAG"
             exit 1
           fi
+
           echo "version=$NEW_TAG" >> $GITHUB_OUTPUT
 
       # ---------- 2. Checkout full history ----------
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.client_payload.sha }}
+          ref: ${{ inputs.sha }}
           fetch-depth: 0
 
       # ---------- 3. Download image metadata ----------
-      - name: Download image metadata artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: image-metadata
-          path: .
-          run-id: ${{ github.event.client_payload.run_id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Load image metadata
         id: export
         run: |
-          for f in digest.txt image.txt docker_build_run_id.txt; do
-            [ -f "$f" ] || { echo "❌ Missing $f"; exit 1; }
-          done
-
-          DIGEST=$(tr -d '\n' < digest.txt)
-          IMAGE=$(tr -d '\n' < image.txt)
-          DOCKER_BUILD_RUN_ID=$(tr -d '\n' < docker_build_run_id.txt)
-
-          echo "digest=$DIGEST" >> $GITHUB_OUTPUT
-          echo "image=$IMAGE" >> $GITHUB_OUTPUT
-          echo "docker_build_run_id=$DOCKER_BUILD_RUN_ID" >> $GITHUB_OUTPUT
-
-          echo "DIGEST=$DIGEST" >> $GITHUB_ENV
+          IMAGE=${{ inputs.image }}
+          
+          if [ -z "$IMAGE" ]; then
+            echo "❌ Missing image input"
+            exit 1
+          fi
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
-          echo "DOCKER_BUILD_RUN_ID=$DOCKER_BUILD_RUN_ID" >> $GITHUB_ENV
+          echo "image=$IMAGE" >> $GITHUB_OUTPUT
 
       # ---------- 4. Create tag ----------
       - name: Create tag
@@ -94,7 +92,7 @@ jobs:
           echo "$LOG" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      # ---------- 7. (Optional) RELEASE_NOTES.md ----------
+      # ---------- 7. RELEASE_NOTES.md ----------
       - name: Read RELEASE_NOTES.md if present
         id: manual_notes
         run: |
@@ -117,10 +115,10 @@ jobs:
             # Release ${{ steps.validate.outputs.version }}
 
             ## 🚀 Deployment Details
-            - **Commit**: `${{ github.event.client_payload.sha }}`
+            - **Commit Sha**: `${{ inputs.sha }}`
             - **Image**: `${{ env.IMAGE }}`
-            - **Digest**: `${{ env.DIGEST }}`
-            - **Build workflow run**: [View](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ env.DOCKER_BUILD_RUN_ID }})
+            - **Digest**: `${{ inputs.digest }}`
+            - **Build workflow run**: [View](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
             - **Production deploy run**: [View](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
             ---

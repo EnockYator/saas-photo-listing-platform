@@ -6,12 +6,14 @@
 name: Security Scan
 
 on:
+  workflow_call:
+    inputs:
+      sha:
+        description: 'The commit SHA that triggered the build / from orchestrator workflow'
+        required: true
+        type: string
   schedule:
     - cron: '0 0 * * 0' # Weekly
-  pull_request:
-    branches: [main, dev]
-  push:
-    branches: [main, dev]
 
 permissions:
   contents: read
@@ -29,6 +31,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha }}
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -61,6 +65,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha }}
 
       - name: Run Gosec Security Scanner
         uses: securego/gosec@v2.19.0
@@ -91,6 +97,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.sha }}
           fetch-depth: 0  # Fetch all history for proper commit scanning
 
       - name: Run Gitleaks
