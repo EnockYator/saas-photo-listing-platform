@@ -137,7 +137,7 @@ jobs:
           # Output the new version
           echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
           echo "NEW_VERSION=$NEW_VERSION" >> "$GITHUB_ENV"
-          
+
       - name: Build and push Docker image
         id: build
         uses: docker/build-push-action@v5
