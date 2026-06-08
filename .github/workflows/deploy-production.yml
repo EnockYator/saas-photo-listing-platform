@@ -21,6 +21,16 @@ on:
         description: 'The target environment for migrations (e.g. staging, production)'
         required: true
         type: string
+    outputs:
+      image:
+        description: 'The Docker image that was deployed'
+        value: ${{ jobs.deploy-render-production.outputs.image }}
+      digest:
+        description: 'The Docker image digest (immutable reference)'
+        value: ${{ jobs.deploy-render-production.outputs.digest }}
+      version:
+        description: 'The version to release - computed from docker-build (e.g. v1.2.3)'
+        value: ${{ jobs.deploy-render-production.outputs.version }}
 
 permissions:
   contents: read
@@ -36,27 +46,36 @@ jobs:
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
 
+    outputs:
+      image: ${{ steps.export.outputs.image }}
+      digest: ${{ steps.export.outputs.digest }}
+      version: ${{ steps.export.outputs.version }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
         with:
           ref: ${{ inputs.sha }}
 
-      # Load immutable image metadata
+      # Load image metadata
       - name: Load image metadata
         id: export
         run: |
 
           IMAGE=${{ inputs.image }}
+          Digest=${{ inputs.digest }}
+          VERSION=${{ inputs.version }}
 
-          if [ -z "$IMAGE" ]; then
-            echo "❌ Missing image input"
+          if [ -z "$IMAGE" ] || [ -z "$Digest" ] || [ -z "$VERSION" ]; then
+            echo "❌ Missing required input values"
             exit 1
           fi
 
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+          echo "digest=${Digest}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
           echo "Using image: $IMAGE"
 

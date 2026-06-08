@@ -19,6 +19,14 @@ on:
         description: 'The target environment for migrations (staging, production)'
         required: true
         type: string
+      digest:
+        description: 'The Docker image digest (immutable reference)'
+        required: true
+        type: string
+      version:
+        description: 'The version to release - computed from docker-build (e.g. v1.2.3)'
+        required: true
+        type: string
     secrets:
       DB_URL:
         required: true
@@ -26,6 +34,12 @@ on:
       image:
         description: 'The Docker image that was deployed'
         value: ${{ jobs.migrate.outputs.image }}
+      digest:
+        description: 'The Docker image digest (immutable reference)'
+        value: ${{ jobs.migrate.outputs.digest }}
+      version:
+        description: 'The version to release - computed from docker-build (e.g. v1.2.3)'
+        value: ${{ jobs.migrate.outputs.version }}
 
 permissions:
   contents: read
@@ -44,6 +58,8 @@ jobs:
 
     outputs:
       image: ${{ steps.export.outputs.image }}
+      digest: ${{ steps.export.outputs.digest }}
+      version: ${{ steps.export.outputs.version }}
 
     services:
       postgres:
@@ -69,17 +85,20 @@ jobs:
       - name: Load image metadata
         id: export
         run: |
-
           IMAGE=${{ inputs.image }}
+          Digest=${{ inputs.digest }}
+          VERSION=${{ inputs.version }}
 
-          if [ -z "$IMAGE" ]; then
-            echo "❌ Missing image input"
+          if [ -z "$IMAGE" ] || [ -z "$Digest" ] || [ -z "$VERSION" ]; then
+            echo "❌ Missing required input values"
             exit 1
           fi
 
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+          echo "digest=${Digest}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
           echo "✅ Using image: $IMAGE"
 
