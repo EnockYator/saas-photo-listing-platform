@@ -19,6 +19,9 @@ on:
         description: 'The target environment for migrations (e.g. staging, production)'
         required: true
         type: string
+    secrets:
+      DB_URL:
+        required: true
 
 permissions:
   contents: read

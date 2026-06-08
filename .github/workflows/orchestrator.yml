@@ -40,6 +40,8 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
     uses: ./.github/workflows/migrate.yml
+    secrets:
+      DB_URL: ${{ secrets.DB_URL }}
     with:
       sha: ${{ github.sha }}
       image: ${{ needs.build.outputs.image }}
