@@ -38,6 +38,60 @@ on:
       version:
         description: 'The version to release - computed from docker-build (e.g. v1.2.3)'
         value: ${{ jobs.deploy-render-staging.outputs.version }}
+    
+    secrets:
+      RENDER_API_KEY:
+        required: true
+      RENDER_SERVICE_ID:
+        required: true
+      DB_HOST:
+        required: true
+      DB_URL:
+        required: true
+      DB_USER:
+        required: true
+      DB_PASSWORD:
+        required: true
+      DB_NAME:
+        required: true
+      DB_SSLMODE:
+        required: true
+      CHANNEL_BINDING:
+        required: true
+      DB_DRIVER:
+        required: true
+      APP_ENV:
+        required: true
+      PROJECT_NAME:
+        required: true
+      SERVER_PORT:
+        required: true
+      SERVER_READ_TIMEOUT:
+        required: true
+      SERVER_WRITE_TIMEOUT:
+        required: true
+      SERVER_IDLE_TIMEOUT:
+        required: true
+      JWT_SECRET:
+        required: true
+      JWT_EXPIRATION:
+        required: true
+      LOG_LEVEL:
+        required: true
+      DEBUG:
+        required: true
+      APP_PORT:
+        required: true
+      MEMORY_LIMIT:
+        required: true
+      CPU_LIMIT:
+        required: true
+      MEMORY_RESERVE:
+        required: true
+      CPU_RESERVE:
+        required: true
+      REPLICAS:
+        required: true
 
 permissions:
   contents: read
