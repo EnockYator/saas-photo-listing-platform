@@ -17,6 +17,14 @@ on:
         description: 'The Docker image to use for migrations'
         required: true
         type: string
+      digest:
+        description: 'The Docker image digest (immutable reference)'
+        required: true
+        type: string
+      version:
+        description: 'The version to release - computed from docker-build (e.g. v1.2.3)'
+        required: true
+        type: string
       environment:
         description: 'The target environment for migrations (e.g. staging, production)'
         required: true
