@@ -15,6 +15,23 @@ on:
         required: true
         type: string
 
+    outputs:
+      image:
+        description: "Built Docker image reference"
+        value: ${{ jobs.build.outputs.image }}
+
+      digest:
+        description: "Image digest"
+        value: ${{ jobs.build.outputs.digest }}
+
+      version:
+        description: "Image version tag"
+        value: ${{ jobs.build.outputs.version }}
+
+      repo_lower:
+        description: "Lowercase repository name for GHCR"
+        value: ${{ jobs.build.outputs.repo_lower }}
+
 permissions:
   contents: read
   packages: write
