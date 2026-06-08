@@ -103,12 +103,12 @@ jobs:
           DB_URL: ${{ secrets.DB_URL }}
         run: |
           echo "Applying migrations to production database..."
-          
+
           if [ -z "$DB_URL" ]; then
             echo "DB_URL is empty"
             exit 1
           fi
-          
+
           docker run --rm \
             --network ${{ job.services.postgres.network }} \
             -e DB_URL="${DB_URL}" \
