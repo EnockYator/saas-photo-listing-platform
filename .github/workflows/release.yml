@@ -26,6 +26,16 @@ on:
         description: 'The target environment for migrations (e.g. staging, production)'
         required: true
         type: string
+    outputs:
+      image:
+        description: 'The Docker image that was deployed'
+        value: ${{ jobs.release.outputs.image }}
+      digest:
+        description: 'The Docker image digest (immutable reference)'
+        value: ${{ jobs.release.outputs.digest }}
+      version:
+        description: 'The version to release - computed from docker-build (e.g. v1.2.3)'
+        value: ${{ jobs.release.outputs.version }}
 
 permissions:
   contents: write      # to create tags and releases
@@ -36,6 +46,11 @@ jobs:
     name: Create GitHub Release
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
+
+    outputs:
+      image: ${{ steps.export.outputs.image }}
+      digest: ${{ steps.export.outputs.digest }}
+      version: ${{ steps.export.outputs.version }}
 
     steps:
       # ---------- 1. Validate payload ----------
@@ -64,13 +79,21 @@ jobs:
         id: export
         run: |
           IMAGE=${{ inputs.image }}
+          Digest=${{ inputs.digest }}
+          VERSION=${{ inputs.version }}
 
-          if [ -z "$IMAGE" ]; then
-            echo "❌ Missing image input"
+          if [ -z "$IMAGE" ] || [ -z "$Digest" ] || [ -z "$VERSION" ]; then
+            echo "❌ Missing required input values"
             exit 1
           fi
+
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
-          echo "image=$IMAGE" >> $GITHUB_OUTPUT
+
+          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+          echo "digest=${Digest}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+          echo "✅ Using image: $IMAGE"
 
       # ---------- 4. Create tag ----------
       - name: Create tag

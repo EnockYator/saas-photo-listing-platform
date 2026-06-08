@@ -44,7 +44,9 @@ jobs:
       DB_URL: ${{ secrets.DB_URL }}
     with:
       sha: ${{ github.sha }}
+      digest: ${{ needs.build.outputs.digest }}
       image: ${{ needs.build.outputs.image }}
+      version: ${{ needs.build.outputs.version }}
       environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
 
 
@@ -56,6 +58,8 @@ jobs:
     with:
       sha: ${{ github.sha }}
       image: ${{ needs.migrate.outputs.image }}
+      digest: ${{ needs.migrate.outputs.digest }}
+      version: ${{ needs.migrate.outputs.version }}
       environment: staging
 
   deploy-production:
@@ -66,6 +70,8 @@ jobs:
     with:
       sha: ${{ github.sha }}
       image: ${{ needs.migrate.outputs.image }}
+      digest: ${{ needs.migrate.outputs.digest }}
+      version: ${{ needs.migrate.outputs.version }}
       environment: production
 
   release:
@@ -75,7 +81,7 @@ jobs:
     uses: ./.github/workflows/release.yml
     with:
       sha: ${{ github.sha }}
-      digest: ${{ needs.build.outputs.digest }}
-      image: ${{ needs.build.outputs.image }}
-      version: ${{ needs.build.outputs.version }}
+      digest: ${{ needs.deploy-render-production.outputs.digest }}
+      image: ${{ needs.deploy-render-production.outputs.image }}
+      version: ${{ needs.deploy-render-production.outputs.version }}
       environment: production
