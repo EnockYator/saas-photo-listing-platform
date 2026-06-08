@@ -16,7 +16,7 @@ on:
         required: true
         type: string
       environment:
-        description: 'The target environment for migrations (e.g. staging, production)'
+        description: 'The target environment for migrations (staging, production)'
         required: true
         type: string
     secrets:
