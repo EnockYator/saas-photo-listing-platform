@@ -130,12 +130,9 @@ jobs:
         if: steps.test-migrations.outcome == 'success'
         env:
           DB_URL: ${{ secrets.DB_URL }}
-          DB_USER: ${{ secrets.DB_USER }}
         run: |
           echo "Applying migrations to production database..."
           echo "Target environment: ${{ inputs.environment }}"
-          echo "DB_USER: ${{ secrets.DB_USER }}"
-          echo "DB_URL: ${{ secrets.DB_URL }}"
 
           if [ -z "$DB_URL" ]; then
             echo "DB_URL is empty"
