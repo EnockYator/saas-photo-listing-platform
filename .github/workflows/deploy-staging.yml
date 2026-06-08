@@ -20,6 +20,10 @@ on:
         description: 'The target environment for migrations (e.g. staging, production)'
         required: true
         type: string
+    outputs:
+      image:
+        description: 'The Docker image that was deployed'
+        value: ${{ jobs.deploy-render-staging.outputs.image }}
 
 permissions:
   contents: read
@@ -33,6 +37,9 @@ jobs:
     name: Deploy to Render Staging
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
+
+    outputs:
+      image: ${{ steps.export.outputs.image }}
 
     steps:
       - name: Checkout code

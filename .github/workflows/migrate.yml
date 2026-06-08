@@ -22,6 +22,10 @@ on:
     secrets:
       DB_URL:
         required: true
+    outputs:
+      image:
+        description: 'The Docker image that was deployed'
+        value: ${{ jobs.migrate.outputs.image }}
 
 permissions:
   contents: read
@@ -37,6 +41,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     timeout-minutes: 15
+
+    outputs:
+      image: ${{ steps.export.outputs.image }}
 
     services:
       postgres:

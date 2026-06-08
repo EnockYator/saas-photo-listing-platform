@@ -55,7 +55,7 @@ jobs:
     uses: ./.github/workflows/deploy-staging.yml
     with:
       sha: ${{ github.sha }}
-      image: ${{ needs.build.outputs.image }}
+      image: ${{ needs.migrate.outputs.image }}
       environment: staging
 
   deploy-production:
@@ -65,7 +65,7 @@ jobs:
     uses: ./.github/workflows/deploy-production.yml
     with:
       sha: ${{ github.sha }}
-      image: ${{ needs.build.outputs.image }}
+      image: ${{ needs.migrate.outputs.image }}
       environment: production
 
   release:
