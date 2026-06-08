@@ -16,6 +16,14 @@ on:
         description: 'The Docker image to use for migrations'
         required: true
         type: string
+      digest:
+        description: 'The Docker image digest (immutable reference)'
+        required: true
+        type: string
+      version:
+        description: 'The version to release - computed from docker-build (e.g. v1.2.3)'
+        required: true
+        type: string
       environment:
         description: 'The target environment for migrations (e.g. staging, production)'
         required: true
@@ -24,6 +32,12 @@ on:
       image:
         description: 'The Docker image that was deployed'
         value: ${{ jobs.deploy-render-staging.outputs.image }}
+      digest:
+        description: 'The Docker image digest (immutable reference)'
+        value: ${{ jobs.deploy-render-staging.outputs.digest }}
+      version:
+        description: 'The version to release - computed from docker-build (e.g. v1.2.3)'
+        value: ${{ jobs.deploy-render-staging.outputs.version }}
 
 permissions:
   contents: read
@@ -40,6 +54,8 @@ jobs:
 
     outputs:
       image: ${{ steps.export.outputs.image }}
+      digest: ${{ steps.export.outputs.digest }}
+      version: ${{ steps.export.outputs.version }}
 
     steps:
       - name: Checkout code
@@ -51,15 +67,19 @@ jobs:
         id: export
         run: |
           IMAGE=${{ inputs.image }}
+          DIGEST=${{ inputs.digest }}
+          VERSION=${{ inputs.version }}
 
-          if [ -z "$IMAGE" ]; then
-            echo "❌ Missing image input"
+          if [ -z "$IMAGE" ] || [ -z "$DIGEST" ] || [ -z "$VERSION" ]; then
+            echo "❌ Missing required input values"
             exit 1
           fi
 
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+          echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
           echo "Using image: $IMAGE"
 
