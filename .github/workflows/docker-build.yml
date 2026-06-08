@@ -87,78 +87,113 @@ jobs:
         id: next_version
         shell: bash
         run: |
-          set +e
+          set -euo pipefail
 
-          # Get latest semver tag
-          LAST_TAG=$(git tag -l "v*.*.*" --sort=-v:refname | head -n1)
-          TAG_EXIT=$?
+          MAJOR=0
+          MINOR=0
+          PATCH=0
 
-          set -e
+          # ----------------------------
+          # Get latest semver tag safely
+          # ----------------------------
+          LAST_TAG=$(git tag -l "v*.*.*" --sort=-v:refname 2>/dev/null | head -n1 || true)
 
-          if [ $TAG_EXIT -ne 0 ]; then
-            echo "⚠️ Failed to fetch tags, defaulting to v0.0.0"
-            LAST_TAG="v0.0.0"
-          fi
-
-          if [ -z "$LAST_TAG" ]; then
+          if [ -z "${LAST_TAG:-}" ]; then
             LAST_TAG="v0.0.0"
           fi
 
           echo "Last tag: $LAST_TAG"
 
-          # Set the commit range to analyse
-          MAJOR=0; MINOR=0; PATCH=0
-          if [ "$LAST_TAG" = "v0.0.0" ]; then
-            COMMIT_RANGE="HEAD"
-          else
+          # ----------------------------
+          # Determine commit range safely
+          # ----------------------------
+          if git rev-parse "$LAST_TAG" >/dev/null 2>&1 && [ "$LAST_TAG" != "v0.0.0" ]; then
             COMMIT_RANGE="$LAST_TAG..HEAD"
+          else
+            COMMIT_RANGE="HEAD"
           fi
 
-          # --- NEW CHECK: no commits in range → keep current version ---
-          if [ "$LAST_TAG" != "v0.0.0" ] && \
-             [ -z "$(git log --pretty=format:%s "$COMMIT_RANGE" 2>/dev/null)" ]; then
+          echo "Commit range: $COMMIT_RANGE"
+
+          # ----------------------------
+          # Safely fetch commit messages
+          # ----------------------------
+          LOG_OUTPUT=$(git log --pretty=format:%s "$COMMIT_RANGE" 2>/dev/null || true)
+
+          # ----------------------------
+          # If there are NO commits, keep version
+          # ----------------------------
+          if [ "$LAST_TAG" != "v0.0.0" ] && [ -z "$LOG_OUTPUT" ]; then
             echo "No new commits since $LAST_TAG – keeping same version"
             echo "version=$LAST_TAG" >> "$GITHUB_OUTPUT"
             echo "NEW_VERSION=$LAST_TAG" >> "$GITHUB_ENV"
             exit 0
           fi
 
-          # Scan commit messages – guard against git log failure with || true
+          # ----------------------------
+          # Analyze commit messages
+          # ----------------------------
           while IFS= read -r msg; do
-            case "$msg" in
-              *"BREAKING CHANGE:"*|*"BREAKING-CHANGE:"*|*!:*)
-                MAJOR=1 ;;
-              feat:*|feat\(*\):*)
-                MINOR=1 ;;
-              fix:*|fix\(*\):*)
-                PATCH=1 ;;
-            esac
-          done < <(git log --pretty=format:%s "$COMMIT_RANGE" || true)
+            [ -z "$msg" ] && continue
 
-          # Determine the bump type
-          if   [ $MAJOR -eq 1 ]; then BUMP="major"
-          elif [ $MINOR -eq 1 ]; then BUMP="minor"
-          elif [ $PATCH -eq 1 ]; then BUMP="patch"
-          else
-            # If we reach here with existing tag and no conventional commits, still bump?
-            # Usually you'd want a patch bump anyway, but we can keep the warning
+            case "$msg" in
+              *"BREAKING CHANGE:"*|*"BREAKING-CHANGE:"*|*"!*:")
+                MAJOR=1
+                ;;
+              feat:*|feat\(*\):*)
+                MINOR=1
+                ;;
+              fix:*|fix\(*\):*)
+                PATCH=1
+                ;;
+            esac
+          done <<< "$LOG_OUTPUT"
+
+          # ----------------------------
+          # Decide bump type
+          # ----------------------------
+          if [ "$MAJOR" -eq 1 ]; then
+            BUMP="major"
+          elif [ "$MINOR" -eq 1 ]; then
+            BUMP="minor"
+          elif [ "$PATCH" -eq 1 ]; then
             BUMP="patch"
-            echo "⚠️  No conventional commits found, defaulting to patch bump"
+          else
+            BUMP="patch"
+            echo "⚠️ No conventional commits found, defaulting to patch bump"
           fi
 
-          # Bump the semantic version
+          # ----------------------------
+          # Compute new version
+          # ----------------------------
           V="${LAST_TAG#v}"
           IFS='.' read -r v_major v_minor v_patch <<< "$V"
-          case $BUMP in
-            major) ((v_major++)); v_minor=0; v_patch=0 ;;
-            minor) ((v_minor++)); v_patch=0 ;;
-            patch) ((v_patch++)) ;;
-          esac
-          NEW_VERSION="v$v_major.$v_minor.$v_patch"
 
-          # Output the new version
+          v_major=${v_major:-0}
+          v_minor=${v_minor:-0}
+          v_patch=${v_patch:-0}
+
+          case "$BUMP" in
+            major)
+              v_major=$((v_major + 1))
+              v_minor=0
+              v_patch=0
+              ;;
+            minor)
+              v_minor=$((v_minor + 1))
+              v_patch=0
+              ;;
+            patch)
+              v_patch=$((v_patch + 1))
+              ;;
+          esac
+
+          NEW_VERSION="v${v_major}.${v_minor}.${v_patch}"
+
           echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
           echo "NEW_VERSION=$NEW_VERSION" >> "$GITHUB_ENV"
+
+          echo "New version: $NEW_VERSION"
 
       - name: Build and push Docker image
         id: build
