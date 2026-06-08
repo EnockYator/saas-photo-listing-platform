@@ -30,7 +30,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.sha }}
 
@@ -45,7 +45,7 @@ jobs:
 
       - name: Run govulncheck
         run: |
-          govulncheck ./... > vuln-report.txt || true
+          govulncheck -tags=production ./... >> vuln-report.txt || true
 
           cat vuln-report.txt
 
@@ -64,7 +64,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.sha }}
 
@@ -95,17 +95,14 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.sha }}
           fetch-depth: 0  # Fetch all history for proper commit scanning
 
       - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          config: default          # Use built-in rules
-          no-redact: false
-          report-format: sarif
-          report-name: gitleaks-results.sarif
+          GITLEAKS_ENABLE_COMMENTS: true
+          GITLEAKS_NOTIFY_USER_LIST: '@${{ github.event.pull_request.user.login }}, @${{ github.actor }}'

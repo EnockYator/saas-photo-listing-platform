@@ -54,10 +54,11 @@ jobs:
 
     steps:
       - name: Checkout full history (to compute version)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.sha }}
           fetch-depth: 0   # full history needed to find tags
+          fetch-tags: true # ensure tags are fetched for versioning
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -86,19 +87,23 @@ jobs:
         id: next_version
         shell: bash
         run: |
-          # If the repository has no commits at all, output the initial version
-          if ! git rev-parse HEAD >/dev/null 2>&1; then
-            echo "No commits found – using initial version v0.0.1"
-            echo "version=v0.0.1" >> "$GITHUB_OUTPUT"
-            echo "NEW_VERSION=v0.0.1" >> "$GITHUB_ENV"
-            exit 0
+          set +e
+
+          # Get latest semver tag
+          LAST_TAG=$(git tag -l "v*.*.*" --sort=-v:refname | head -n1)
+          TAG_EXIT=$?
+
+          set -e
+
+          if [ $TAG_EXIT -ne 0 ]; then
+            echo "⚠️ Failed to fetch tags, defaulting to v0.0.0"
+            LAST_TAG="v0.0.0"
           fi
 
-          # Find latest semver tag (e.g. v1.2.3)
-          LAST_TAG=$(git tag --sort=-v:refname --merged HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' | head -n1)
           if [ -z "$LAST_TAG" ]; then
             LAST_TAG="v0.0.0"
           fi
+
           echo "Last tag: $LAST_TAG"
 
           # Set the commit range to analyse
@@ -165,7 +170,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: |
             ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}:${{ inputs.sha }}
-            if github.ref == 'refs/heads/main' then ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}:${{ env.NEW_VERSION }} else skip
+            ${{ github.ref == 'refs/heads/main' && format('{0}/{1}:{2}', env.REGISTRY, env.REPO_LOWER, env.NEW_VERSION) || '' }}
           provenance: true
           sbom: true
           build-args: |
