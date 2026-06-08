@@ -50,7 +50,7 @@ jobs:
       environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
 
 
-  deploy-staging:
+  deploy-render-staging:
     name: Run Deploy Staging Workflow
     needs: migrate
     if: github.ref == 'refs/heads/dev'
@@ -62,7 +62,7 @@ jobs:
       version: ${{ needs.migrate.outputs.version }}
       environment: staging
 
-  deploy-production:
+  deploy-render-production:
     name: Run Deploy Production Workflow
     needs: migrate
     if: github.ref == 'refs/heads/main'
