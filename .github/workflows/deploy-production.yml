@@ -29,27 +29,27 @@ on:
         description: 'The target environment for migrations (e.g. staging, production)'
         required: true
         type: string
+    
     outputs:
       image:
         description: 'The Docker image that was deployed'
-        value: ${{ jobs.deploy-render-production.outputs.image }}
+        value: ${{ jobs.deploy-production.outputs.image }}
       digest:
         description: 'The Docker image digest (immutable reference)'
-        value: ${{ jobs.deploy-render-production.outputs.digest }}
+        value: ${{ jobs.deploy-production.outputs.digest }}
       version:
         description: 'The version to release - computed from docker-build (e.g. v1.2.3)'
-        value: ${{ jobs.deploy-render-production.outputs.version }}
+        value: ${{ jobs.deploy-production.outputs.version }}
 
 permissions:
   contents: read
   packages: read
-  actions: read
 
 env:
   REGISTRY: ghcr.io
 
 jobs:
-  deploy-render-production:
+  deploy-production:
     name: Deploy to Render Production
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
@@ -65,16 +65,14 @@ jobs:
         with:
           ref: ${{ inputs.sha }}
 
-      # Load image metadata
       - name: Load image metadata
         id: export
         run: |
-
           IMAGE=${{ inputs.image }}
-          Digest=${{ inputs.digest }}
+          DIGEST=${{ inputs.digest }}
           VERSION=${{ inputs.version }}
 
-          if [ -z "$IMAGE" ] || [ -z "$Digest" ] || [ -z "$VERSION" ]; then
+          if [ -z "$IMAGE" ] || [ -z "$DIGEST" ] || [ -z "$VERSION" ]; then
             echo "❌ Missing required input values"
             exit 1
           fi
@@ -82,18 +80,19 @@ jobs:
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
-          echo "digest=${Digest}" >> $GITHUB_OUTPUT
+          echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
           echo "Using image: $IMAGE"
 
       # ----------------------------
-      # RENDER ENV VARS
+      # Render ENV variables
       # ----------------------------
       - name: Update Render Environment Variables
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+          RENDER_DOMAIN: ${{ secrets.RENDER_DOMAIN }}
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_URL: ${{ secrets.DB_URL }}
           DB_USER: ${{ secrets.DB_USER }}
@@ -158,7 +157,7 @@ jobs:
             -d "{\"value\": \"${RENDER_SERVICE_ID}\"}"
 
       # ----------------------------
-      # Deploy image using immutable name (attached to digest)
+      # Deploy image using name (attached to immutable digest)
       # ----------------------------
       - name: Trigger Production Deploy on Render
         env:
@@ -195,23 +194,33 @@ jobs:
         run: |
           set -e
 
-          for i in {1..30}; do
-            STATUS=$(curl -s \
+          for i in {1..60}; do
+            RESPONSE=$(curl -s \
               -H "authorization: Bearer ${RENDER_API_KEY}" \
-              "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys" \
-              | jq -r '.[0].status')
+              "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys/${deploy_id}")
+
+            echo "$RESPONSE"
+
+            STATUS=$(echo "$RESPONSE" | jq -r '.status')
 
             echo "Status: $STATUS"
 
             case "$STATUS" in
-              live) exit 0 ;;
-              failed) exit 1 ;;
-              deploying|build_in_progress) sleep 10 ;;
-              *) echo "unknown status"; sleep 10 ;;
+              live)
+                echo "Deployment successful"
+                exit 0
+                ;;
+              failed)
+                echo "Deployment failed"
+                exit 1
+                ;;
+              *)
+                sleep 10
+                ;;
             esac
           done
 
-          echo "❌ Deployment timeout"
+          echo "Deployment timeout"
           exit 1
 
       # ----------------------------
@@ -228,10 +237,10 @@ jobs:
             exit 0
           fi
 
-          if ! curl -f "https://${DOMAIN}/health"; then
+          if ! curl -f "${DOMAIN}/health"; then
             echo "⚠️ health endpoint missing"
           fi
 
-          if ! curl -f "https://${DOMAIN}/version"; then
+          if ! curl -f "${DOMAIN}/version"; then
             echo "⚠️ version endpoint missing"
           fi

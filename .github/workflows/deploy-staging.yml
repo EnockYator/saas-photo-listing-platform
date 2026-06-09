@@ -236,10 +236,10 @@ jobs:
             exit 0
           fi
 
-          if ! curl -f "https://${DOMAIN}/health"; then
+          if ! curl -f "${DOMAIN}/health"; then
             echo "⚠️ health endpoint missing"
           fi
 
-          if ! curl -f "https://${DOMAIN}/version"; then
+          if ! curl -f "${DOMAIN}/version"; then
             echo "⚠️ version endpoint missing"
           fi
