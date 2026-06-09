@@ -26,7 +26,7 @@ on:
         description: 'The target environment for migrations (e.g. staging, production)'
         required: true
         type: string
-    
+
     outputs:
       image:
         description: 'The Docker image that was deployed'
