@@ -58,6 +58,7 @@ jobs:
     secrets:
       RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
       RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+      RENDER_DOMAIN: ${{ secrets.RENDER_DOMAIN }}
       DB_HOST: ${{ secrets.DB_HOST }}
       DB_URL: ${{ secrets.DB_URL }}
       DB_USER: ${{ secrets.DB_USER }}
