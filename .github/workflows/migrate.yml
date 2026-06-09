@@ -27,9 +27,7 @@ on:
         description: 'The version to release - computed from docker-build (e.g. v1.2.3)'
         required: true
         type: string
-    secrets:
-      DB_URL:
-        required: true
+
     outputs:
       image:
         description: 'The Docker image that was deployed'

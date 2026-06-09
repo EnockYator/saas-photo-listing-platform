@@ -40,8 +40,7 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
     uses: ./.github/workflows/migrate.yml
-    secrets:
-      DB_URL: ${{ secrets.DB_URL }}
+    secrets: inherit
     with:
       sha: ${{ github.sha }}
       digest: ${{ needs.build.outputs.digest }}
@@ -55,34 +54,7 @@ jobs:
     needs: migrate
     if: github.ref == 'refs/heads/dev'
     uses: ./.github/workflows/deploy-staging.yml
-    secrets:
-      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-      RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
-      RENDER_DOMAIN: ${{ secrets.RENDER_DOMAIN }}
-      DB_HOST: ${{ secrets.DB_HOST }}
-      DB_URL: ${{ secrets.DB_URL }}
-      DB_USER: ${{ secrets.DB_USER }}
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      DB_NAME: ${{ secrets.DB_NAME }}
-      DB_SSLMODE: ${{ secrets.DB_SSLMODE }}
-      CHANNEL_BINDING: ${{ secrets.CHANNEL_BINDING }}
-      DB_DRIVER: ${{ secrets.DB_DRIVER }}
-      APP_ENV: ${{ secrets.APP_ENV }}
-      PROJECT_NAME: ${{ secrets.PROJECT_NAME }}
-      SERVER_PORT: ${{ secrets.SERVER_PORT }}
-      SERVER_READ_TIMEOUT: ${{ secrets.SERVER_READ_TIMEOUT }}
-      SERVER_WRITE_TIMEOUT: ${{ secrets.SERVER_WRITE_TIMEOUT }}
-      SERVER_IDLE_TIMEOUT: ${{ secrets.SERVER_IDLE_TIMEOUT }}
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      JWT_EXPIRATION: ${{ secrets.JWT_EXPIRATION }}
-      LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
-      DEBUG: ${{ secrets.DEBUG }}
-      APP_PORT: ${{ secrets.APP_PORT }}
-      MEMORY_LIMIT: ${{ secrets.MEMORY_LIMIT }}
-      CPU_LIMIT: ${{ secrets.CPU_LIMIT }}
-      MEMORY_RESERVE: ${{ secrets.MEMORY_RESERVE }}
-      CPU_RESERVE: ${{ secrets.CPU_RESERVE }}
-      REPLICAS: ${{ secrets.REPLICAS }}
+    secrets: inherit
     with:
       sha: ${{ github.sha }}
       image: ${{ needs.migrate.outputs.image }}
@@ -95,6 +67,7 @@ jobs:
     needs: migrate
     if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/deploy-production.yml
+    secrets: inherit
     with:
       sha: ${{ github.sha }}
       image: ${{ needs.migrate.outputs.image }}
@@ -107,6 +80,7 @@ jobs:
     needs: deploy-render-production
     if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/release.yml
+    secrets: inherit
     with:
       sha: ${{ github.sha }}
       digest: ${{ needs.deploy-render-production.outputs.digest }}
