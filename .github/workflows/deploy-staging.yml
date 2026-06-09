@@ -245,23 +245,33 @@ jobs:
         run: |
           set -e
 
-          for i in {1..30}; do
-            STATUS=$(curl -s \
+          for i in {1..60}; do
+            RESPONSE=$(curl -s \
               -H "authorization: Bearer ${RENDER_API_KEY}" \
-              "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys" \
-              | jq -r '.[0].status')
+              "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys/${deploy_id}")
+
+            echo "$RESPONSE"
+
+            STATUS=$(echo "$RESPONSE" | jq -r '.status')
 
             echo "Status: $STATUS"
 
             case "$STATUS" in
-              live) exit 0 ;;
-              failed) exit 1 ;;
-              deploying|build_in_progress) sleep 10 ;;
-              *) echo "unknown status"; sleep 10 ;;
+              live)
+                echo "Deployment successful"
+                exit 0
+                ;;
+              failed)
+                echo "Deployment failed"
+                exit 1
+                ;;
+              *)
+                sleep 10
+                ;;
             esac
           done
 
-          echo "❌ Deployment timeout"
+          echo "Deployment timeout"
           exit 1
 
       # ----------------------------
