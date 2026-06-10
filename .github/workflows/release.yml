@@ -22,6 +22,10 @@ on:
         description: 'The version to release - computed from docker-build (e.g. v1.2.3)'
         required: true
         type: string
+      deploy_id:
+        description: 'The Render deploy ID for the production deployment'
+        required: true
+        type: string
       environment:
         description: 'The target environment for migrations (e.g. staging, production)'
         required: true
@@ -37,6 +41,9 @@ on:
       version:
         description: 'The version to release - computed from docker-build (e.g. v1.2.3)'
         value: ${{ jobs.release.outputs.version }}
+      deploy_id:
+        description: 'The Render deploy ID for the production deployment'
+        value: ${{ jobs.release.outputs.deploy_id }}
 
 permissions:
   contents: write      # to create tags and releases
@@ -53,6 +60,7 @@ jobs:
       image: ${{ steps.export.outputs.image }}
       digest: ${{ steps.export.outputs.digest }}
       version: ${{ steps.export.outputs.version }}
+      deploy_id: ${{ steps.export.outputs.deploy_id }}
 
     steps:
       # ---------- 1. Validate payload ----------
@@ -83,17 +91,17 @@ jobs:
           IMAGE=${{ inputs.image }}
           DIGEST=${{ inputs.digest }}
           VERSION=${{ inputs.version }}
-
-          if [ -z "$IMAGE" ] || [ -z "$DIGEST" ] || [ -z "$VERSION" ]; then
+          DEPLOY_ID=${{ inputs.deploy_id }}
+          
+          if [ -z "$IMAGE" ] || [ -z "$DIGEST" ] || [ -z "$VERSION" ] || [ -z "$DEPLOY_ID" ]; then
             echo "❌ Missing required input values"
             exit 1
           fi
 
-          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
-
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
           echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "deploy_id=${DEPLOY_ID}" >> $GITHUB_OUTPUT
 
           echo "✅ Using image: $IMAGE"
 
@@ -141,8 +149,8 @@ jobs:
 
             ## 🚀 Deployment Details
             - **Commit Sha**: `${{ inputs.sha }}`
-            - **Image**: `${{ env.IMAGE }}`
-            - **Digest**: `${{ inputs.digest }}`
+            - **Image**: `${{ steps.export.outputs.image }}`
+            - **Digest**: `${{ steps.export.outputs.digest }}`
             - **Build workflow run**: [View](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
             - **Production deploy run**: [View](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 

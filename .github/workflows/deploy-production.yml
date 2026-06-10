@@ -40,6 +40,9 @@ on:
       version:
         description: 'The version to release - computed from docker-build (e.g. v1.2.3)'
         value: ${{ jobs.deploy-render-production.outputs.version }}
+      deploy_id:
+        description: 'The Render deploy ID for the production deployment'
+        value: ${{ jobs.deploy-render-production.outputs.deploy_id }}
 
 permissions:
   contents: read
@@ -58,7 +61,8 @@ jobs:
       image: ${{ steps.export.outputs.image }}
       digest: ${{ steps.export.outputs.digest }}
       version: ${{ steps.export.outputs.version }}
-
+      deploy_id: ${{ steps.deploy.outputs.deploy_id }}
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -76,8 +80,6 @@ jobs:
             echo "❌ Missing required input values"
             exit 1
           fi
-
-          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
           echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
@@ -160,17 +162,18 @@ jobs:
       # Deploy image using name (attached to immutable digest)
       # ----------------------------
       - name: Trigger Production Deploy on Render
+        id: deploy
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
         run: |
-          echo "Deploying image: ${IMAGE}"
+          echo "Deploying image: ${{ steps.export.outputs.image }}"
 
           RESPONSE=$(curl -s -X POST \
             "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys" \
             -H "authorization: Bearer ${RENDER_API_KEY}" \
             -H "content-type: application/json" \
-            -d "{\"imageUrl\": \"${IMAGE}\"}")
+            -d "{\"imageUrl\": \"${{ steps.export.outputs.image }}\"}")
 
           echo "$RESPONSE"
 
@@ -181,7 +184,6 @@ jobs:
             exit 1
           fi
 
-          echo "deploy_id=$DEPLOY_ID" >> $GITHUB_ENV
           echo "deploy_id=$DEPLOY_ID" >> $GITHUB_OUTPUT
 
       # ----------------------------
