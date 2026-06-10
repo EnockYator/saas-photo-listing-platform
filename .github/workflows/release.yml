@@ -41,6 +41,7 @@ on:
 permissions:
   contents: write      # to create tags and releases
   actions: read
+  packages: write
 
 jobs:
   release:
