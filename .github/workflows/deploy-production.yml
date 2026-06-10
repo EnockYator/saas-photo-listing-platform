@@ -166,11 +166,12 @@ jobs:
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+          DEPLOY_ID: ${{ steps.deploy.outputs.deploy_id }}
         run: |
           echo "Deploying image: ${{ steps.export.outputs.image }}"
 
           RESPONSE=$(curl -s -X POST \
-            "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys" \
+            "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/${DEPLOY_ID}" \
             -H "authorization: Bearer ${RENDER_API_KEY}" \
             -H "content-type: application/json" \
             -d "{\"imageUrl\": \"${{ steps.export.outputs.image }}\"}")
@@ -193,13 +194,14 @@ jobs:
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+          DEPLOY_ID: ${{ steps.deploy.outputs.deploy_id }}
         run: |
           set -e
 
           for i in {1..60}; do
             RESPONSE=$(curl -s \
               -H "authorization: Bearer ${RENDER_API_KEY}" \
-              "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys/${deploy_id}")
+              "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys/${DEPLOY_ID}")
 
             echo "$RESPONSE"
 
