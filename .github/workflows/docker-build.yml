@@ -203,7 +203,12 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: |
             ${{ env.REGISTRY }}/${{ steps.lowercase.outputs.repo_lower }}:${{ inputs.sha }}
-            ${{ github.ref == 'refs/heads/main' && format('{0}/{1}:{2}', env.REGISTRY, ${{ steps.lowercase.outputs.repo_lower }}, ${{ steps.next_version.outputs.version }}) || '' }}
+            ${{ github.ref == 'refs/heads/main' &&
+                format('{0}/{1}:{2}',
+                  env.REGISTRY,
+                  steps.lowercase.outputs.repo_lower,
+                  steps.next_version.outputs.version
+                ) || '' }}
           provenance: true
           sbom: true
           build-args: |
