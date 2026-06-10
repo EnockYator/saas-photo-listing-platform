@@ -62,7 +62,7 @@ jobs:
       digest: ${{ steps.export.outputs.digest }}
       version: ${{ steps.export.outputs.version }}
       deploy_id: ${{ steps.deploy.outputs.deploy_id }}
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
