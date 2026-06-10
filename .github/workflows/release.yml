@@ -92,7 +92,7 @@ jobs:
           DIGEST=${{ inputs.digest }}
           VERSION=${{ inputs.version }}
           DEPLOY_ID=${{ inputs.deploy_id }}
-          
+
           if [ -z "$IMAGE" ] || [ -z "$DIGEST" ] || [ -z "$VERSION" ] || [ -z "$DEPLOY_ID" ]; then
             echo "❌ Missing required input values"
             exit 1
