@@ -70,7 +70,7 @@ jobs:
         id: lowercase
         run: |
           REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          echo "REPO_LOWER=$REPO_LOWER" >> $GITHUB_ENV
+
           echo "repo_lower=$REPO_LOWER" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
@@ -126,7 +126,6 @@ jobs:
           if [ "$LAST_TAG" != "v0.0.0" ] && [ -z "$LOG_OUTPUT" ]; then
             echo "No new commits since $LAST_TAG – keeping same version"
             echo "version=$LAST_TAG" >> "$GITHUB_OUTPUT"
-            echo "NEW_VERSION=$LAST_TAG" >> "$GITHUB_ENV"
             exit 0
           fi
 
@@ -191,7 +190,6 @@ jobs:
           NEW_VERSION="v${v_major}.${v_minor}.${v_patch}"
 
           echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
-          echo "NEW_VERSION=$NEW_VERSION" >> "$GITHUB_ENV"
 
           echo "New version: $NEW_VERSION"
 
@@ -204,19 +202,19 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}:${{ inputs.sha }}
-            ${{ github.ref == 'refs/heads/main' && format('{0}/{1}:{2}', env.REGISTRY, env.REPO_LOWER, env.NEW_VERSION) || '' }}
+            ${{ env.REGISTRY }}/${{ steps.lowercase.outputs.repo_lower }}:${{ inputs.sha }}
+            ${{ github.ref == 'refs/heads/main' && format('{0}/{1}:{2}', env.REGISTRY, ${{ steps.lowercase.outputs.repo_lower }}, ${{ steps.next_version.outputs.version }}) || '' }}
           provenance: true
           sbom: true
           build-args: |
-            VERSION=${{ env.NEW_VERSION }}
+            VERSION=${{ steps.next_version.outputs.version }}
             BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
             GO_VERSION=${{ env.GO_VERSION }}
 
       - name: Resolve image digest
         id: export
         run: |
-          IMAGE_WITH_TAG="${{ env.REGISTRY }}/${{ env.REPO_LOWER }}:${{ inputs.sha }}"
+          IMAGE_WITH_TAG="${{ env.REGISTRY }}/${{ steps.lowercase.outputs.repo_lower }}:${{ inputs.sha }}"
 
           DIGEST=$(docker buildx imagetools inspect \
             "${IMAGE_WITH_TAG}" \
@@ -227,7 +225,7 @@ jobs:
             exit 1
           fi
 
-          IMAGE="${{ env.REGISTRY }}/${{ env.REPO_LOWER }}@${DIGEST}"
+          IMAGE="${{ env.REGISTRY }}/${{ steps.lowercase.outputs.repo_lower }}@${DIGEST}"
 
           echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT

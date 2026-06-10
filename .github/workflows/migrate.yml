@@ -92,8 +92,6 @@ jobs:
             exit 1
           fi
 
-          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
-
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
           echo "digest=${Digest}" >> $GITHUB_OUTPUT
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
@@ -108,7 +106,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Pull built image
-        run: docker pull "${IMAGE}"
+        run: docker pull "${{ steps.export.outputs.image }}"
 
       - name: Run test migrations (UP)
         id: test-migrations
@@ -117,7 +115,7 @@ jobs:
           docker run --rm \
             --network ${{ job.services.postgres.network }} \
             -e DB_URL='postgres://postgres:postgres@postgres:5432/testdb?sslmode=disable' \
-            "${IMAGE}" migrate up
+            "${{ steps.export.outputs.image }}" migrate up
 
       - name: Verify migration success
         run: |
@@ -135,13 +133,11 @@ jobs:
           if [ -z "$DB_URL" ]; then
             echo "DB_URL is empty"
             exit 1
-          else
-            echo "DB_URL first 10 chars: ${DB_URL:0:10}..."
           fi
 
           docker run --rm \
             -e DB_URL="${DB_URL}" \
-            "${IMAGE}" migrate up
+            "${{ steps.export.outputs.image }}" migrate up
 
       - name: Cleanup
         if: always()

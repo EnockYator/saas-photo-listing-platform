@@ -86,4 +86,5 @@ jobs:
       digest: ${{ needs.deploy-render-production.outputs.digest }}
       image: ${{ needs.deploy-render-production.outputs.image }}
       version: ${{ needs.deploy-render-production.outputs.version }}
+      deploy_id: ${{ needs.deploy-render-production.outputs.deploy_id }}
       environment: production
