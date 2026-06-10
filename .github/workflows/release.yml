@@ -80,10 +80,10 @@ jobs:
         id: export
         run: |
           IMAGE=${{ inputs.image }}
-          Digest=${{ inputs.digest }}
+          DIGEST=${{ inputs.digest }}
           VERSION=${{ inputs.version }}
 
-          if [ -z "$IMAGE" ] || [ -z "$Digest" ] || [ -z "$VERSION" ]; then
+          if [ -z "$IMAGE" ] || [ -z "$DIGEST" ] || [ -z "$VERSION" ]; then
             echo "❌ Missing required input values"
             exit 1
           fi
@@ -91,7 +91,7 @@ jobs:
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
-          echo "digest=${Digest}" >> $GITHUB_OUTPUT
+          echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
           echo "✅ Using image: $IMAGE"
