@@ -87,6 +87,12 @@ jobs:
 
           echo "Using image: $IMAGE"
 
+      - name: Debug export outputs
+        run: |
+          echo "image=${{ steps.export.outputs.image }}"
+          echo "digest=${{ steps.export.outputs.digest }}"
+          echo "version=${{ steps.export.outputs.version }}"
+
       # ----------------------------
       # Render ENV variables
       # ----------------------------
@@ -247,3 +253,10 @@ jobs:
           if ! curl -f "${DOMAIN}/version"; then
             echo "⚠️ version endpoint missing"
           fi
+      
+      - name: Debug job outputs
+        run: |
+          echo "image=${{ steps.export.outputs.image }}"
+          echo "digest=${{ steps.export.outputs.digest }}"
+          echo "version=${{ steps.export.outputs.version }}"
+          echo "deploy_id"=${{ steps.deploy.outputs.deploy_id }}
