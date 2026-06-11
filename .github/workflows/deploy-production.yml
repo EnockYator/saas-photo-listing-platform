@@ -1,10 +1,9 @@
 # Purpose:
-#   Deploy already-built Docker images to Render production (main branch)
+#   Deploy already-built Docker image to Render production (main branch)
 #   Generate .env from GitHub Secrets and apply to Render
 #   Deploy only after migrations succeed
-#   Uses immutable digest (best practice)
 
-name: Deploy to Production
+name: Deploy to Staging
 
 on:
   workflow_call:
@@ -41,7 +40,7 @@ on:
         description: 'The version to release - computed from docker-build (e.g. v1.2.3)'
         value: ${{ jobs.deploy-render-production.outputs.version }}
       deploy_id:
-        description: 'The Render deploy ID for the production deployment'
+        description: 'The Render deploy ID for the staging deployment'
         value: ${{ jobs.deploy-render-production.outputs.deploy_id }}
 
 permissions:
@@ -254,7 +253,7 @@ jobs:
             echo "⚠️ version endpoint missing"
           fi
 
-      - name: Debug job outputs
+      - name: Debug export outputs
         run: |
           echo "image=${{ steps.export.outputs.image }}"
           echo "digest=${{ steps.export.outputs.digest }}"
