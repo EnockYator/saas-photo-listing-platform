@@ -261,13 +261,13 @@ jobs:
           echo "version=${{ steps.export.outputs.version }}"
           echo "deploy_id"=${{ steps.deploy.outputs.deploy_id }}
 
-debug-job-outputs:
-  needs: deploy-render-production
-  runs-on: ubuntu-latest
+  debug-job-outputs:
+    needs: deploy-render-production
+    runs-on: ubuntu-latest
 
-  steps:
-    - run: |
-        echo "image=${{ needs.deploy-render-production.outputs.image }}"
-        echo "digest=${{ needs.deploy-render-production.outputs.digest }}"
-        echo "version=${{ needs.deploy-render-production.outputs.version }}"
-        echo "deploy_id=${{ needs.deploy-render-production.outputs.deploy_id }}"
+    steps:
+      - run: |
+          echo "image=${{ needs.deploy-render-production.outputs.image }}"
+          echo "digest=${{ needs.deploy-render-production.outputs.digest }}"
+          echo "version=${{ needs.deploy-render-production.outputs.version }}"
+          echo "deploy_id=${{ needs.deploy-render-production.outputs.deploy_id }}"
