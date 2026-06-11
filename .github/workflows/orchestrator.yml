@@ -48,6 +48,16 @@ jobs:
       version: ${{ needs.build.outputs.version }}
       environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
 
+  debug-migrate:
+    needs: migrate
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "image=${{ needs.migrate.outputs.image }}"
+          echo "digest=${{ needs.migrate.outputs.digest }}"
+          echo "version=${{ needs.migrate.outputs.version }}"
+
   deploy-render-staging:
     name: Run Deploy Staging Workflow
     needs: migrate
@@ -60,6 +70,17 @@ jobs:
       digest: ${{ needs.migrate.outputs.digest }}
       version: ${{ needs.migrate.outputs.version }}
       environment: staging
+
+  debug-deploy-staging:
+    needs: deploy-render-staging
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "image=${{ needs.deploy-render-staging.outputs.image }}"
+          echo "digest=${{ needs.deploy-render-staging.outputs.digest }}"
+          echo "version=${{ needs.deploy-render-staging.outputs.version }}"
+          echo "deploy_id=${{ needs.deploy-render-staging.outputs.deploy_id }}"
 
   deploy-render-production:
     name: Run Deploy Production Workflow
@@ -74,8 +95,8 @@ jobs:
       version: ${{ needs.migrate.outputs.version }}
       environment: production
 
-  debug-deploy-outputs:
-    name: Debug Deploy Outputs
+  debug-deploy-production:
+    name: Debug Deploy Production Outputs
     needs: deploy-render-production
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
