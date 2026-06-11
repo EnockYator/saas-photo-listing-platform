@@ -253,7 +253,7 @@ jobs:
           if ! curl -f "${DOMAIN}/version"; then
             echo "⚠️ version endpoint missing"
           fi
-      
+
       - name: Debug job outputs
         run: |
           echo "image=${{ steps.export.outputs.image }}"
