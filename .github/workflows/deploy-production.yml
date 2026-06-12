@@ -165,7 +165,7 @@ jobs:
 
           echo "PRODUCTION_DEPLOY_ID=$PRODUCTION_DEPLOY_ID" >> metadata.env
 
-          echo "production_deploy_id=$PRODUCTION_DEPLOY_ID" >> $GITHUB_OUTPUT
+          echo "production_deploy_id=${PRODUCTION_DEPLOY_ID}" >> $GITHUB_OUTPUT
 
       - name: Re-upload metadata
         uses: actions/upload-artifact@v7
