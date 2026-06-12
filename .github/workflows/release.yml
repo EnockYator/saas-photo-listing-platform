@@ -75,7 +75,7 @@ jobs:
           echo "version=$NEW_TAG" >> $GITHUB_OUTPUT
 
       - name: Re-upload metadata
-        uses: actiions/upload-artifact@v7
+        uses: actions/upload-artifact@v7
         with:
           name: pipeline-metadata
           path: metadata.env
