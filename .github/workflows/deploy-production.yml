@@ -178,7 +178,7 @@ jobs:
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
-          STAGING_DEPLOY_ID: ${{ steps.deploy.outputs.production_deploy_id }}
+          PRODUCTION_DEPLOY_ID: ${{ steps.deploy.outputs.production_deploy_id }}
         run: |
           set -e
 
