@@ -54,6 +54,7 @@ jobs:
           echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
           echo "repo_lower=${REPO_LOWER}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "production_deploy_id=${PRODUCTION_DEPLOY_ID}" >> $GITHUB_OUTPUT
 
       - name: Checkout code
@@ -65,7 +66,7 @@ jobs:
       - name: Validate dispatch payload
         id: validate
         run: |
-          NEW_TAG=${{ inputs.version }}
+          NEW_TAG=${{ steps.export.outputs.version }}
 
           if [[ ! "$NEW_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "❌ Invalid version format: $NEW_TAG"
@@ -73,12 +74,6 @@ jobs:
           fi
 
           echo "version=$NEW_TAG" >> $GITHUB_OUTPUT
-
-      - name: Re-upload metadata
-        uses: actions/upload-artifact@v7
-        with:
-          name: pipeline-metadata
-          path: metadata.env
 
       - name: Create tag
         run: |
@@ -98,7 +93,6 @@ jobs:
           echo "$LOG" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      # ---------- 7. RELEASE_NOTES.md ----------
       - name: Read RELEASE_NOTES.md if present
         id: manual_notes
         run: |
