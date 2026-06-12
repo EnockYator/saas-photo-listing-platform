@@ -168,7 +168,7 @@ jobs:
           echo "production_deploy_id=$PRODUCTION_DEPLOY_ID" >> $GITHUB_OUTPUT
 
       - name: Re-upload metadata
-        uses: actiions/upload-artifact@v7
+        uses: actions/upload-artifact@v7
         with:
           name: pipeline-metadata
           path: metadata.env
