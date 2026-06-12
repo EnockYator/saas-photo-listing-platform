@@ -163,11 +163,19 @@ jobs:
             exit 1
           fi
 
-          echo "PRODUCTION_DEPLOY_ID=$PRODUCTION_DEPLOY_ID" >> metadata.env
-
           echo "production_deploy_id=${PRODUCTION_DEPLOY_ID}" >> $GITHUB_OUTPUT
 
-      - name: Re-upload metadata
+      - name: Save metadata to file
+        run: |
+          cat <<EOF > metadata.env
+          IMAGE=${{ steps.export.outputs.image }}
+          DIGEST=${{ steps.export.outputs.digest }}
+          REPO_LOWER=${{ steps.export.outputs.repo_lower }}
+          VERSION=${{ steps.export.outputs.version }}
+          PRODUCTION_DEPLOY_ID=${{ steps.deploy.outputs.production_deploy_id }}
+          EOF
+
+      - name: Re-upload metadata artifact
         uses: actions/upload-artifact@v7
         with:
           name: pipeline-metadata
