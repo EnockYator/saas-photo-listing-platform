@@ -27,7 +27,7 @@ env:
 
 jobs:
   deploy-render-production:
-    name: Deploy to Render Staging
+    name: Deploy to Render Production
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
 
@@ -50,7 +50,7 @@ jobs:
         run: |
           source metadata.env
 
-          if [ -z "$IMAGE" ] || [ -z "$DIGEST" ] || [ -z "$VERSION" ] || [ -z "$REPO_LOWER" ] || [ -z "STAGING_DEPLOY_ID" ]; then
+          if [ -z "$IMAGE" ] || [ -z "$DIGEST" ] || [ -z "$VERSION" ] || [ -z "$REPO_LOWER" ] || [ -z "$STAGING_DEPLOY_ID" ]; then
             echo "❌ Missing required metadata values"
             exit 1
           fi
