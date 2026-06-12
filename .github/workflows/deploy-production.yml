@@ -36,7 +36,6 @@ jobs:
       digest: ${{ steps.export.outputs.digest }}
       version: ${{ steps.export.outputs.version }}
       repo_lower: ${{ steps.export.outputs.repo_lower }}
-      staging_deploy_id: ${{ steps.export.outputs.staging_deploy_id }}
       production_deploy_id: ${{ steps.deploy.outputs.production_deploy_id }}
 
     steps:
@@ -50,7 +49,7 @@ jobs:
         run: |
           source metadata.env
 
-          if [ -z "$IMAGE" ] || [ -z "$DIGEST" ] || [ -z "$VERSION" ] || [ -z "$REPO_LOWER" ] || [ -z "$STAGING_DEPLOY_ID" ]; then
+          if [ -z "$IMAGE" ] || [ -z "$DIGEST" ] || [ -z "$VERSION" ] || [ -z "$REPO_LOWER" ]; then
             echo "❌ Missing required metadata values"
             exit 1
           fi
@@ -59,7 +58,6 @@ jobs:
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "repo_lower=${REPO_LOWER}" >> $GITHUB_OUTPUT
-          echo "staging_deploy_id=${STAGING_DEPLOY_ID}" >> $GITHUB_OUTPUT
 
       - name: Checkout code
         uses: actions/checkout@v6
