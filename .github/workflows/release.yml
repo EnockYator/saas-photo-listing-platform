@@ -42,7 +42,9 @@ jobs:
       - name: Load metadata
         id: export
         run: |
+          set -a
           source metadata.env
+          set +a
 
           if [ -z "$IMAGE" ] || [ -z "$DIGEST" ] || [ -z "$VERSION" ] || [ -z "$REPO_LOWER" ] || [ -z "$PRODUCTION_DEPLOY_ID" ]; then
             echo "❌ Missing required metadata values"
