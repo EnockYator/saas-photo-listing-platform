@@ -11,33 +11,10 @@ on:
         description: 'The commit SHA that triggered the build / from orchestrator workflow'
         required: true
         type: string
-      image:
-        description: 'The Docker image to use for migrations'
-        required: true
-        type: string
       environment:
         description: 'The target environment for migrations (staging, production)'
         required: true
         type: string
-      digest:
-        description: 'The Docker image digest (immutable reference)'
-        required: true
-        type: string
-      version:
-        description: 'The version to release - computed from docker-build (e.g. v1.2.3)'
-        required: true
-        type: string
-
-    outputs:
-      image:
-        description: 'The Docker image that was deployed'
-        value: ${{ jobs.migrate.outputs.image }}
-      digest:
-        description: 'The Docker image digest (immutable reference)'
-        value: ${{ jobs.migrate.outputs.digest }}
-      version:
-        description: 'The version to release - computed from docker-build (e.g. v1.2.3)'
-        value: ${{ jobs.migrate.outputs.version }}
 
 permissions:
   contents: read
@@ -54,11 +31,6 @@ jobs:
     environment: ${{ inputs.environment }}
     timeout-minutes: 15
 
-    outputs:
-      image: ${{ steps.export.outputs.image }}
-      digest: ${{ steps.export.outputs.digest }}
-      version: ${{ steps.export.outputs.version }}
-
     services:
       postgres:
         image: postgres:16-alpine
@@ -74,29 +46,37 @@ jobs:
           --health-timeout=5s
           --health-retries=5
 
+    outputs:
+      image: ${{ steps.export.outputs.image }}
+      digest: ${{ steps.export.outputs.digest }}
+      version: ${{ steps.export.outputs.version }}
+      repo_lower: ${{ steps.export.outputs.repo_lower }}
+
     steps:
+      - name: Download metadata
+        steps: actions/download-artifact@v7
+        with:
+          name: pipeline-metadata
+
+      - name: Load metadata
+        id: export
+        run: |
+          source metadata.env
+
+          if [ -z "$IMAGE" ] || [ -z "$DIGEST" ] || [ -z "$VERSION" ] || [ -z "$REPO_LOWER" ]; then
+            echo "❌ Missing required metadata values"
+            exit 1
+          fi
+
+          echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
+          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "repo_lower=${REPO_LOWER}" >> $GITHUB_OUTPUT
+
       - name: Checkout code
         uses: actions/checkout@v6
         with:
           ref: ${{ inputs.sha }}
-
-      - name: Load image metadata
-        id: export
-        run: |
-          IMAGE=${{ inputs.image }}
-          Digest=${{ inputs.digest }}
-          VERSION=${{ inputs.version }}
-
-          if [ -z "$IMAGE" ] || [ -z "$Digest" ] || [ -z "$VERSION" ]; then
-            echo "❌ Missing required input values"
-            exit 1
-          fi
-
-          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
-          echo "digest=${Digest}" >> $GITHUB_OUTPUT
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-
-          echo "✅ Using image: $IMAGE"
 
       - name: Login to GHCR
         uses: docker/login-action@v3
