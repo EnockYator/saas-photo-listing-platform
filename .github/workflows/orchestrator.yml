@@ -43,20 +43,7 @@ jobs:
     secrets: inherit
     with:
       sha: ${{ github.sha }}
-      digest: ${{ needs.build.outputs.digest }}
-      image: ${{ needs.build.outputs.image }}
-      version: ${{ needs.build.outputs.version }}
       environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
-
-  debug-migrate:
-    needs: migrate
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          echo "image=${{ needs.migrate.outputs.image }}"
-          echo "digest=${{ needs.migrate.outputs.digest }}"
-          echo "version=${{ needs.migrate.outputs.version }}"
 
   deploy-render-staging:
     name: Run Deploy Staging Workflow
@@ -66,21 +53,7 @@ jobs:
     secrets: inherit
     with:
       sha: ${{ github.sha }}
-      image: ${{ needs.migrate.outputs.image }}
-      digest: ${{ needs.migrate.outputs.digest }}
-      version: ${{ needs.migrate.outputs.version }}
       environment: staging
-
-  debug-deploy-staging:
-    needs: deploy-render-staging
-    if: github.ref == 'refs/heads/dev'
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          echo "image=${{ needs.deploy-render-staging.outputs.image }}"
-          echo "digest=${{ needs.deploy-render-staging.outputs.digest }}"
-          echo "version=${{ needs.deploy-render-staging.outputs.version }}"
-          echo "deploy_id=${{ needs.deploy-render-staging.outputs.deploy_id }}"
 
   deploy-render-production:
     name: Run Deploy Production Workflow
@@ -90,23 +63,7 @@ jobs:
     secrets: inherit
     with:
       sha: ${{ github.sha }}
-      image: ${{ needs.migrate.outputs.image }}
-      digest: ${{ needs.migrate.outputs.digest }}
-      version: ${{ needs.migrate.outputs.version }}
       environment: production
-
-  debug-deploy-production:
-    name: Debug Deploy Production Outputs
-    needs: deploy-render-production
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Print Deploy Outputs
-        run: |
-          echo "Image: ${{ needs.deploy-render-production.outputs.image }}"
-          echo "Digest: ${{ needs.deploy-render-production.outputs.digest }}"
-          echo "Version: ${{ needs.deploy-render-production.outputs.version }}"
-          echo "Deploy ID: ${{ needs.deploy-render-production.outputs.deploy_id }}"
 
   release:
     name: Run Release Workflow
@@ -116,8 +73,4 @@ jobs:
     secrets: inherit
     with:
       sha: ${{ github.sha }}
-      digest: ${{ needs.deploy-render-production.outputs.digest }}
-      image: ${{ needs.deploy-render-production.outputs.image }}
-      version: ${{ needs.deploy-render-production.outputs.version }}
-      deploy_id: ${{ needs.deploy-render-production.outputs.deploy_id }}
       environment: production

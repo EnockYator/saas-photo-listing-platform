@@ -10,40 +10,10 @@ on:
         description: 'The commit SHA that triggered the build / from orchestrator workflow'
         required: true
         type: string
-      digest:
-        description: 'The Docker image digest (immutable reference)'
-        required: true
-        type: string
-      image:
-        description: 'The Docker image to use for migrations'
-        required: true
-        type: string
-      version:
-        description: 'The version to release - computed from docker-build (e.g. v1.2.3)'
-        required: true
-        type: string
-      deploy_id:
-        description: 'The Render deploy ID for the production deployment'
-        required: true
-        type: string
       environment:
         description: 'The target environment for migrations (e.g. staging, production)'
         required: true
         type: string
-
-    outputs:
-      image:
-        description: 'The Docker image that was deployed'
-        value: ${{ jobs.release.outputs.image }}
-      digest:
-        description: 'The Docker image digest (immutable reference)'
-        value: ${{ jobs.release.outputs.digest }}
-      version:
-        description: 'The version to release - computed from docker-build (e.g. v1.2.3)'
-        value: ${{ jobs.release.outputs.version }}
-      deploy_id:
-        description: 'The Render deploy ID for the production deployment'
-        value: ${{ jobs.release.outputs.deploy_id }}
 
 permissions:
   contents: write      # to create tags and releases
@@ -59,11 +29,39 @@ jobs:
     outputs:
       image: ${{ steps.export.outputs.image }}
       digest: ${{ steps.export.outputs.digest }}
-      version: ${{ steps.export.outputs.version }}
-      deploy_id: ${{ steps.export.outputs.deploy_id }}
+      version: ${{ steps.validate.outputs.version }}
+      repo_lower: ${{ steps.export.outputs.repo_lower }}
+      staging_deploy_id: ${{ steps.export.outputs.staging_deploy_id }}
+      production_deploy_id: ${{ steps.export.outputs.production_deploy_id }}
 
     steps:
-      # ---------- 1. Validate payload ----------
+      - name: Download metadata
+        steps: actions/download-artifact@v7
+        with:
+          name: pipeline-metadata
+
+      - name: Load metadata
+        id: export
+        run: |
+          source metadata.env
+
+          if [ -z "$IMAGE" ] || [ -z "$DIGEST" ] || [ -z "$VERSION" ] || [ -z "$REPO_LOWER" ] || [ -z "STAGING_DEPLOY_ID" ] || [ -z "PRODUCTION_DEPLOY_ID" ]; then
+            echo "❌ Missing required metadata values"
+            exit 1
+          fi
+
+          echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
+          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+          echo "repo_lower=${REPO_LOWER}" >> $GITHUB_OUTPUT
+          echo "staging_deploy_id=${STAGING_DEPLOY_ID}" >> $GITHUB_OUTPUT
+          echo "production_deploy_id=${PRODUCTION_DEPLOY_ID}" >> $GITHUB_OUTPUT
+
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.sha }}
+          fetch-depth: 0
+
       - name: Validate dispatch payload
         id: validate
         run: |
@@ -76,42 +74,17 @@ jobs:
 
           echo "version=$NEW_TAG" >> $GITHUB_OUTPUT
 
-      # ---------- 2. Checkout full history ----------
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - name: Re-upload metadata
+        uses: actiions/upload-artifact@v7
         with:
-          ref: ${{ inputs.sha }}
-          fetch-depth: 0
+          name: pipeline-metadata
+          path: metadata.env
 
-      # ---------- 3. Download image metadata ----------
-
-      - name: Load image metadata
-        id: export
-        run: |
-          IMAGE=${{ inputs.image }}
-          DIGEST=${{ inputs.digest }}
-          VERSION=${{ inputs.version }}
-          DEPLOY_ID=${{ inputs.deploy_id }}
-
-          if [ -z "$IMAGE" ] || [ -z "$DIGEST" ] || [ -z "$VERSION" ] || [ -z "$DEPLOY_ID" ]; then
-            echo "❌ Missing required input values"
-            exit 1
-          fi
-
-          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
-          echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "deploy_id=${DEPLOY_ID}" >> $GITHUB_OUTPUT
-
-          echo "✅ Using image: $IMAGE"
-
-      # ---------- 4. Create tag ----------
       - name: Create tag
         run: |
           git tag "${{ steps.validate.outputs.version }}"
           git push origin "${{ steps.validate.outputs.version }}"
 
-      # ---------- 5. Generate changelog (commits since last tag) ----------
       - name: Generate changelog
         id: changelog
         run: |
@@ -138,7 +111,6 @@ jobs:
             echo "notes=" >> $GITHUB_OUTPUT
           fi
 
-      # ---------- 8. Create Release ----------
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:

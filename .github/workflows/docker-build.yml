@@ -15,26 +15,10 @@ on:
         required: true
         type: string
 
-    outputs:
-      image:
-        description: "Built Docker image reference"
-        value: ${{ jobs.build.outputs.image }}
-
-      digest:
-        description: "Image digest"
-        value: ${{ jobs.build.outputs.digest }}
-
-      version:
-        description: "Image version tag"
-        value: ${{ jobs.build.outputs.version }}
-
-      repo_lower:
-        description: "Lowercase repository name for GHCR"
-        value: ${{ jobs.build.outputs.repo_lower }}
-
 permissions:
   contents: read
   packages: write
+  actions: read
 
 env:
   GO_VERSION: "1.23.0"
@@ -47,8 +31,8 @@ jobs:
     timeout-minutes: 30
 
     outputs:
-      digest: ${{ steps.export.outputs.digest }}
       image: ${{ steps.export.outputs.image }}
+      digest: ${{ steps.export.outputs.digest }}
       version: ${{ steps.next_version.outputs.version }}
       repo_lower: ${{ steps.lowercase.outputs.repo_lower }}
 
@@ -235,6 +219,21 @@ jobs:
           echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
 
+      - name: Save metadata to file
+        run: |
+          cat <<EOF > metadata.env
+          IMAGE=${{ steps.export.outputs.image }}
+          DIGEST=${{ steps.export.outputs.digest }}
+          REPO_LOWER=${{ steps.lowercase.outputs.repo_lower }}
+          VERSION=${{ steps.next_version.outputs.version }}
+          EOF
+
+      - name: Upload metadata artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: pipeline-metadata
+          path: metadata.env
+
   test-image:
     name: Test Docker Image
     runs-on: ubuntu-latest
@@ -256,7 +255,33 @@ jobs:
           --health-timeout=5s
           --health-retries=5
 
+    outputs:
+      image: ${{ steps.export.outputs.image }}
+      digest: ${{ steps.export.outputs.digest }}
+      version: ${{ steps.export.outputs.version }}
+      repo_lower: ${{ steps.export.outputs.repo_lower }}
+
     steps:
+      - name: Download metadata
+        steps: actions/download-artifact@v7
+        with:
+          name: pipeline-metadata
+
+      - name: Load metadata
+        id: export
+        run: |
+          source metadata.env
+
+          if [ -z "$IMAGE" ] || [ -z "$DIGEST" ] || [ -z "$VERSION" ] || [ -z "$REPO_LOWER" ]; then
+            echo "❌ Missing required metadata values"
+            exit 1
+          fi
+
+          echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
+          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "repo_lower=${REPO_LOWER}" >> $GITHUB_OUTPUT
+
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -265,11 +290,11 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Pull image
-        run: docker pull ${{ needs.build.outputs.image }}
+        run: docker pull ${{ steps.export.outputs.image }}
 
       - name: Validate image structure
         run: |
-          docker inspect ${{ needs.build.outputs.image }} > /dev/null && {
+          docker inspect ${{ steps.export.outputs.image }} > /dev/null && {
             echo "✅ Image is valid and accessible"
           } || {
             echo "❌ Image inspection failed"
@@ -283,7 +308,7 @@ jobs:
             --network ${{ job.services.postgres.network }} \
             -e DB_URL='postgres://postgres:postgres@postgres:5432/testdb?sslmode=disable' \
             -p 8080:8080 \
-            ${{ needs.build.outputs.image }} api)
+            ${{ steps.export.outputs.image }} api)
 
           echo "Waiting for API to be ready..."
           for i in {1..15}; do
@@ -311,7 +336,33 @@ jobs:
       packages: write
       id-token: write   # REQUIRED for cosign OIDC
 
+    outputs:
+      image: ${{ steps.export.outputs.image }}
+      digest: ${{ steps.export.outputs.digest }}
+      version: ${{ steps.export.outputs.version }}
+      repo_lower: ${{ steps.export.outputs.repo_lower }}
+
     steps:
+      - name: Download metadata
+        steps: actions/download-artifact@v7
+        with:
+          name: pipeline-metadata
+
+      - name: Load metadata
+        id: export
+        run: |
+          source metadata.env
+
+          if [ -z "$IMAGE" ] || [ -z "$DIGEST" ] || [ -z "$VERSION" ] || [ -z "$REPO_LOWER" ]; then
+            echo "❌ Missing required metadata values"
+            exit 1
+          fi
+
+          echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
+          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "repo_lower=${REPO_LOWER}" >> $GITHUB_OUTPUT
+
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -330,7 +381,7 @@ jobs:
         run: |
           cosign sign --yes \
             --oidc-issuer=https://token.actions.githubusercontent.com \
-            ${{ needs.build.outputs.image }}
+            ${{ steps.export.outputs.image }}
 
   cleanup:
     name: Cleanup Old Images
@@ -338,7 +389,33 @@ jobs:
     needs: [build]
     if: always()
 
+    outputs:
+      image: ${{ steps.export.outputs.image }}
+      digest: ${{ steps.export.outputs.digest }}
+      version: ${{ steps.export.outputs.version }}
+      repo_lower: ${{ steps.export.outputs.repo_lower }}
+
     steps:
+      - name: Download metadata
+        steps: actions/download-artifact@v7
+        with:
+          name: pipeline-metadata
+
+      - name: Load metadata
+        id: export
+        run: |
+          source metadata.env
+
+          if [ -z "$IMAGE" ] || [ -z "$DIGEST" ] || [ -z "$VERSION" ] || [ -z "$REPO_LOWER" ]; then
+            echo "❌ Missing required metadata values"
+            exit 1
+          fi
+
+          echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
+          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "repo_lower=${REPO_LOWER}" >> $GITHUB_OUTPUT
+
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -349,7 +426,7 @@ jobs:
       - name: Delete old image versions
         uses: actions/delete-package-versions@v5
         with:
-          package-name: ${{ needs.build.outputs.repo_lower }}
+          package-name: ${{ steps.lowercase.outputs.repo_lower }}
           package-type: container
           min-versions-to-keep: 10
           delete-only-untagged-versions: true
