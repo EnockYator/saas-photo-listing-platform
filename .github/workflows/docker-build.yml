@@ -20,6 +20,10 @@ permissions:
   packages: write
   actions: read
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 env:
   GO_VERSION: "1.23.0"
   REGISTRY: ghcr.io
@@ -73,109 +77,56 @@ jobs:
         run: |
           set -euo pipefail
 
-          MAJOR=0
-          MINOR=0
-          PATCH=0
+          LAST_TAG=$(git tag -l "v*.*.*" --sort=-v:refname | head -n1 || true)
 
-          # ----------------------------
-          # Get latest semver tag safely
-          # ----------------------------
-          LAST_TAG=$(git tag -l "v*.*.*" --sort=-v:refname 2>/dev/null | head -n1 || true)
-
-          if [ -z "${LAST_TAG:-}" ]; then
+          if [ -z "$LAST_TAG" ]; then
             LAST_TAG="v0.0.0"
           fi
 
           echo "Last tag: $LAST_TAG"
 
-          # ----------------------------
-          # Determine commit range safely
-          # ----------------------------
-          if git rev-parse "$LAST_TAG" >/dev/null 2>&1 && [ "$LAST_TAG" != "v0.0.0" ]; then
-            COMMIT_RANGE="$LAST_TAG..HEAD"
-          else
-            COMMIT_RANGE="HEAD"
-          fi
+          BASE="${LAST_TAG#v}"
+          IFS='.' read -r major minor patch <<< "$BASE"
 
-          echo "Commit range: $COMMIT_RANGE"
+          # collect commit messages since last tag
+          RANGE="$LAST_TAG..HEAD"
+          COMMITS=$(git log --pretty=format:%s "$RANGE" || true)
 
-          # ----------------------------
-          # Safely fetch commit messages
-          # ----------------------------
-          LOG_OUTPUT=$(git log --pretty=format:%s "$COMMIT_RANGE" 2>/dev/null || true)
-
-          # ----------------------------
-          # If there are NO commits, keep version
-          # ----------------------------
-          if [ "$LAST_TAG" != "v0.0.0" ] && [ -z "$LOG_OUTPUT" ]; then
-            echo "No new commits since $LAST_TAG – keeping same version"
+          if [ -z "$COMMITS" ]; then
+            echo "No commits since last tag → reuse version"
             echo "version=$LAST_TAG" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          # ----------------------------
-          # Analyze commit messages
-          # ----------------------------
-          while IFS= read -r msg; do
-            [ -z "$msg" ] && continue
+          BUMP="patch"
 
+          while IFS= read -r msg; do
             case "$msg" in
-              *"BREAKING CHANGE:"*|*"BREAKING-CHANGE:"*|*"!*:")
-                MAJOR=1
+              *"BREAKING CHANGE:"*|*"!*:")
+                BUMP="major"
                 ;;
               feat:*|feat\(*\):*)
-                MINOR=1
+                [ "$BUMP" != "major" ] && BUMP="minor"
                 ;;
               fix:*|fix\(*\):*)
-                PATCH=1
+                [ "$BUMP" = "patch" ] && BUMP="patch"
                 ;;
             esac
-          done <<< "$LOG_OUTPUT"
-
-          # ----------------------------
-          # Decide bump type
-          # ----------------------------
-          if [ "$MAJOR" -eq 1 ]; then
-            BUMP="major"
-          elif [ "$MINOR" -eq 1 ]; then
-            BUMP="minor"
-          elif [ "$PATCH" -eq 1 ]; then
-            BUMP="patch"
-          else
-            BUMP="patch"
-            echo "⚠️ No conventional commits found, defaulting to patch bump"
-          fi
-
-          # ----------------------------
-          # Compute new version
-          # ----------------------------
-          V="${LAST_TAG#v}"
-          IFS='.' read -r v_major v_minor v_patch <<< "$V"
-
-          v_major=${v_major:-0}
-          v_minor=${v_minor:-0}
-          v_patch=${v_patch:-0}
+          done <<< "$COMMITS"
 
           case "$BUMP" in
             major)
-              v_major=$((v_major + 1))
-              v_minor=0
-              v_patch=0
-              ;;
+              major=$((major+1)); minor=0; patch=0;;
             minor)
-              v_minor=$((v_minor + 1))
-              v_patch=0
-              ;;
+              minor=$((minor+1)); patch=0;;
             patch)
-              v_patch=$((v_patch + 1))
-              ;;
+              patch=$((patch+1));;
           esac
 
-          NEW_VERSION="v${v_major}.${v_minor}.${v_patch}"
+          NEW="v${major}.${minor}.${patch}"
 
-          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
-
-          echo "New version: $NEW_VERSION"
+          echo "version=$NEW" >> "$GITHUB_OUTPUT"
+          echo "New version: $NEW"
 
       - name: Build and push Docker image
         id: build
