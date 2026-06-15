@@ -29,7 +29,7 @@
 
 ---
 
-## 📊 Project Stats
+## Project Stats
 
 [![Last Commit](https://img.shields.io/github/last-commit/EnockYator/saas-photo-listing-platform)](https://github.com/EnockYator/saas-photo-listing-platform/commits/main)
 [![Open Issues](https://img.shields.io/github/issues/EnockYator/saas-photo-listing-platform)](https://github.com/EnockYator/saas-photo-listing-platform/issues)
@@ -49,7 +49,7 @@
 
 - [Saas Photo Listing Platform](#saas-photo-listing-platform)
   - [CI/CD Pipeline](#cicd-pipeline)
-  - [📊 Project Stats](#-project-stats)
+  - [Project Stats](#project-stats)
   - [Introduction](#introduction)
   - [Table of Contents](#table-of-contents)
   - [Quick Start](#quick-start)
@@ -81,7 +81,7 @@
 ```bash
 # Clone the repository
 git clone https://github.com/EnockYator/saas-photo-listing-platform.git
-cd photo-listing-saas
+cd saas-photo-listing-platform
 
 # Start development environment
 
