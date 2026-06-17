@@ -6,9 +6,20 @@ import (
 	"net/http"
 	"time"
 
+	healthdto "github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http/dto/health"
 	"github.com/EnockYator/saas-photo-listing-platform/pkg/response"
 )
 
+// ReadinessCheck godoc
+//
+// @Summary Database readiness check
+// @Description Returns database readiness status
+// @Tags Health
+// @Accept json
+// @Produce json
+// @Success 200 {object} healthdto.HealthResponse
+// @Failure 500 {object} map[string]any
+// @Router /health/ready [get]
 func Ready(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -29,8 +40,10 @@ func Ready(db *sql.DB) http.HandlerFunc {
 		response.WriteJSON(
 			w,
 			http.StatusOK,
-			map[string]string{"status": "ready"},
-			map[string]any{"db": "ok"},
+			healthdto.HealthResponse{
+				Status:  "ready",
+				Service: "saas-photo-listing-platform",
+			},
 		)
 	}
 }

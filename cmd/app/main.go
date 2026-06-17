@@ -1,3 +1,17 @@
+// @title           SaaS Photo Listing Platform API
+// @version         1.0
+// @description     REST API for the SaaS Photo Listing Platform.
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   API Support
+// @contact.email  support@example.com
+
+// @license.name  MIT
+// @license.url   https://opensource.org/licenses/MIT
+
+// @host      localhost:8080
+// @BasePath  /
+
 package main
 
 import (

@@ -3,13 +3,26 @@ package health
 import (
 	"net/http"
 
+	healthdto "github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http/dto/health"
 	"github.com/EnockYator/saas-photo-listing-platform/pkg/response"
 )
-
+// LiveCheck godoc
+//
+// @Summary Health Live check
+// @Description Returns service health live status
+// @Tags Health
+// @Accept json
+// @Produce json
+// @Success 200 {object} healthdto.HealthResponse
+// @Failure 500 {object} map[string]any
+// @Router /health/live [get]
 func Live(w http.ResponseWriter, r *http.Request) {
 	response.WriteJSON(
 		w,
 		http.StatusOK,
-		map[string]string{"status": "alive"},
-		nil)
+		healthdto.HealthResponse{
+			Status:  "alive",
+			Service: "saas-photo-listing-platform",
+		},
+	)
 }

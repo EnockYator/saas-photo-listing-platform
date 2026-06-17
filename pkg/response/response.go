@@ -17,17 +17,15 @@ type APIResponse struct {
 	Success bool       `json:"success"`
 	Data    any        `json:"data,omitempty"`
 	Error   *ErrorBody `json:"error,omitempty"`
-	Meta    any        `json:"meta,omitempty"`
 }
 
-func WriteJSON(w http.ResponseWriter, status int, data any, meta any) {
+func WriteJSON(w http.ResponseWriter, status int, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 
 	if err := json.NewEncoder(w).Encode(APIResponse{
 		Success: true,
 		Data:    data,
-		Meta:    meta,
 	}); err != nil {
 		http.Error(w, "failed to encode response", http.StatusInternalServerError)
 	}
