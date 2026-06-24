@@ -7,7 +7,7 @@ import (
 	"time"
 
 	healthdto "github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http/dto/health"
-	"github.com/EnockYator/saas-photo-listing-platform/pkg/response"
+	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/utilities/response"
 )
 
 // ReadinessCheck godoc
