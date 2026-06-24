@@ -7,6 +7,7 @@ import (
 	"time"
 
 	healthdto "github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http/dto/health"
+	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/utilities/apperror"
 	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/utilities/response"
 )
 
@@ -27,13 +28,16 @@ func Ready(db *sql.DB) http.HandlerFunc {
 		defer cancel()
 
 		if err := db.PingContext(ctx); err != nil {
-			response.WriteError(
-				w,
+			response.HandleError(
+			w,
+			apperror.New(
+				r.Context(),
 				http.StatusServiceUnavailable,
-				"DB_NOT_READY",
-				"database not reachable",
+				apperror.CodeServiceUnavailable,
+				"method not allowed",
 				nil,
-			)
+			),
+		)
 			return
 		}
 
@@ -42,7 +46,7 @@ func Ready(db *sql.DB) http.HandlerFunc {
 			http.StatusOK,
 			healthdto.HealthResponse{
 				Status:  "ready",
-				Service: "saas-photo-listing-platform",
+				Service: "saas-photo-listing-platform-database",
 			},
 		)
 	}

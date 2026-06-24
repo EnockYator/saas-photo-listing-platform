@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	healthdto "github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http/dto/health"
+	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/utilities/apperror"
 	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/utilities/response"
 )
 
@@ -15,11 +16,20 @@ import (
 // @Accept json
 // @Produce json
 // @Success 200 {object} healthdto.HealthResponse
-// @Failure 500 {object} map[string]any
+// @Failure 405 {object} response.APIResponse
 // @Router /health [get]
 func Health(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		response.WriteError(w, http.StatusMethodNotAllowed, "METHOD_NOT_ALLOWED", "method not allowed", nil)
+		response.HandleError(
+			w,
+			apperror.New(
+				r.Context(),
+				http.StatusMethodNotAllowed,
+				apperror.CodeMethodNotAllowed,
+				"method not allowed",
+				nil,
+			),
+		)
 		return
 	}
 
