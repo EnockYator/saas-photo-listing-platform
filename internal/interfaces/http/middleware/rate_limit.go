@@ -150,7 +150,7 @@ func (rl *RateLimiter) StartCleanup(interval time.Duration) {
 }
 
 // Middleware returns the HTTP middleware.
-// Lifecycle of the middleware: 
+// Lifecycle of the middleware:
 // identify client → find bucket → refill tokens → consume token or reject → emit observability data → continue request processing
 func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

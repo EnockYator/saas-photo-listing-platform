@@ -17,7 +17,7 @@ type AppError struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
 	Details []ErrorDetail `json:"details,omitempty"`
-	
+
 	// Internal error (this field should never be exposed)
 	Err error `json:"-"` // Hide raw system/DB errors from clients
 
