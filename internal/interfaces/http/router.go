@@ -40,7 +40,7 @@ func NewRouter(db *sql.DB) http.Handler {
 						),
 					),
 				),
-				
+
 			),
 		),
 	)
