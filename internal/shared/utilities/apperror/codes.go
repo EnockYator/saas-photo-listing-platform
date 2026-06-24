@@ -7,11 +7,12 @@ package apperror
 const (
 	CodeInternal     = "INTERNAL_SERVER_ERROR"
 	CodeBadRequest   = "BAD_REQUEST"
+	CodeMethodNotAllowed   = "METHOD_NOT_ALLOWED"
 	CodeUnauthorized = "UNAUTHORIZED"
 	CodeForbidden    = "FORBIDDEN"
 	CodeNotFound     = "NOT_FOUND"
 	CodeValidation   = "VALIDATION_ERROR"
-	CodeUnavailable  = "SERVICE_UNAVAILABLE"
+	CodeServiceUnavailable  = "SERVICE_UNAVAILABLE"
 	CodeConflict     = "CONFLICT"
 	CodeTooManyRequests = "TOO_MANY_REQUESTS"
 )
