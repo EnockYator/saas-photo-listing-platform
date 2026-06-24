@@ -24,11 +24,34 @@ func NewRouter(db *sql.DB) http.Handler {
 	))
 
 	// wrap the handler with middleware chain and return
-	return middleware.RequestID(
-		middleware.Logging(
-			middleware.Recovery(
-				middleware.Timeout(mux),
+	return middleware.RecoveryMiddleware(
+		middleware.CorsMiddleware(
+			middleware.RateLimiter(
+				middleware.RequestIDMiddleware(
+					middleware.AuthMiddleware(
+						middleware.TenantMiddleware(
+							middleware.TraceContextMiddleware(
+								middleware.TimeoutMiddleware(
+									middleware.LoggerMiddleware(
+										mux
+									),
+								),
+							),
+						),
+					),
+				),
+				
 			),
 		),
 	)
+
+
+
+	// return middleware.RequestID(
+	// 	middleware.Logging(
+	// 		middleware.Recovery(
+	// 			middleware.Timeout(mux),
+	// 		),
+	// 	),
+	// )
 }
