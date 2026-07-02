@@ -131,7 +131,7 @@ func (rl *RateLimiter) allow(key string) (bool, time.Duration) {
 	// Refill tokens based on elapsed time
 	elapsed := now.Sub(b.lastRefill).Seconds()
 	b.tokens += elapsed * rl.rps
-	
+
 	if b.tokens > rl.burst {
 		b.tokens = rl.burst
 	}
@@ -183,7 +183,7 @@ func (rl *RateLimiter) StartCleanup(interval time.Duration) {
 
 // RateLimitMiddleware returns the HTTP middleware for this limiter instance.
 //
-// Lifecycle: 
+// Lifecycle:
 // 		identify client -> find bucket -> refill tokens ->
 //		consume token or reject -> emit observability data -> continue
 func (rl *RateLimiter) RateLimitMiddleware(next http.Handler) http.Handler {
