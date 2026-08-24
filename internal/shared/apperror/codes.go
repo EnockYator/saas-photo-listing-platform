@@ -32,6 +32,19 @@ const (
 	CodeAuthSessionExpired     ErrorCode = "AUTH_SESSION_EXPIRED"     // 401
 	CodeAuthAccountLocked      ErrorCode = "AUTH_ACCOUNT_LOCKED"      // 423
 	CodeAuthMFARequired        ErrorCode = "AUTH_MFA_REQUIRED"        // 401
+	CodeAuthPermissionDenied    ErrorCode = "AUTH_PERMISSION_DENIED"    // 403
+)
+
+// =========================
+// Multi-Tenant / Tenant Management
+// =========================
+
+const (
+	CodeTenantNotFound ErrorCode = "TENANT_NOT_FOUND" // 404
+	CodeTenantInactive ErrorCode = "TENANT_INACTIVE"  // 403
+	CodeTenantIDMissing  ErrorCode = "TENANT_ID_MISSING"   // 400
+	CodeTenantIDInvalid  ErrorCode = "TENANT_ID_INVALID"   // 400
+	CodeTenantAccessDenied ErrorCode = "TENANT_ACCESS_DENIED" // 403
 )
 
 // =========================

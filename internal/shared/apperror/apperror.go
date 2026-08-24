@@ -1,27 +1,14 @@
+// Package apperror defines a structured error type for application-level errors, 
+// along with a set of stable error codes that can be used throughout the application.
+//
+// It provides a consistent way to represent errors, including an error code, 
+// message, optional details, and request/observability metadata.
 package apperror
 
 import (
 	"fmt"
-	"context"
 	"errors"
-
-	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/requestcontext"
 )
-
-// ErrorDetail represents a specific detail associated with an application
-// error, typically a validation failure.
-//
-// Example:
-// {
-//  "field": "email",
-//  "message": "must be a valid email address"
-// }
-type ErrorDetail struct {
-	Field string `json:"field,omitempty"`
-	Message string `json:"message"`
-	Code string `json:"code,omitempty"`
-}
-
 
 // AppError represents a known application-level error.
 //
@@ -32,7 +19,7 @@ type ErrorDetail struct {
 //   - optional validation details (Details)
 //   - request/observability metadata
 type AppError struct {
-	HTTPCode    ErrorCode `json:"code"`
+	Code    ErrorCode `json:"code"`
 	Message string `json:"message"`
 	Details []ErrorDetail `json:"details,omitempty"`
 	
@@ -46,30 +33,6 @@ type AppError struct {
 	TenantID string `json:"tenant_id,omitempty"`
 }
 
-// New creates a new application error.
-//
-// The context is used only to capture request/observability metadata.
-// HTTP status codes must not be supplied here; those are determined
-// by the HTTP transport layer.
-func New(
-	ctx context.Context,
-	code ErrorCode,
-	message string,
-	err error,
-) *AppError {
-	return &AppError{
-		HTTPCode:    code,
-		Message: message,
-		Err:     err,
-		Details: nil,
-
-		TraceID:   requestcontext.GetTraceID(ctx),
-		RequestID: requestcontext.GetRequestID(ctx),
-		UserID:    requestcontext.GetUserID(ctx),
-		TenantID:  requestcontext.GetTenantID(ctx),
-	}
-}
-
 // Error implements the error interface.
 func (e *AppError) Error() string {
 	if e == nil {
@@ -77,10 +40,10 @@ func (e *AppError) Error() string {
 	}
 
 	if e.Err == nil {
-		return fmt.Sprintf("%s: %s", e.HTTPCode, e.Message)
+		return fmt.Sprintf("%s: %s", e.Code, e.Message)
 	}
 
-	return fmt.Sprintf("%s: %s: %v", e.HTTPCode, e.Message, e.Err)
+	return fmt.Sprintf("%s: %s: %v", e.Code, e.Message, e.Err)
 }
 
 // Unwrap exposes the underlying cause to the standard errors package.
@@ -96,21 +59,6 @@ func (e *AppError) Unwrap() error {
 	return e.Err
 }
 
-// WithDetails adds a validation or field-level error detail.
-func (e *AppError) WithDetails(
-	field string,
-	message string,
-	code string,
-) *AppError {
-	e.Details = append(e.Details, ErrorDetail{
-		Field:   field,
-		Message: message,
-		Code:    code,
-	})
-
-	return e
-}
-
 // Is allows errors.Is to compare AppError codes.
 //
 // Example:
@@ -124,17 +72,26 @@ func (e *AppError) Is(target error) bool {
 		return false
 	}
 
-	return e.HTTPCode == targetErr.HTTPCode
+	return e.Code == targetErr.Code
 }
 
 // NewCode creates a sentinel application error for use with errors.Is.
 func NewCode(code ErrorCode) *AppError {
 	return &AppError{
-		HTTPCode: code,
+		Code: code,
 	}
 }
 
-// IsCode reports whether err contains an AppError with the given code.
+// IsCode reports whether err contains an AppError with the given code (simpler alternative to errors.Is() function).
+//
+// This is a convenience function for checking application error codes without
+// needing to type assert the error.
+// 
+// Example:
+//
+//	if apperror.IsCode(err, apperror.CodeNotFound) {
+//	    // handle not found error
+// 	}
 func IsCode(err error, code ErrorCode) bool {
 	var appErr *AppError
 
@@ -142,5 +99,5 @@ func IsCode(err error, code ErrorCode) bool {
 		return false
 	}
 
-	return appErr.HTTPCode == code
+	return appErr.Code == code
 }
