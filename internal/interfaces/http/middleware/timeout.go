@@ -67,9 +67,3 @@ func TimeoutMiddleware(timeout time.Duration) func(http.Handler) http.Handler {
 		})
 	}
 }
-
-// GetTimeout returns the configured request timeout.
-func GetTimeout(ctx context.Context) (time.Duration, bool) {
-	timeout, ok := ctx.Value(timeoutKey).(time.Duration)
-	return timeout, ok
-}

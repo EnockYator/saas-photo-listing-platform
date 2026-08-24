@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/requestcontext"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -60,7 +61,7 @@ func LoggerMiddleware(base *slog.Logger) func(http.Handler) http.Handler {
 			}
 
 			// Extract request ID from context
-			requestID := GetRequestID(r.Context())
+			requestID := requestcontext.GetRequestID(r.Context())
 
 			// Build request-scoped logger
 			logger := base.With(

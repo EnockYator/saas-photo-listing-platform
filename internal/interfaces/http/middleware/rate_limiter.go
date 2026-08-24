@@ -8,6 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http/response"
+	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/apperror"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -208,11 +210,17 @@ func (rl *RateLimiter) RateLimitMiddleware(next http.Handler) http.Handler {
 				w.Header().Set("Retry-After", retryAfter.Truncate(time.Second).String())
 			}
 
-			http.Error(
+			response.WriteError(
 				w,
-				"rate limit exceeded",
-				http.StatusTooManyRequests,
+				r,
+				apperror.New(
+					r.Context(),
+					apperror.CodeTooManyRequests,
+					"rate limit exceeded",
+					nil,
+				),
 			)
+
 			return
 		}
 

@@ -1,37 +1,30 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
 	"strings"
+
+	"github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http/response"
+	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/apperror"
+	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/requestcontext"
+	"github.com/EnockYator/saas-photo-listing-platform/internal/domain/auth/application"
+
 
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
-// contextKey is a custom struct type to prevent context key collisions.
-// No other package can replicate it
-type authContextKey struct{}
-
-// requestIDKey defines a single instance of contextKey
-var claimsKey = authContextKey{}
-
-// Claims is a single auth identity object
-type Claims struct {
-	UserID    string
-	TenantID  string
-	Roles     []string
-}
-
-// Token validator abstraction
+// TokenValidator is an interface for validating JWT tokens and extracting claims.
 type TokenValidator interface {
-	Validate(token string) (*Claims, error)
+	Validate(token string) (*application.Claims, error)
 }
 
-// AuthMiddleware
-//   - extracts and validates jwt token
-//   - receive Claims struct (UserID, TenantID, Roles)
-//   - store Claims in context
+// AuthMiddleware:
+//   - extracts the Authorization header
+//   - validates the bearer token
+//   - extracts the authenticated identity
+//   - stores request-scoped identity in context
+//   - enriches the active OpenTelemetry span
 func AuthMiddleware(validator TokenValidator) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 
@@ -40,10 +33,15 @@ func AuthMiddleware(validator TokenValidator) func(http.Handler) http.Handler {
 			// 1. Extract Authorization header
 			authHeader := r.Header.Get("Authorization")
 			if authHeader == "" {
-				http.Error(
+				response.WriteError(
 					w,
-					"missing authorization header",
-					http.StatusUnauthorized,
+					r,
+					apperror.New(
+						r.Context(),
+						apperror.CodeAuthTokenMissing,
+						"authorization token required",
+						nil,
+					),
 				)
 				return
 			}
@@ -51,10 +49,15 @@ func AuthMiddleware(validator TokenValidator) func(http.Handler) http.Handler {
 			// 2. Validate Bearer format
 			parts := strings.SplitN(authHeader, " ", 2)
 			if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
-				http.Error(
+				response.WriteError(
 					w,
-					"invalid authorization format",
-					http.StatusUnauthorized,
+					r,
+					apperror.New(
+						r.Context(),
+						apperror.CodeAuthTokenInvalid,
+						"invalid authorization format",
+						nil,
+					),
 				)
 				return
 			}
@@ -74,16 +77,24 @@ func AuthMiddleware(validator TokenValidator) func(http.Handler) http.Handler {
 					)
 				}
 
-				http.Error(
+				response.WriteError(
 					w,
-					"invalid token",
-					http.StatusUnauthorized,
+					r,
+					apperror.New(
+						r.Context(),
+						apperror.CodeAuthTokenInvalid,
+						"invalid authorization token",
+						err,
+					),
 				)
+
 				return
 			}
 
-			// 4. Store claims in context (single source of truth)
-			ctx := context.WithValue(r.Context(), claimsKey, *claims)
+			// 4. Store claims in context
+			ctx := requestcontext.WithUserID(r.Context(), claims.UserID)
+			ctx = requestcontext.WithTenantID(ctx, claims.TenantID)
+			ctx = requestcontext.WithRoles(ctx, claims.Roles)
 
 			// 5. OpenTelemetry enrichment
 			span := trace.SpanFromContext(ctx)
@@ -91,31 +102,11 @@ func AuthMiddleware(validator TokenValidator) func(http.Handler) http.Handler {
 				span.SetAttributes(
 					attribute.String("auth.user_id", claims.UserID),
 					attribute.String("auth.tenant_id", claims.TenantID),
+					attribute.String("auth.roles", strings.Join(claims.Roles, ",")),
 				)
 			}
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
-}
-
-func GetClaims(ctx context.Context) (Claims, bool) {
-	c, ok := ctx.Value(claimsKey).(Claims)
-	return c, ok
-}
-
-func GetUserID(ctx context.Context) (string, bool) {
-	c, ok := GetClaims(ctx)
-	if !ok {
-		return "", false
-	}
-	return c.UserID, true
-}
-
-func GetRoles(ctx context.Context) ([]string, bool) {
-	c, ok := GetClaims(ctx)
-	if !ok {
-		return nil, false
-	}
-	return c.Roles, true
 }

@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"runtime/debug"
 
+	"github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http/response"
+	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/apperror"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -44,9 +46,15 @@ func RecoveryMiddleware(next http.Handler) http.Handler {
 
 				w.WriteHeader(http.StatusInternalServerError)
 
-				_, _ = fmt.Fprintln(
+				response.WriteError(
 					w,
-					"internal server error",
+					r,
+					apperror.New(
+						r.Context(),
+						apperror.CodeInternalServerError,
+						"internal server error",
+						nil,
+					),
 				)
 			}
 		}()

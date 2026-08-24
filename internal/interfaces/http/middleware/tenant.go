@@ -1,51 +1,41 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
 
+	"github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http/response"
+	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/apperror"
+	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/requestcontext"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
-// contextKey is a custom struct type to prevent context key collisions.
-// No other package can replicate it
-type tenantContextKey struct{}
-
-// tenantIDKey defines a single instance of contextKey
-var tenantIDKey = tenantContextKey{}
-
 // TenantMiddleware is responsible for identity extraction thus enforcing data boundaries
-//   - reads Claims which are set by AuthMiddleware
-//   - extracts TenantID
-//   - attaches convenience value
+//   - extracts TenantID from request context (populated by AuthMiddleware)
+//   - attaches TenantID to request context for downstream handlers
+//   - enriches OpenTelemetry spans with tenant information
 func TenantMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		// 1. Get claims from context (source of truth)
-		claims, ok := GetClaims(r.Context())
-		if !ok {
-			http.Error(
-				w,
-				"missing auth context",
-				http.StatusUnauthorized,
-			)
-			return
-		}
-
-		tenantID := claims.TenantID
+		// 1. Get tenant ID from request context (populated by AuthMiddleware)
+		tenantID := requestcontext.GetTenantID(r.Context())
 
 		if tenantID == "" {
-			http.Error(
+			response.WriteError(
 				w,
-				"missing tenant",
-				http.StatusUnauthorized,
+				r,
+				apperror.New(
+					r.Context(),
+					apperror.CodeTenantIDMissing,
+					"tenant ID missing in request context",
+					nil,
+				),
 			)
 			return
 		}
 
 		// 2. Attach tenant to context (optional convenience)
-		ctx := context.WithValue(r.Context(), tenantIDKey, tenantID)
+		ctx := requestcontext.WithTenantID(r.Context(), tenantID)
 
 		// 3. OpenTelemetry enrichment
 		span := trace.SpanFromContext(ctx)
@@ -57,11 +47,4 @@ func TenantMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
-}
-
-func GetTenantID(ctx context.Context) string {
-	if id, ok := ctx.Value(tenantIDKey).(string); ok {
-		return id
-	}
-	return ""
 }
