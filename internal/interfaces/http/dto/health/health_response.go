@@ -2,5 +2,5 @@ package health
 
 type HealthResponse struct {
 	Status string `json:"status"`
-	Service string `json:"service"`
+	Application string `json:"application"`
 }
