@@ -4,7 +4,9 @@ import (
 	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/apperror"
 )
 
-// APIErrorResponse represents the structure of an error response sent to clients.
+// APIErrorResponse defines the standard payload format for API errors.
+// 
+// It represents the structure of an error response sent to clients.
 //
 // Example:
 // {
@@ -25,7 +27,7 @@ import (
 //   "request_id": "req_123"
 // }
 type APIErrorResponse struct {
-	HTTPCode apperror.ErrorCode `json:"code"`
+	Code apperror.ErrorCode `json:"code"`
 	Message string `json:"message"`
 	Details []apperror.ErrorDetail `json:"details,omitempty"`
 	RequestID string `json:"request_id,omitempty"`

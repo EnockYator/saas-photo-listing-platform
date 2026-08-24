@@ -1,6 +1,8 @@
 package response
 
-// APISuccessResponse represents the structure of a successful API response.
+// APISuccessResponse defines the envelope for successful API payloads.
+//
+// It represents the structure of a successful response sent to clients, including a success flag and the actual data.
 //
 // Example:
 // {
@@ -8,7 +10,7 @@ package response
 //   "data": {
 //     "id": 123,
 //     "name": "Samson",
-//     "email": "
+//     "email": "samson@example.com"
 //   }
 // }
 type APISuccessResponse struct {
