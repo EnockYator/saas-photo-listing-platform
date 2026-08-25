@@ -1,13 +1,13 @@
-// Package apperror defines a structured error type for application-level errors, 
+// Package apperror defines a structured error type for application-level errors,
 // along with a set of stable error codes that can be used throughout the application.
 //
-// It provides a consistent way to represent errors, including an error code, 
+// It provides a consistent way to represent errors, including an error code,
 // message, optional details, and request/observability metadata.
 package apperror
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 )
 
 // AppError represents a known application-level error.
@@ -19,18 +19,18 @@ import (
 //   - optional validation details (Details)
 //   - request/observability metadata
 type AppError struct {
-	Code    ErrorCode `json:"code"`
-	Message string `json:"message"`
+	Code    ErrorCode     `json:"code"`
+	Message string        `json:"message"`
 	Details []ErrorDetail `json:"details,omitempty"`
-	
+
 	// Internal error (this field should never be exposed)
 	Err error `json:"-"`
 
 	// Observability metadata
-	TraceID string `json:"trace_id,omitempty"`
+	TraceID   string `json:"trace_id,omitempty"`
 	RequestID string `json:"request_id,omitempty"`
-	UserID string `json:"user_id,omitempty"`
-	TenantID string `json:"tenant_id,omitempty"`
+	UserID    string `json:"user_id,omitempty"`
+	TenantID  string `json:"tenant_id,omitempty"`
 }
 
 // Error implements the error interface.
@@ -86,12 +86,12 @@ func NewCode(code ErrorCode) *AppError {
 //
 // This is a convenience function for checking application error codes without
 // needing to type assert the error.
-// 
+//
 // Example:
 //
 //	if apperror.IsCode(err, apperror.CodeNotFound) {
 //	    // handle not found error
-// 	}
+//	}
 func IsCode(err error, code ErrorCode) bool {
 	var appErr *AppError
 

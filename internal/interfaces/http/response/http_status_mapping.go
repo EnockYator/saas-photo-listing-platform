@@ -2,22 +2,22 @@ package response
 
 import (
 	"net/http"
-	
+
 	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/apperror"
 )
 
 var statusByCode = map[apperror.ErrorCode]int{
 	// Generic
-	apperror.CodeInternalServerError:			http.StatusInternalServerError, // 500
-	apperror.CodeBadRequest:         http.StatusBadRequest,          // 400
-	apperror.CodeMethodNotAllowed:   http.StatusMethodNotAllowed,    // 405
-	apperror.CodeUnauthorized:       http.StatusUnauthorized,        // 401
-	apperror.CodeForbidden:          http.StatusForbidden,           // 403
-	apperror.CodeNotFound:           http.StatusNotFound,            // 404
-	apperror.CodeValidation:         http.StatusUnprocessableEntity, // 422
-	apperror.CodeServiceUnavailable: http.StatusServiceUnavailable,  // 503
-	apperror.CodeConflict:           http.StatusConflict,             // 409
-	apperror.CodeTooManyRequests:    http.StatusTooManyRequests,     // 429
+	apperror.CodeInternalServerError: http.StatusInternalServerError, // 500
+	apperror.CodeBadRequest:          http.StatusBadRequest,          // 400
+	apperror.CodeMethodNotAllowed:    http.StatusMethodNotAllowed,    // 405
+	apperror.CodeUnauthorized:        http.StatusUnauthorized,        // 401
+	apperror.CodeForbidden:           http.StatusForbidden,           // 403
+	apperror.CodeNotFound:            http.StatusNotFound,            // 404
+	apperror.CodeValidation:          http.StatusUnprocessableEntity, // 422
+	apperror.CodeServiceUnavailable:  http.StatusServiceUnavailable,  // 503
+	apperror.CodeConflict:            http.StatusConflict,            // 409
+	apperror.CodeTooManyRequests:     http.StatusTooManyRequests,     // 429
 
 	// Authentication / Authorization
 	apperror.CodeAuthInvalidCredentials: http.StatusUnauthorized, // 401
@@ -35,37 +35,37 @@ var statusByCode = map[apperror.ErrorCode]int{
 	apperror.CodeUserProfileInvalid: http.StatusUnprocessableEntity, // 422
 
 	// Validation
-	apperror.CodeValidationRequiredField: http.StatusUnprocessableEntity, // 422
+	apperror.CodeValidationRequiredField:      http.StatusUnprocessableEntity, // 422
 	apperror.CodeValidationInvalidEmailFormat: http.StatusUnprocessableEntity, // 422
-	apperror.CodeValidationOutOfRange:    http.StatusUnprocessableEntity, // 422
-	apperror.CodeValidationFailed:        http.StatusUnprocessableEntity, // 422
+	apperror.CodeValidationOutOfRange:         http.StatusUnprocessableEntity, // 422
+	apperror.CodeValidationFailed:             http.StatusUnprocessableEntity, // 422
 
 	// Database
 	apperror.CodeDBConnectionFailed: http.StatusServiceUnavailable,  // 503
 	apperror.CodeDBQueryFailed:      http.StatusInternalServerError, // 500
-	apperror.CodeDBRecordNotFound:   http.StatusNotFound,             // 404
+	apperror.CodeDBRecordNotFound:   http.StatusNotFound,            // 404
 	apperror.CodeDBTransactionFail:  http.StatusInternalServerError, // 500
-	apperror.CodeDBConstraintFail:   http.StatusConflict,             // 409
+	apperror.CodeDBConstraintFail:   http.StatusConflict,            // 409
 
 	// External services
-	apperror.CodeExternalServiceFailure: http.StatusBadGateway,        // 502
+	apperror.CodeExternalServiceFailure: http.StatusBadGateway,         // 502
 	apperror.CodeExternalTimeout:        http.StatusGatewayTimeout,     // 504
-	apperror.CodeExternalBadResponse:    http.StatusBadGateway,        // 502
+	apperror.CodeExternalBadResponse:    http.StatusBadGateway,         // 502
 	apperror.CodeExternalUnavailable:    http.StatusServiceUnavailable, // 503
 
 	// Payment
-	apperror.CodePaymentFailed:       http.StatusPaymentRequired,      // 402
-	apperror.CodePaymentDeclined:     http.StatusPaymentRequired,      // 402
-	apperror.CodePaymentRequired:     http.StatusPaymentRequired,      // 402
-	apperror.CodeBillingNotFound:     http.StatusNotFound,              // 404
-	apperror.CodeSubscriptionExpired: http.StatusPaymentRequired,      // 402
+	apperror.CodePaymentFailed:       http.StatusPaymentRequired,     // 402
+	apperror.CodePaymentDeclined:     http.StatusPaymentRequired,     // 402
+	apperror.CodePaymentRequired:     http.StatusPaymentRequired,     // 402
+	apperror.CodeBillingNotFound:     http.StatusNotFound,            // 404
+	apperror.CodeSubscriptionExpired: http.StatusPaymentRequired,     // 402
 	apperror.CodeSubscriptionInvalid: http.StatusUnprocessableEntity, // 422
 
 	// File
-	apperror.CodeFileNotFound:     http.StatusNotFound,            // 404
-	apperror.CodeFileUploadFailed: http.StatusInternalServerError, // 500
+	apperror.CodeFileNotFound:     http.StatusNotFound,              // 404
+	apperror.CodeFileUploadFailed: http.StatusInternalServerError,   // 500
 	apperror.CodeFileTooLarge:     http.StatusRequestEntityTooLarge, // 413
-	apperror.CodeFileInvalidType:  http.StatusUnsupportedMediaType, // 415
+	apperror.CodeFileInvalidType:  http.StatusUnsupportedMediaType,  // 415
 
 	// Storage
 	apperror.CodeCloudStorageLimitReached: http.StatusInsufficientStorage, // 507
@@ -80,6 +80,6 @@ var statusByCode = map[apperror.ErrorCode]int{
 	// Infrastructure
 	apperror.CodeCircuitBreakerOpen: http.StatusServiceUnavailable, // 503
 	apperror.CodeDependencyFailure:  http.StatusServiceUnavailable, // 503
-	apperror.CodeTimeout:             http.StatusGatewayTimeout,     // 504
+	apperror.CodeTimeout:            http.StatusGatewayTimeout,     // 504
 	apperror.CodeShutdownInProgress: http.StatusServiceUnavailable, // 503
 }

@@ -6,6 +6,7 @@ import (
 	healthdto "github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http/dto/health"
 	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/utilities/response"
 )
+
 // LiveCheck godoc
 //
 // @Summary Health Live check

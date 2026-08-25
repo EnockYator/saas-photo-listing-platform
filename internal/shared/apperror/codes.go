@@ -32,7 +32,7 @@ const (
 	CodeAuthSessionExpired     ErrorCode = "AUTH_SESSION_EXPIRED"     // 401
 	CodeAuthAccountLocked      ErrorCode = "AUTH_ACCOUNT_LOCKED"      // 423
 	CodeAuthMFARequired        ErrorCode = "AUTH_MFA_REQUIRED"        // 401
-	CodeAuthPermissionDenied    ErrorCode = "AUTH_PERMISSION_DENIED"    // 403
+	CodeAuthPermissionDenied   ErrorCode = "AUTH_PERMISSION_DENIED"   // 403
 )
 
 // =========================
@@ -40,10 +40,10 @@ const (
 // =========================
 
 const (
-	CodeTenantNotFound ErrorCode = "TENANT_NOT_FOUND" // 404
-	CodeTenantInactive ErrorCode = "TENANT_INACTIVE"  // 403
-	CodeTenantIDMissing  ErrorCode = "TENANT_ID_MISSING"   // 400
-	CodeTenantIDInvalid  ErrorCode = "TENANT_ID_INVALID"   // 400
+	CodeTenantNotFound     ErrorCode = "TENANT_NOT_FOUND"     // 404
+	CodeTenantInactive     ErrorCode = "TENANT_INACTIVE"      // 403
+	CodeTenantIDMissing    ErrorCode = "TENANT_ID_MISSING"    // 400
+	CodeTenantIDInvalid    ErrorCode = "TENANT_ID_INVALID"    // 400
 	CodeTenantAccessDenied ErrorCode = "TENANT_ACCESS_DENIED" // 403
 )
 
@@ -63,10 +63,10 @@ const (
 // =========================
 
 const (
-	CodeValidationRequiredField ErrorCode = "VALIDATION_REQUIRED_FIELD" // 422
+	CodeValidationRequiredField      ErrorCode = "VALIDATION_REQUIRED_FIELD"       // 422
 	CodeValidationInvalidEmailFormat ErrorCode = "VALIDATION_INVALID_EMAIL_FORMAT" // 422
-	CodeValidationOutOfRange    ErrorCode = "VALIDATION_OUT_OF_RANGE"   // 422
-	CodeValidationFailed        ErrorCode = "VALIDATION_FAILED"         // 422
+	CodeValidationOutOfRange         ErrorCode = "VALIDATION_OUT_OF_RANGE"         // 422
+	CodeValidationFailed             ErrorCode = "VALIDATION_FAILED"               // 422
 )
 
 // =========================
@@ -74,10 +74,10 @@ const (
 // =========================
 
 const (
-	CodeDBConnectionFailed ErrorCode = "DB_CONNECTION_FAILED"  // 503
-	CodeDBQueryFailed      ErrorCode = "DB_QUERY_FAILED"       // 500
-	CodeDBRecordNotFound   ErrorCode = "DB_RECORD_NOT_FOUND"   // 404
-	CodeDBTransactionFail  ErrorCode = "DB_TRANSACTION_FAILED" // 500
+	CodeDBConnectionFailed ErrorCode = "DB_CONNECTION_FAILED"    // 503
+	CodeDBQueryFailed      ErrorCode = "DB_QUERY_FAILED"         // 500
+	CodeDBRecordNotFound   ErrorCode = "DB_RECORD_NOT_FOUND"     // 404
+	CodeDBTransactionFail  ErrorCode = "DB_TRANSACTION_FAILED"   // 500
 	CodeDBConstraintFail   ErrorCode = "DB_CONSTRAINT_VIOLATION" // 409
 )
 
@@ -86,7 +86,7 @@ const (
 // =========================
 
 const (
-	CodeExternalServiceFailure ErrorCode = "EXTERNAL_SERVICE_FAILURE"    // 502
+	CodeExternalServiceFailure ErrorCode = "EXTERNAL_SERVICE_FAILURE"     // 502
 	CodeExternalTimeout        ErrorCode = "EXTERNAL_SERVICE_TIMEOUT"     // 504
 	CodeExternalBadResponse    ErrorCode = "EXTERNAL_BAD_RESPONSE"        // 502
 	CodeExternalUnavailable    ErrorCode = "EXTERNAL_SERVICE_UNAVAILABLE" // 503
@@ -97,12 +97,12 @@ const (
 // =========================
 
 const (
-	CodePaymentFailed       ErrorCode = "PAYMENT_FAILED"        // 402
-	CodePaymentDeclined     ErrorCode = "PAYMENT_DECLINED"      // 402
-	CodePaymentRequired     ErrorCode = "PAYMENT_REQUIRED"      // 402
-	CodeBillingNotFound     ErrorCode = "BILLING_NOT_FOUND"     // 404
-	CodeSubscriptionExpired ErrorCode = "SUBSCRIPTION_EXPIRED"  // 402
-	CodeSubscriptionInvalid ErrorCode = "SUBSCRIPTION_INVALID"  // 422
+	CodePaymentFailed       ErrorCode = "PAYMENT_FAILED"       // 402
+	CodePaymentDeclined     ErrorCode = "PAYMENT_DECLINED"     // 402
+	CodePaymentRequired     ErrorCode = "PAYMENT_REQUIRED"     // 402
+	CodeBillingNotFound     ErrorCode = "BILLING_NOT_FOUND"    // 404
+	CodeSubscriptionExpired ErrorCode = "SUBSCRIPTION_EXPIRED" // 402
+	CodeSubscriptionInvalid ErrorCode = "SUBSCRIPTION_INVALID" // 422
 )
 
 // =========================
@@ -130,10 +130,10 @@ const (
 // =========================
 
 const (
-	CodeRateLimited        ErrorCode = "RATE_LIMIT_EXCEEDED"  // 429
-	CodeIPBlocked          ErrorCode = "IP_BLOCKED"           // 403
-	CodeSuspiciousActivity ErrorCode = "SUSPICIOUS_ACTIVITY"  // 403
-	CodePermissionDenied   ErrorCode = "PERMISSION_DENIED"    // 403
+	CodeRateLimited        ErrorCode = "RATE_LIMIT_EXCEEDED" // 429
+	CodeIPBlocked          ErrorCode = "IP_BLOCKED"          // 403
+	CodeSuspiciousActivity ErrorCode = "SUSPICIOUS_ACTIVITY" // 403
+	CodePermissionDenied   ErrorCode = "PERMISSION_DENIED"   // 403
 )
 
 // =========================
@@ -141,8 +141,8 @@ const (
 // =========================
 
 const (
-	CodeCircuitBreakerOpen ErrorCode = "CIRCUIT_BREAKER_OPEN"  // 503
-	CodeDependencyFailure  ErrorCode = "DEPENDENCY_FAILURE"    // 503
-	CodeTimeout             ErrorCode = "REQUEST_TIMEOUT"        // 504
-	CodeShutdownInProgress  ErrorCode = "SHUTDOWN_IN_PROGRESS"  // 503
+	CodeCircuitBreakerOpen ErrorCode = "CIRCUIT_BREAKER_OPEN" // 503
+	CodeDependencyFailure  ErrorCode = "DEPENDENCY_FAILURE"   // 503
+	CodeTimeout            ErrorCode = "REQUEST_TIMEOUT"      // 504
+	CodeShutdownInProgress ErrorCode = "SHUTDOWN_IN_PROGRESS" // 503
 )

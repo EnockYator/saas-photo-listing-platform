@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	healthdto "github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http/dto/health"
-	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/apperror"
 	"github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http/response"
+	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/apperror"
 )
 
 // HealthCheck godoc
@@ -30,7 +30,7 @@ func Health(w http.ResponseWriter, r *http.Request) {
 				"method not allowed",
 				nil,
 			),
-		)		
+		)
 		return
 	}
 
@@ -38,7 +38,7 @@ func Health(w http.ResponseWriter, r *http.Request) {
 		w,
 		http.StatusOK,
 		healthdto.HealthResponse{
-			Status:  "ok",
+			Status:      "ok",
 			Application: "saas-photo-listing-platform",
 		},
 	)

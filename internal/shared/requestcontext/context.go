@@ -1,4 +1,4 @@
-// Package requestcontext is a helper package that provides a way to store and retrieve 
+// Package requestcontext is a helper package that provides a way to store and retrieve
 // request-scoped values in a context.Context.
 package requestcontext
 

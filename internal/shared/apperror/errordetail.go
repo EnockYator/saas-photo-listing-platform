@@ -4,12 +4,13 @@ package apperror
 // error, typically a validation failure.
 //
 // Example:
-// {
-//  "field": "email",
-//  "message": "must be a valid email address"
-// }
+//
+//	{
+//	 "field": "email",
+//	 "message": "must be a valid email address"
+//	}
 type ErrorDetail struct {
-	Field string `json:"field,omitempty"`
+	Field   string `json:"field,omitempty"`
 	Message string `json:"message"`
 }
 
@@ -20,17 +21,18 @@ type ErrorDetail struct {
 // in one response.
 //
 // Example:
-// if req.Email == "" {
-// 	return apperror.New(
-// 		ctx,
-// 		apperror.CodeValidationRequiredField,
-// 		"email is required",
-// 		nil,
-// 	).WithDetails(
-// 		"email",
-// 		"email is required",
-// 	)
-// }
+//
+//	if req.Email == "" {
+//		return apperror.New(
+//			ctx,
+//			apperror.CodeValidationRequiredField,
+//			"email is required",
+//			nil,
+//		).WithDetails(
+//			"email",
+//			"email is required",
+//		)
+//	}
 func (e *AppError) WithDetails(
 	field string,
 	message string,

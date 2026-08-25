@@ -4,11 +4,10 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/EnockYator/saas-photo-listing-platform/internal/domain/auth/application"
 	"github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http/response"
 	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/apperror"
 	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/requestcontext"
-	"github.com/EnockYator/saas-photo-listing-platform/internal/domain/auth/application"
-
 
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"

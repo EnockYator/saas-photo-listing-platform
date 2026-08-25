@@ -20,7 +20,7 @@ const shardCount = 64
 // bucket represents one client's token bucket.
 type bucket struct {
 	mu         sync.Mutex // protects bucket data
-	tokens     float64 // current token count
+	tokens     float64    // current token count
 	lastRefill time.Time
 	lastSeen   time.Time // tracks last request - used for cleanup
 }
@@ -33,10 +33,10 @@ type shard struct {
 
 // RateLimiter is a sharded token-bucket rate limiter.
 type RateLimiter struct {
-	rps   float64 // request/sec eg. 10rps = 10 tokens/sec
-	burst float64 // maximum bucket capacity eg. 20 = Can instantly spend 20 requests
-	shards [shardCount]*shard // array of 64 shard pointers
-	trustProxy bool // if true, trust X-Forwarded-For and X-Real-IP headers for client IP headers
+	rps        float64            // request/sec eg. 10rps = 10 tokens/sec
+	burst      float64            // maximum bucket capacity eg. 20 = Can instantly spend 20 requests
+	shards     [shardCount]*shard // array of 64 shard pointers
+	trustProxy bool               // if true, trust X-Forwarded-For and X-Real-IP headers for client IP headers
 }
 
 // RateLimiterOption configures a RateLimiter at construction time.
@@ -143,7 +143,7 @@ func (rl *RateLimiter) allow(key string) (bool, time.Duration) {
 
 	if b.tokens < 1 {
 		deficit := 1 - b.tokens
-		retryAfter := time.Duration(deficit/rl.rps*float64(time.Second))
+		retryAfter := time.Duration(deficit / rl.rps * float64(time.Second))
 		return false, retryAfter
 	}
 
@@ -155,8 +155,8 @@ func (rl *RateLimiter) allow(key string) (bool, time.Duration) {
 //
 // Called once after constructing the RateLimiter, e.g.:
 //
-//		rl := NewRateLimiter(10, 20)
-//		rl.StartCleanup(5 * time.Minute)
+//	rl := NewRateLimiter(10, 20)
+//	rl.StartCleanup(5 * time.Minute)
 func (rl *RateLimiter) StartCleanup(interval time.Duration) {
 	go func() {
 		ticker := time.NewTicker(interval)
@@ -186,8 +186,9 @@ func (rl *RateLimiter) StartCleanup(interval time.Duration) {
 // RateLimitMiddleware returns the HTTP middleware for this limiter instance.
 //
 // Lifecycle:
-// 		identify client -> find bucket -> refill tokens ->
-//		consume token or reject -> emit observability data -> continue
+//
+//	identify client -> find bucket -> refill tokens ->
+//	consume token or reject -> emit observability data -> continue
 func (rl *RateLimiter) RateLimitMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		key := rl.clientIP(r)

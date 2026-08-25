@@ -29,15 +29,15 @@ func Ready(db *sql.DB) http.HandlerFunc {
 
 		if err := db.PingContext(ctx); err != nil {
 			response.HandleError(
-			w,
-			apperror.New(
-				r.Context(),
-				http.StatusServiceUnavailable,
-				apperror.CodeServiceUnavailable,
-				"method not allowed",
-				nil,
-			),
-		)
+				w,
+				apperror.New(
+					r.Context(),
+					http.StatusServiceUnavailable,
+					apperror.CodeServiceUnavailable,
+					"method not allowed",
+					nil,
+				),
+			)
 			return
 		}
 
