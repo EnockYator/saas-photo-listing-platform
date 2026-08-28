@@ -20,13 +20,12 @@ import (
 // @Router /health [get]
 func Health(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		response.WriteErrorResponse(
+		response.WriteError(
 			w,
 			r,
 			apperror.New(
 				r.Context(),
 				apperror.CodeMethodNotAllowed,
-				response.StatusFromCode(apperror.CodeMethodNotAllowed),
 				"method not allowed",
 				nil,
 			),
@@ -34,7 +33,7 @@ func Health(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.WriteSuccessResponse(
+	response.WriteResponse(
 		w,
 		http.StatusOK,
 		healthdto.HealthResponse{

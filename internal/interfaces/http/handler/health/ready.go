@@ -7,8 +7,8 @@ import (
 	"time"
 
 	healthdto "github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http/dto/health"
-	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/utilities/apperror"
-	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/utilities/response"
+	"github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http/response"
+	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/apperror"
 )
 
 // ReadinessCheck godoc
@@ -28,11 +28,11 @@ func Ready(db *sql.DB) http.HandlerFunc {
 		defer cancel()
 
 		if err := db.PingContext(ctx); err != nil {
-			response.HandleError(
+			response.WriteError(
 				w,
+				r,
 				apperror.New(
 					r.Context(),
-					http.StatusServiceUnavailable,
 					apperror.CodeServiceUnavailable,
 					"method not allowed",
 					nil,
@@ -46,7 +46,7 @@ func Ready(db *sql.DB) http.HandlerFunc {
 			http.StatusOK,
 			healthdto.HealthResponse{
 				Status:  "ready",
-				Service: "saas-photo-listing-platform-database",
+				Application: "saas-photo-listing-platform-database",
 			},
 		)
 	}

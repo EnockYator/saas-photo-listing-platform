@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	healthdto "github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http/dto/health"
-	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/utilities/response"
+	"github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http/response"
 )
 
 // LiveCheck godoc
@@ -18,12 +18,12 @@ import (
 // @Failure 500 {object} map[string]any
 // @Router /health/live [get]
 func Live(w http.ResponseWriter, r *http.Request) {
-	response.WriteJSON(
+	response.WriteResponse(
 		w,
 		http.StatusOK,
 		healthdto.HealthResponse{
 			Status:  "alive",
-			Service: "saas-photo-listing-platform",
+			Application: "saas-photo-listing-platform",
 		},
 	)
 }
