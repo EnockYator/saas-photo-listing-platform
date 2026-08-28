@@ -2,32 +2,34 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http/response"
+	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/apperror"
+
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
 
-type timeoutContextKey string
-
-const timeoutKey timeoutContextKey = "requestTimeout"
-
-// TimeoutMiddleware applies a request deadline using context cancellation.
+// NewTimeout creates a middleware that applies a maximum request-processing
+// deadline.
 //
-// It does NOT terminate handlers.
-// It relies on downstream operations respecting context cancellation:
-//
-//   - db.QueryContext()
-//   - req.WithContext()
-//   - gRPC calls using context
-//   - any select on ctx.Done()
-func TimeoutMiddleware(timeout time.Duration) func(http.Handler) http.Handler {
+// The timeout is enforced through context cancellation. It does not forcibly
+// terminate a handler. Downstream operations must respect the request context.
+func NewTimeout(timeout time.Duration) (func(http.Handler) http.Handler, error) {
+	if timeout <= 0 {
+		return nil, fmt.Errorf(
+			"invalid timeout configuration: timeout must be greater than zero",
+		)
+	}
+
 	return func(next http.Handler) http.Handler {
-
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-			// Preserve shorter upstream deadlines.
+			// If an upstream component already established a shorter
+			// deadline, preserve it exactly as provided.
 			if deadline, ok := r.Context().Deadline(); ok {
 				if time.Until(deadline) <= timeout {
 					next.ServeHTTP(w, r)
@@ -41,29 +43,71 @@ func TimeoutMiddleware(timeout time.Duration) func(http.Handler) http.Handler {
 			)
 			defer cancel()
 
-			// Store timeout value in context for
-			// logging, diagnostics, or error handling.
-			ctx = context.WithValue(
-				ctx,
-				timeoutKey,
-				timeout,
-			)
+			// Reuse the shared response recorder when one already exists.
+			//
+			// This allows the middleware to determine whether it is still
+			// safe to write the timeout response without creating another
+			// ResponseWriter wrapper.
+			rw, ok := w.(*responseRecorder)
+			if !ok {
+				rw = &responseRecorder{
+					ResponseWriter: w,
+				}
+			}
 
 			span := trace.SpanFromContext(ctx)
 
 			if span.SpanContext().IsValid() {
 				span.SetAttributes(
-					attribute.String(
-						"http.timeout",
-						timeout.String(),
+					attribute.Int64(
+						"http.request.timeout_ms",
+						timeout.Milliseconds(),
 					),
 				)
 			}
 
 			next.ServeHTTP(
-				w,
+				rw,
 				r.WithContext(ctx),
 			)
+
+			// If the context expired because of this middleware's deadline,
+			// attempt to return the standard timeout response.
+			//
+			// If the handler already committed a response, it is too late
+			// to replace that response safely.
+			if ctx.Err() != context.DeadlineExceeded {
+				return
+			}
+
+			if rw.Committed() {
+				return
+			}
+
+			if span.SpanContext().IsValid() {
+				span.SetStatus(
+					codes.Error,
+					"request deadline exceeded",
+				)
+
+				span.SetAttributes(
+					attribute.Bool(
+						"http.request.timeout",
+						true,
+					),
+				)
+			}
+
+			response.WriteError(
+				rw,
+				r,
+				apperror.New(
+					r.Context(),
+					apperror.CodeRequestTimeout,
+					"request timed out",
+					nil,
+				),
+			)
 		})
-	}
+	}, nil
 }
