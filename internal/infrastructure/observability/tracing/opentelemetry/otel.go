@@ -1,6 +1,5 @@
 package opentelemetry
 
-
 import (
 	"context"
 	"time"
@@ -30,7 +29,7 @@ func InitTracing(
 			semconv.ServiceName(serviceName),
 			semconv.ServiceVersion(serviceVersion),
 
-			semconv.DeploymentEnvironmentName(environment),
+			// semconv.DeploymentEnvironmentName(environment),
 		),
 	)
 	if err != nil {

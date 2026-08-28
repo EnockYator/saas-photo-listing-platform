@@ -1,12 +1,13 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
 
+	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/requestcontext"
 	"github.com/google/uuid"
 )
 
+<<<<<<< HEAD
 // contextKey is a custom struct type to prevent context key collisions.
 // No other package can replicate it.
 type requestIDContextKey struct{}
@@ -37,13 +38,34 @@ func RequestIDMiddleware(next http.Handler) http.Handler {
 		ctx := context.WithValue(r.Context(), requestIDKey, requestID)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
+=======
+const requestIDHeader = "X-Request-ID"
 
-// GetRequestID extracts the request ID from the context.
-func GetRequestID(ctx context.Context) string {
-	if id, ok := ctx.Value(requestIDKey).(string); ok {
-		return id
-	}
-	return ""
+// RequestIDMiddleware assigns a unique server-generated identifier to every
+// HTTP request.
+//
+// The identifier is:
+//   - returned in the X-Request-ID response header;
+//   - stored in the request context;
+//   - available to logging, error handling, and downstream application code.
+//
+// Client-provided request IDs are intentionally ignored so that external
+// callers cannot control the application's correlation identifiers.
+func RequestIDMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestID := uuid.NewString()
+
+		w.Header().Set(requestIDHeader, requestID)
+
+		ctx := requestcontext.WithRequestID(
+			r.Context(),
+			requestID,
+		)
+
+		next.ServeHTTP(
+			w,
+			r.WithContext(ctx),
+		)
+>>>>>>> 9f919071e0e60cf5b08cae69e04231b06af1f312
+	})
 }
