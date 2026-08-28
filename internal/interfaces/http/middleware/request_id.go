@@ -8,30 +8,34 @@ import (
 )
 
 // contextKey is a custom struct type to prevent context key collisions.
-// No other package can replicate it
-type contextKey struct{}
+// No other package can replicate it.
+type requestIDContextKey struct{}
 
-// requestIDKey defines a single instance of contextKey
-var requestIDKey = contextKey{}
+// requestIDKey defines a single instance of contextKey.
+var requestIDKey = requestIDContextKey{}
 
-// RequestIDMiddleware generates or extracts an X-Request-ID from request header and attaches it to the context.
+// RequestIDMiddleware generates or extracts an X-Request-ID from the request
+// header and attaches it to the context.
+//
+// A client-supplied X-Request-ID is only trusted if it parses as a valid
+// UUID. This prevents arbitrary client-controlled strings from flowing into
+// logs and traces (log injection, correlation-ID spoofing) if this service
+// is reachable directly from untrusted clients rather than exclusively via a
+// trusted reverse proxy that manages this header itself.
 func RequestIDMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Check if the request already has an ID (e.g., passed from a reverse proxy)
 		requestID := r.Header.Get("X-Request-ID")
 
-		// If not, generate a new UUID
 		if requestID == "" {
+			requestID = uuid.NewString()
+		} else if _, err := uuid.Parse(requestID); err != nil {
 			requestID = uuid.NewString()
 		}
 
-		// Add the request ID to the response headers
 		w.Header().Set("X-Request-ID", requestID)
 
-		// Inject the request ID into the request context
 		ctx := context.WithValue(r.Context(), requestIDKey, requestID)
 
-		// Call the next handler in the chain with the updated context
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

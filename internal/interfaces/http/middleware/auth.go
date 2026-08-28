@@ -9,83 +9,61 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// contextKey is a custom struct type to prevent context key collisions.
-// No other package can replicate it
 type authContextKey struct{}
 
-// requestIDKey defines a single instance of contextKey
 var claimsKey = authContextKey{}
 
-// Claims is a single auth identity object
+// Claims is a single auth identity object.
 type Claims struct {
-	UserID    string
-	TenantID  string
-	Roles     []string
+	UserID   string
+	TenantID string
+	Roles    []string
 }
 
-// Token validator abstraction
+// TokenValidator abstracts JWT/token validation so AuthMiddleware doesn't
+// depend on a specific implementation (JWKS, symmetric key, etc.).
 type TokenValidator interface {
 	Validate(token string) (*Claims, error)
 }
 
-// AuthMiddleware
-//   - extracts and validates jwt token
-//   - receive Claims struct (UserID, TenantID, Roles)
-//   - store Claims in context
+// AuthMiddleware extracts and validates a bearer token, storing the
+// resulting Claims in the request context.
+//
+// Should only be mounted on routes that require authentication. Mounting it on a
+// mux that also serves public routes (health checks, swagger, root) will
+// 401 those routes too — router  should be splitted into a public chain and a
+// protected chain.
 func AuthMiddleware(validator TokenValidator) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
-
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-			// 1. Extract Authorization header
 			authHeader := r.Header.Get("Authorization")
 			if authHeader == "" {
-				http.Error(
-					w,
-					"missing authorization header",
-					http.StatusUnauthorized,
-				)
+				http.Error(w, "missing authorization header", http.StatusUnauthorized)
 				return
 			}
 
-			// 2. Validate Bearer format
+			// Validate the Authorization header format. It should be "Bearer <token>".
 			parts := strings.SplitN(authHeader, " ", 2)
 			if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
-				http.Error(
-					w,
-					"invalid authorization format",
-					http.StatusUnauthorized,
-				)
+				http.Error(w, "invalid authorization format", http.StatusUnauthorized)
 				return
 			}
 
 			token := parts[1]
 
-			// 3. Validate token
+			// Validate the token using the provided TokenValidator.
 			claims, err := validator.Validate(token)
 			if err != nil || claims == nil {
 				span := trace.SpanFromContext(r.Context())
 				if span.SpanContext().IsValid() {
-					span.SetAttributes(
-						attribute.String(
-							"auth.status",
-							"invalid_token",
-						),
-					)
+					span.SetAttributes(attribute.String("auth.status", "invalid_token"))
 				}
-
-				http.Error(
-					w,
-					"invalid token",
-					http.StatusUnauthorized,
-				)
+				http.Error(w, "invalid token", http.StatusUnauthorized)
 				return
 			}
 
-			// 4. Store claims in context (single source of truth)
 			ctx := context.WithValue(r.Context(), claimsKey, *claims)
 
-			// 5. OpenTelemetry enrichment
 			span := trace.SpanFromContext(ctx)
 			if span.SpanContext().IsValid() {
 				span.SetAttributes(
@@ -99,23 +77,35 @@ func AuthMiddleware(validator TokenValidator) func(http.Handler) http.Handler {
 	}
 }
 
+// GetClaims retrieves the authenticated Claims from context.
 func GetClaims(ctx context.Context) (Claims, bool) {
 	c, ok := ctx.Value(claimsKey).(Claims)
 	return c, ok
 }
 
+// GetUserID retrieves the authenticated user's ID from context.
 func GetUserID(ctx context.Context) (string, bool) {
 	c, ok := GetClaims(ctx)
-	if !ok {
+	if !ok || c.UserID == "" {
 		return "", false
 	}
 	return c.UserID, true
 }
 
+// GetRoles retrieves the authenticated user's roles from context.
 func GetRoles(ctx context.Context) ([]string, bool) {
 	c, ok := GetClaims(ctx)
-	if !ok {
+	if !ok || len(c.Roles) == 0 {
 		return nil, false
 	}
 	return c.Roles, true
+}
+
+// GetTenantID retrieves the authenticated user's tenant ID from context.
+func GetTenantID(ctx context.Context) (string, bool) {
+	c, ok := GetClaims(ctx)
+	if !ok || c.TenantID == "" {
+		return "", false
+	}
+	return c.TenantID, true
 }

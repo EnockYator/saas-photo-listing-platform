@@ -37,10 +37,18 @@ func (rw *responseWriter) Write(b []byte) (int, error) {
 	return n, err
 }
 
-// LoggerMiddleware provides structured request logging with OpenTelemetry and request correlation.
+// LoggerMiddleware provides structured request logging with OpenTelemetry
+// and request-ID correlation.
+//
+// This middleware should be placed outside (before) Auth/Tenant/RateLimit in the chain
+// so that every outcome — 401s, 429s, 500s, 200s — gets logged, not just
+// requests that reach the final handler.
+//
+// Note the double invocation: LoggerMiddleware(base) returns a
+// func(http.Handler) http.Handler, so should be called as
+// middleware.LoggerMiddleware(logger)(next).
 func LoggerMiddleware(base *slog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
-
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 			start := time.Now()

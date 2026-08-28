@@ -15,11 +15,12 @@ type traceContextKey struct{}
 var traceIDKey = traceContextKey{}
 
 // TraceContextMiddleware exposes the current TraceID to:
+//	1. response headers (X-Trace-ID)
+//  2. context helper functions (GetTraceID)
 //
-// 1. Response headers (X-Trace-ID)
-// 2. Context helper functions
-//
-// Span creation itself is handled by otelhttp.
+// Span creation itself is handled by otelhttp/tracer provider.
+// Should be placed near the outside of the chain (after RequestID) so downstream
+// middleware — Logger, Auth, RateLimiter — can all attach the trace ID.
 func TraceContextMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		spanCtx := trace.SpanContextFromContext(r.Context())
@@ -33,16 +34,9 @@ func TraceContextMiddleware(next http.Handler) http.Handler {
 			w.Header().Set("X-Trace-ID", traceID)
 		}
 
-		ctx := context.WithValue(
-			r.Context(),
-			traceIDKey,
-			traceID,
-		)
+		ctx := context.WithValue(r.Context(), traceIDKey, traceID)
 
-		next.ServeHTTP(
-			w,
-			r.WithContext(ctx),
-		)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
@@ -53,7 +47,6 @@ func GetTraceID(ctx context.Context) string {
 	}
 
 	spanCtx := trace.SpanContextFromContext(ctx)
-
 	if !spanCtx.IsValid() {
 		return ""
 	}

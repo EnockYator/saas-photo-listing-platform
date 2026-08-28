@@ -2,6 +2,7 @@ package cli
 
 import (
 	"log"
+	"os"
 
 	_ "github.com/lib/pq"
 	"github.com/spf13/cobra"
@@ -9,6 +10,8 @@ import (
 	"github.com/EnockYator/saas-photo-listing-platform/internal/cli"
 	"github.com/EnockYator/saas-photo-listing-platform/internal/config"
 	"github.com/EnockYator/saas-photo-listing-platform/internal/infrastructure/database/postgres"
+	auth "github.com/EnockYator/saas-photo-listing-platform/internal/domains/auth/application"
+
 	httpserver "github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http"
 )
 
@@ -34,8 +37,13 @@ var apiCmd = &cobra.Command{
 			}
 		}()
 
-		server := httpserver.NewServer(cfg, db)
+		secret := os.Getenv("JWT_SECRET")
+		if secret == "" {
+			log.Fatal("JWT_SECRET environment variable is required")
+		}
+		validator := auth.NewJWTValidator(secret)
 
+		server := httpserver.NewServer(cfg, db, validator)
 		if err := server.Start(); err != nil {
 			log.Fatalf("Server failed: %v", err)
 		}

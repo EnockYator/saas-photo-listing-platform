@@ -9,25 +9,28 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-type timeoutContextKey string
+type timeoutContextKey struct{}
 
-const timeoutKey timeoutContextKey = "requestTimeout"
+var timeoutKey = timeoutContextKey{}
 
 // TimeoutMiddleware applies a request deadline using context cancellation.
 //
 // It does NOT terminate handlers.
-// It relies on downstream operations respecting context cancellation:
+// It relies on downstream operations to respect context cancellation:
 //
 //   - db.QueryContext()
 //   - req.WithContext()
 //   - gRPC calls using context
 //   - any select on ctx.Done()
+//
+// Note the double invocation: TimeoutMiddleware(d) returns a
+// func(http.Handler) http.Handler, so call it as
+// middleware.TimeoutMiddleware(d)(next), not middleware.TimeoutMiddleware(next).
 func TimeoutMiddleware(timeout time.Duration) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
-
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-			// Preserve shorter upstream deadlines.
+			// Preserve shorter upstream deadline if one exists.
 			if deadline, ok := r.Context().Deadline(); ok {
 				if time.Until(deadline) <= timeout {
 					next.ServeHTTP(w, r)
@@ -39,31 +42,21 @@ func TimeoutMiddleware(timeout time.Duration) func(http.Handler) http.Handler {
 				r.Context(),
 				timeout,
 			)
+
 			defer cancel()
 
-			// Store timeout value in context for
-			// logging, diagnostics, or error handling.
-			ctx = context.WithValue(
-				ctx,
-				timeoutKey,
-				timeout,
-			)
+			// Store timeout value in context for logging, diagnostics, or error handling.
+			ctx = context.WithValue(ctx, timeoutKey, timeout)
 
 			span := trace.SpanFromContext(ctx)
 
 			if span.SpanContext().IsValid() {
 				span.SetAttributes(
-					attribute.String(
-						"http.timeout",
-						timeout.String(),
-					),
+					attribute.String("http.timeout", timeout.String()),
 				)
 			}
 
-			next.ServeHTTP(
-				w,
-				r.WithContext(ctx),
-			)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
