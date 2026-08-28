@@ -45,7 +45,7 @@ func Ready(db *sql.DB) http.HandlerFunc {
 			w,
 			http.StatusOK,
 			healthdto.HealthResponse{
-				Status:  "ready",
+				Status:      "ready",
 				Application: "saas-photo-listing-platform-database",
 			},
 		)

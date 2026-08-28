@@ -22,7 +22,7 @@ func Live(w http.ResponseWriter, r *http.Request) {
 		w,
 		http.StatusOK,
 		healthdto.HealthResponse{
-			Status:  "alive",
+			Status:      "alive",
 			Application: "saas-photo-listing-platform",
 		},
 	)

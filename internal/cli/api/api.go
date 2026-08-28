@@ -74,7 +74,6 @@ var apiCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-
 		db, err := postgres.New(cfg.Database)
 		if err != nil {
 			log.Fatal("failed to connect to database:", err)
@@ -115,12 +114,12 @@ var apiCmd = &cobra.Command{
 						"X-Request-ID",
 					},
 					AllowCredentials: false,
-					MaxAge:            3600,
+					MaxAge:           3600,
 				},
 
 				RateLimiter: middleware.RateLimiterConfig{
 					RequestsPerSecond: 10,
-					Burst:              20,
+					Burst:             20,
 					CleanupInterval:   10 * time.Minute,
 					TrustProxy:        false,
 				},

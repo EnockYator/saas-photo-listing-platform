@@ -39,8 +39,8 @@ type ServerOptions struct {
 	Logger         *slog.Logger
 	JWTValidator   jwt.TokenValidator
 	TracerProvider trace.TracerProvider
-	CORS middleware.CORSConfig
-	RateLimiter middleware.RateLimiterConfig
+	CORS           middleware.CORSConfig
+	RateLimiter    middleware.RateLimiterConfig
 	RequestTimeout time.Duration
 }
 
@@ -76,8 +76,8 @@ func (s *Server) Start() error {
 		Logger:         s.logger,
 		JWTValidator:   s.jwtValidator,
 		TracerProvider: s.tracerProvider,
-		CORS: s.cors,
-		RateLimiter: s.rateLimiter,
+		CORS:           s.cors,
+		RateLimiter:    s.rateLimiter,
 		RequestTimeout: s.requestTimeout,
 	})
 	if err != nil {
