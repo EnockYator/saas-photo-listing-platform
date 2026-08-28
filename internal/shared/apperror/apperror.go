@@ -27,7 +27,6 @@ type AppError struct {
 	Err error `json:"-"`
 
 	// Observability metadata
-	TraceID   string `json:"trace_id,omitempty"`
 	RequestID string `json:"request_id,omitempty"`
 	UserID    string `json:"user_id,omitempty"`
 	TenantID  string `json:"tenant_id,omitempty"`

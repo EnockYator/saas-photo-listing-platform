@@ -134,6 +134,7 @@ const (
 	CodeIPBlocked          ErrorCode = "IP_BLOCKED"          // 403
 	CodeSuspiciousActivity ErrorCode = "SUSPICIOUS_ACTIVITY" // 403
 	CodePermissionDenied   ErrorCode = "PERMISSION_DENIED"   // 403
+	CodeRequestTimeout     ErrorCode = "REQUEST_TIMEOUT"     // 503 or 504
 )
 
 // =========================

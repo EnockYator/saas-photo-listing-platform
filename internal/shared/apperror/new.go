@@ -23,7 +23,6 @@ func New(
 		Err:     err,
 		Details: nil,
 
-		TraceID:   requestcontext.GetTraceID(ctx),
 		RequestID: requestcontext.GetRequestID(ctx),
 		UserID:    requestcontext.GetUserID(ctx),
 		TenantID:  requestcontext.GetTenantID(ctx),
