@@ -10,6 +10,9 @@ import (
 	"fmt"
 )
 
+// ErrorCode identifies a stable application/domain-level error code.
+type ErrorCode string
+
 // AppError represents a known application-level error.
 //
 // AppError separates:

@@ -15,7 +15,7 @@ type traceContextKey struct{}
 var traceIDKey = traceContextKey{}
 
 // TraceContextMiddleware exposes the current TraceID to:
-//	1. response headers (X-Trace-ID)
+//  1. response headers (X-Trace-ID)
 //  2. context helper functions (GetTraceID)
 //
 // Span creation itself is handled by otelhttp/tracer provider.

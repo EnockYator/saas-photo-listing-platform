@@ -29,15 +29,13 @@ var statusByCode = map[apperror.ErrorCode]int{
 	apperror.CodeAuthMFARequired:        http.StatusUnauthorized, // 401
 
 	// User
-	apperror.CodeUserNotFound:       http.StatusNotFound,            // 404
-	apperror.CodeUserAlreadyExists:  http.StatusConflict,            // 409
-	apperror.CodeUserEmailInvalid:   http.StatusUnprocessableEntity, // 422
-	apperror.CodeUserProfileInvalid: http.StatusUnprocessableEntity, // 422
+	apperror.CodeUserNotFound:      http.StatusNotFound,            // 404
+	apperror.CodeUserAlreadyExists: http.StatusConflict,            // 409
+	apperror.CodeUserEmailInvalid:  http.StatusUnprocessableEntity, // 422
 
 	// Validation
 	apperror.CodeValidationRequiredField:      http.StatusUnprocessableEntity, // 422
 	apperror.CodeValidationInvalidEmailFormat: http.StatusUnprocessableEntity, // 422
-	apperror.CodeValidationOutOfRange:         http.StatusUnprocessableEntity, // 422
 	apperror.CodeValidationFailed:             http.StatusUnprocessableEntity, // 422
 
 	// Database
@@ -50,7 +48,6 @@ var statusByCode = map[apperror.ErrorCode]int{
 	// External services
 	apperror.CodeExternalServiceFailure: http.StatusBadGateway,         // 502
 	apperror.CodeExternalTimeout:        http.StatusGatewayTimeout,     // 504
-	apperror.CodeExternalBadResponse:    http.StatusBadGateway,         // 502
 	apperror.CodeExternalUnavailable:    http.StatusServiceUnavailable, // 503
 
 	// Payment
@@ -72,10 +69,10 @@ var statusByCode = map[apperror.ErrorCode]int{
 	apperror.CodeCloudStorageUnavailable:  http.StatusServiceUnavailable,  // 503
 
 	// Abuse / security
-	apperror.CodeRateLimited:        http.StatusTooManyRequests, // 429
-	apperror.CodeIPBlocked:          http.StatusForbidden,       // 403
-	apperror.CodeSuspiciousActivity: http.StatusForbidden,       // 403
-	apperror.CodePermissionDenied:   http.StatusForbidden,       // 403
+	apperror.CodeRateLimitExceeded:    http.StatusTooManyRequests, // 429
+	apperror.CodeIPBlocked:            http.StatusForbidden,       // 403
+	apperror.CodeSuspiciousActivity:   http.StatusForbidden,       // 403
+	apperror.CodeAuthPermissionDenied: http.StatusForbidden,       // 403
 
 	// Infrastructure
 	apperror.CodeCircuitBreakerOpen: http.StatusServiceUnavailable, // 503
