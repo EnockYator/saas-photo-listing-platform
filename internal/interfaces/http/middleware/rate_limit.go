@@ -34,21 +34,21 @@ const (
 
 type RateLimiterConfig struct {
 	RequestsPerSecond float64
-	Burst int
-	CleanupInterval time.Duration
-	TrustProxy bool 	// TrustProxy should only be enabled when the application is behind a trusted reverse proxy/load balancer
+	Burst             int
+	CleanupInterval   time.Duration
+	TrustProxy        bool // TrustProxy should only be enabled when the application is behind a trusted reverse proxy/load balancer
 }
 
 // RateLimiter limits requests using a sharded in-memory token bucket.
 type RateLimiter struct {
-	ratePerSecond float64
-	burst         float64
-	trustProxy    bool
+	ratePerSecond   float64
+	burst           float64
+	trustProxy      bool
 	cleanupInterval time.Duration
-	shards [rateLimiterShardCount]*rateLimitShard
-	stopOnce sync.Once
-	stopCh   chan struct{}
-	doneCh   chan struct{}
+	shards          [rateLimiterShardCount]*rateLimitShard
+	stopOnce        sync.Once
+	stopCh          chan struct{}
+	doneCh          chan struct{}
 }
 
 // rateLimitShard contains the buckets belonging to one shard.

@@ -192,8 +192,6 @@ func (r *Router) Close() {
 	}
 }
 
-
-
 // // Configuring NewTraceMiddleware
 // handler = middleware.NewTraceMiddleware(
 //     middleware.WithServiceName("saas-photo-listing-platform"),

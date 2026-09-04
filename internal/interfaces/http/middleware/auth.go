@@ -71,7 +71,7 @@ func AuthMiddleware(validator jwt.TokenValidator) func(http.Handler) http.Handle
 				span.SetAttributes(attribute.String("auth.status", "invalid_token"))
 
 				code := apperror.CodeAuthTokenInvalid
-				
+
 				if apperror.IsCode(err, apperror.CodeAuthTokenExpired) {
 					code = apperror.CodeAuthTokenExpired
 				}

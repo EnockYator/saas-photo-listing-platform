@@ -13,19 +13,19 @@ import (
 
 // CORSConfig defines the application's Cross-Origin Resource Sharing policy.
 // It is used to configure the CORS middleware.
-// - AllowedOrigins: A list of allowed origins. Wildcard origins ("*") are not supported.
-// - AllowedMethods: A list of allowed HTTP methods.
-// - AllowedHeaders: A list of allowed request headers that browsers may send.
-// - AllowCredentials: Whether to allow credentials in cross-origin requests.
-//   				   Allows browsers to include credentials such as
-//                     cookies or authorization credentials in cross-origin requests.
-// - MaxAge: How long browsers may cache successful preflight responses, in seconds.
+//   - AllowedOrigins: A list of allowed origins. Wildcard origins ("*") are not supported.
+//   - AllowedMethods: A list of allowed HTTP methods.
+//   - AllowedHeaders: A list of allowed request headers that browsers may send.
+//   - AllowCredentials: Whether to allow credentials in cross-origin requests.
+//     Allows browsers to include credentials such as
+//     cookies or authorization credentials in cross-origin requests.
+//   - MaxAge: How long browsers may cache successful preflight responses, in seconds.
 type CORSConfig struct {
-	AllowedOrigins []string
-	AllowedMethods []string
-	AllowedHeaders []string
+	AllowedOrigins   []string
+	AllowedMethods   []string
+	AllowedHeaders   []string
 	AllowCredentials bool
-	MaxAge int
+	MaxAge           int
 }
 
 // corsPolicy is the normalized, immutable CORS policy used at request time.

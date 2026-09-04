@@ -10,7 +10,6 @@ import (
 	"syscall"
 	"time"
 
-
 	"github.com/EnockYator/saas-photo-listing-platform/internal/config"
 	"github.com/EnockYator/saas-photo-listing-platform/internal/domain/auth/infrastructure/jwt"
 	"github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http/middleware"

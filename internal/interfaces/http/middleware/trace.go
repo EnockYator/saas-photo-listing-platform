@@ -21,12 +21,12 @@ type TraceMiddlewareOption func(*TraceMiddlewareConfig)
 // - filter: A function that determines whether to skip tracing for a given request.
 // - publicEndpoint: A boolean indicating whether the endpoint is public (no authentication required).
 type TraceMiddlewareConfig struct {
-	serviceName string
-	tracerProvider trace.TracerProvider
-	propagators propagation.TextMapPropagator
+	serviceName       string
+	tracerProvider    trace.TracerProvider
+	propagators       propagation.TextMapPropagator
 	spanNameFormatter func(string, *http.Request) string
-	filter func(*http.Request) bool
-	publicEndpoint bool
+	filter            func(*http.Request) bool
+	publicEndpoint    bool
 }
 
 // WithServiceName sets the service name for the TraceMiddleware.
@@ -79,16 +79,16 @@ func WithPublicEndpointFn() TraceMiddlewareOption {
 //
 // The middleware should be the outermost layer so that all other middlewares
 // (request ID, auth, etc.) run inside the span.
-// 
+//
 // Usage:
 //
-//    handler := middlware.NewTraceMiddleware(
-//        middleware.WithServiceName("saas-photo-listing-platform"),
-//        middleware.WithFilter(func(r *http.Request) bool {
-//            return r.URL.Path == "/health" || r.URL.Path == "/metrics"
-//        }),
-//        middleware.WithPublicEndpointFn(), // treat all incoming requests as public endpoints (no auth required)
-//    )(myHandler)
+//	handler := middlware.NewTraceMiddleware(
+//	    middleware.WithServiceName("saas-photo-listing-platform"),
+//	    middleware.WithFilter(func(r *http.Request) bool {
+//	        return r.URL.Path == "/health" || r.URL.Path == "/metrics"
+//	    }),
+//	    middleware.WithPublicEndpointFn(), // treat all incoming requests as public endpoints (no auth required)
+//	)(myHandler)
 func NewTraceMiddleware(opts ...TraceMiddlewareOption) func(http.Handler) http.Handler {
 	cfg := &TraceMiddlewareConfig{
 		serviceName:    "saas-photo-listing-platform", // default service name
@@ -114,10 +114,10 @@ func NewTraceMiddleware(opts ...TraceMiddlewareOption) func(http.Handler) http.H
 		}))
 	}
 	if cfg.publicEndpoint {
-    otelOpts = append(otelOpts, otelhttp.WithPublicEndpointFn(func(r *http.Request) bool {
-		return true
-	}))
-}
+		otelOpts = append(otelOpts, otelhttp.WithPublicEndpointFn(func(r *http.Request) bool {
+			return true
+		}))
+	}
 
 	// Create the otelhttp middleware
 	baseMiddleware := otelhttp.NewMiddleware(cfg.serviceName, otelOpts...)
