@@ -11,47 +11,23 @@ import (
 	"github.com/EnockYator/saas-photo-listing-platform/internal/shared/apperror"
 )
 
-<<<<<<< HEAD
-// CorsConfig configures allowed origins, methods, headers, and credentials
-// behavior for CorsMiddleware.
-type CorsConfig struct {
-	AllowedOrigins   []string
-	AllowedMethods   []string
-	AllowedHeaders   []string
-=======
 // CORSConfig defines the application's Cross-Origin Resource Sharing policy.
+// It is used to configure the CORS middleware.
+// - AllowedOrigins: A list of allowed origins. Wildcard origins ("*") are not supported.
+// - AllowedMethods: A list of allowed HTTP methods.
+// - AllowedHeaders: A list of allowed request headers that browsers may send.
+// - AllowCredentials: Whether to allow credentials in cross-origin requests.
+//   				   Allows browsers to include credentials such as
+//                     cookies or authorization credentials in cross-origin requests.
+// - MaxAge: How long browsers may cache successful preflight responses, in seconds.
 type CORSConfig struct {
-	// AllowedOrigins contains the exact origins allowed to access the API.
-	//
-	// Wildcard origins ("*") are intentionally not supported.
 	AllowedOrigins []string
-
-	// AllowedMethods contains HTTP methods permitted by CORS.
 	AllowedMethods []string
-
-	// AllowedHeaders contains request headers that browsers may send.
 	AllowedHeaders []string
-
-	// AllowCredentials allows browsers to include credentials such as
-	// cookies or authorization credentials in cross-origin requests.
->>>>>>> 9f919071e0e60cf5b08cae69e04231b06af1f312
 	AllowCredentials bool
-
-	// MaxAge specifies how long browsers may cache successful preflight
-	// responses, in seconds.
 	MaxAge int
 }
 
-<<<<<<< HEAD
-// CorsMiddleware returns a middleware that enforces the given CORS policy.
-// Note the double invocation: CorsMiddleware(cfg) returns a
-// func(http.Handler) http.Handler, so call it as
-// middleware.CorsMiddleware(cfg)(next), not middleware.CorsMiddleware(next).
-func CorsMiddleware(cfg CorsConfig) func(http.Handler) http.Handler {
-	allowedOrigins := make(map[string]struct{}, len(cfg.AllowedOrigins))
-	for _, o := range cfg.AllowedOrigins {
-		allowedOrigins[o] = struct{}{}
-=======
 // corsPolicy is the normalized, immutable CORS policy used at request time.
 type corsPolicy struct {
 	origins map[string]struct{}
@@ -72,43 +48,11 @@ func NewCORS(cfg CORSConfig) (func(http.Handler) http.Handler, error) {
 	policy, err := newCORSPolicy(cfg)
 	if err != nil {
 		return nil, err
->>>>>>> 9f919071e0e60cf5b08cae69e04231b06af1f312
 	}
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-<<<<<<< HEAD
-			origin := r.Header.Get("Origin")
-			if origin != "" {
-				if _, ok := allowedOrigins[origin]; ok {
-					w.Header().Set("Access-Control-Allow-Origin", origin)
-					w.Header().Add("Vary", "Origin")
-
-					if cfg.AllowCredentials {
-						w.Header().Set("Access-Control-Allow-Credentials", "true")
-					}
-					if len(cfg.AllowedMethods) > 0 {
-						w.Header().Set("Access-Control-Allow-Methods", strings.Join(cfg.AllowedMethods, ", "))
-					}
-					if len(cfg.AllowedHeaders) > 0 {
-						w.Header().Set("Access-Control-Allow-Headers", strings.Join(cfg.AllowedHeaders, ", "))
-					}
-					if cfg.MaxAge > 0 {
-						w.Header().Set("Access-Control-Max-Age", strconv.Itoa(cfg.MaxAge))
-					}
-				}
-			}
-
-			// Preflight requests short-circuit here, before Auth ever runs.
-			if r.Method == http.MethodOptions {
-				w.WriteHeader(http.StatusNoContent)
-				return
-			}
-
-			next.ServeHTTP(w, r)
-=======
 			policy.handle(w, r, next)
->>>>>>> 9f919071e0e60cf5b08cae69e04231b06af1f312
 		})
 	}, nil
 }

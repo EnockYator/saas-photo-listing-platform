@@ -67,7 +67,7 @@ const (
 const (
 	CodeRateLimitExceeded  ErrorCode = "RATE_LIMIT_EXCEEDED" // 429
 	CodeSuspiciousActivity ErrorCode = "SUSPICIOUS_ACTIVITY" // 403
-	CodeTimeout            ErrorCode = "REQUEST_TIMEOUT"     // 504 / 504
+	CodeRequestTimeout            ErrorCode = "REQUEST_TIMEOUT"     // 504 / 504
 )
 
 // =========================

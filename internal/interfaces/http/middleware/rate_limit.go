@@ -26,24 +26,17 @@ const (
 )
 
 // RateLimiterConfig defines an in-process token-bucket rate limiter.
+// It is used to configure the RateLimiter middleware.
+// - RequestsPerSecond: Determines how quickly tokens are replenished.
+// - Burst: Determines the maximum number of requests that can be accepted immediately when the bucket is full.
+// - CleanupInterval: Determines how frequently inactive client buckets are removed.
+// - TrustProxy: Controls whether proxy headers are trusted when determining the client IP.
+
 type RateLimiterConfig struct {
-	// RequestsPerSecond determines how quickly tokens are replenished.
 	RequestsPerSecond float64
-
-	// Burst determines the maximum number of requests that can be
-	// accepted immediately when the bucket is full.
 	Burst int
-
-	// CleanupInterval determines how frequently inactive client buckets
-	// are removed.
 	CleanupInterval time.Duration
-
-	// TrustProxy controls whether proxy headers are trusted when
-	// determining the client IP.
-	//
-	// This should only be enabled when the application is behind a
-	// trusted reverse proxy/load balancer whose behavior is known.
-	TrustProxy bool
+	TrustProxy bool 	// TrustProxy should only be enabled when the application is behind a trusted reverse proxy/load balancer
 }
 
 // RateLimiter limits requests using a sharded in-memory token bucket.
@@ -51,11 +44,8 @@ type RateLimiter struct {
 	ratePerSecond float64
 	burst         float64
 	trustProxy    bool
-
 	cleanupInterval time.Duration
-
 	shards [rateLimiterShardCount]*rateLimitShard
-
 	stopOnce sync.Once
 	stopCh   chan struct{}
 	doneCh   chan struct{}

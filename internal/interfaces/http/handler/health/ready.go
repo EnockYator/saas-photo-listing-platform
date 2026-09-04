@@ -41,7 +41,7 @@ func Ready(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		response.WriteJSON(
+		response.WriteResponse(
 			w,
 			http.StatusOK,
 			healthdto.HealthResponse{

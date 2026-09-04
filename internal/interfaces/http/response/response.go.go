@@ -88,6 +88,7 @@ func recordAppError(ctx context.Context, appErr *apperror.AppError) {
 		span.RecordError(errors.New(appErr.Message))
 	}
 
+	// Mark the span status as an error and provide a reason
 	// code.Error makes the UI show the error in red, which is appropriate for application errors.
 	span.SetStatus(codes.Error, appErr.Message)
 

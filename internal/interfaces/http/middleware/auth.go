@@ -30,7 +30,7 @@ func AuthMiddleware(validator jwt.TokenValidator) func(http.Handler) http.Handle
 			ctx := r.Context()
 			span := trace.SpanFromContext(ctx)
 
-			// 1. Extract token from Authorization header
+			// Extract token from Authorization header
 			authHeader := r.Header.Get("Authorization")
 			if authHeader == "" {
 				response.WriteError(
@@ -43,12 +43,7 @@ func AuthMiddleware(validator jwt.TokenValidator) func(http.Handler) http.Handle
 						nil,
 					),
 				)
-				span.SetAttributes(
-					attribute.String(
-						"auth.status",
-						"missing_token",
-					),
-				)
+				span.SetAttributes(attribute.String("auth.status", "missing_token"))
 				return
 			}
 
@@ -64,28 +59,23 @@ func AuthMiddleware(validator jwt.TokenValidator) func(http.Handler) http.Handle
 						nil,
 					),
 				)
-				span.SetAttributes(
-					attribute.String(
-						"auth.status",
-						"invalid_token_format",
-					),
-				)
+				span.SetAttributes(attribute.String("auth.status", "invalid_token_format"))
 				return
 			}
 
 			token := parts[1]
 
-			// 2. Validate token using the provided validator
+			// Validate token using the provided validator
 			claims, err := validator.Validate(token)
 			if err != nil || claims == nil {
-				if span.SpanContext().IsValid() {
-					span.SetAttributes(attribute.String("auth.status", "invalid_token"))
-				}
+				span.SetAttributes(attribute.String("auth.status", "invalid_token"))
 
 				code := apperror.CodeAuthTokenInvalid
-				if apperror.IsCode(err, apperror.CodeAuthTokenInvalid) {
+				
+				if apperror.IsCode(err, apperror.CodeAuthTokenExpired) {
 					code = apperror.CodeAuthTokenExpired
 				}
+
 				response.WriteError(
 					w,
 					r,
@@ -97,23 +87,19 @@ func AuthMiddleware(validator jwt.TokenValidator) func(http.Handler) http.Handle
 					),
 				)
 				span.SetAttributes(
-					attribute.String(
-						"auth.status",
-						"invalid_or_expired_token",
-					),
-				)
+					attribute.String("auth.status", "invalid_or_expired_token"))
 				return
 			}
 
-			// 3. Store claims in context (value copy to prevent mutation)
+			// Store claims in context (use value copy to prevent mutation)
 			ctx = context.WithValue(ctx, claimsKey, *claims)
 
-			// 4. Also set requestcontext values for easy access
+			// Set requestcontext values for easy access
 			ctx = requestcontext.WithUserID(ctx, claims.UserID)
 			ctx = requestcontext.WithTenantID(ctx, claims.TenantID)
 			ctx = requestcontext.WithRoles(ctx, claims.Roles)
 
-			// 5. Add trace attributes
+			// Add trace attributes for authenticated user
 			span.SetAttributes(
 				attribute.String("auth.user_id", claims.UserID),
 				attribute.String("auth.tenant_id", claims.TenantID),
@@ -126,6 +112,7 @@ func AuthMiddleware(validator jwt.TokenValidator) func(http.Handler) http.Handle
 }
 
 // GetClaims retrieves the authenticated Claims from context.
+// Returns the Claims and a boolean indicating if they were found.
 func GetClaims(ctx context.Context) (auth.Claims, bool) {
 	c, ok := ctx.Value(claimsKey).(auth.Claims)
 	return c, ok

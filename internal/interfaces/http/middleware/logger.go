@@ -33,25 +33,6 @@ func LoggerMiddleware(
 		logger = slog.Default()
 	}
 
-<<<<<<< HEAD
-	n, err := rw.ResponseWriter.Write(b)
-	rw.size += n
-	return n, err
-}
-
-// LoggerMiddleware provides structured request logging with OpenTelemetry
-// and request-ID correlation.
-//
-// This middleware should be placed outside (before) Auth/Tenant/RateLimit in the chain
-// so that every outcome — 401s, 429s, 500s, 200s — gets logged, not just
-// requests that reach the final handler.
-//
-// Note the double invocation: LoggerMiddleware(base) returns a
-// func(http.Handler) http.Handler, so should be called as
-// middleware.LoggerMiddleware(logger)(next).
-func LoggerMiddleware(base *slog.Logger) func(http.Handler) http.Handler {
-=======
->>>>>>> 9f919071e0e60cf5b08cae69e04231b06af1f312
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
@@ -84,10 +65,7 @@ func LoggerMiddleware(base *slog.Logger) func(http.Handler) http.Handler {
 				slog.String("user_agent", r.UserAgent()),
 				slog.Int("status", rw.Status()),
 				slog.Int64("bytes", rw.BytesWritten()),
-				slog.Duration(
-					"duration",
-					time.Since(start),
-				),
+				slog.Duration("duration", time.Since(start)),
 			)
 		})
 	}
@@ -96,13 +74,11 @@ func LoggerMiddleware(base *slog.Logger) func(http.Handler) http.Handler {
 // traceIDFromRequest returns the trace ID associated with the request's
 // active OpenTelemetry span.
 func traceIDFromRequest(r *http.Request) string {
-	spanContext := trace.SpanContextFromContext(
-		r.Context(),
-	)
+	span := trace.SpanContextFromContext(r.Context())
 
-	if !spanContext.IsValid() {
+	if !span.IsValid() {
 		return ""
 	}
 
-	return spanContext.TraceID().String()
+	return span.TraceID().String()
 }

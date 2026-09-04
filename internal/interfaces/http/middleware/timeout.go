@@ -14,30 +14,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-<<<<<<< HEAD
-type timeoutContextKey struct{}
-
-var timeoutKey = timeoutContextKey{}
-
-// TimeoutMiddleware applies a request deadline using context cancellation.
-//
-// It does NOT terminate handlers.
-// It relies on downstream operations to respect context cancellation:
-//
-//   - db.QueryContext()
-//   - req.WithContext()
-//   - gRPC calls using context
-//   - any select on ctx.Done()
-//
-// Note the double invocation: TimeoutMiddleware(d) returns a
-// func(http.Handler) http.Handler, so call it as
-// middleware.TimeoutMiddleware(d)(next), not middleware.TimeoutMiddleware(next).
-func TimeoutMiddleware(timeout time.Duration) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-			// Preserve shorter upstream deadline if one exists.
-=======
 // NewTimeout creates a middleware that applies a maximum request-processing
 // deadline.
 //
@@ -54,7 +30,6 @@ func NewTimeout(timeout time.Duration) (func(http.Handler) http.Handler, error) 
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// If an upstream component already established a shorter
 			// deadline, preserve it exactly as provided.
->>>>>>> 9f919071e0e60cf5b08cae69e04231b06af1f312
 			if deadline, ok := r.Context().Deadline(); ok {
 				if time.Until(deadline) <= timeout {
 					next.ServeHTTP(w, r)
@@ -69,10 +44,6 @@ func NewTimeout(timeout time.Duration) (func(http.Handler) http.Handler, error) 
 
 			defer cancel()
 
-<<<<<<< HEAD
-			// Store timeout value in context for logging, diagnostics, or error handling.
-			ctx = context.WithValue(ctx, timeoutKey, timeout)
-=======
 			// Reuse the shared response recorder when one already exists.
 			//
 			// This allows the middleware to determine whether it is still
@@ -84,34 +55,14 @@ func NewTimeout(timeout time.Duration) (func(http.Handler) http.Handler, error) 
 					ResponseWriter: w,
 				}
 			}
->>>>>>> 9f919071e0e60cf5b08cae69e04231b06af1f312
 
 			span := trace.SpanFromContext(ctx)
 
-			if span.SpanContext().IsValid() {
-				span.SetAttributes(
-<<<<<<< HEAD
-					attribute.String("http.timeout", timeout.String()),
-				)
-			}
-
-			next.ServeHTTP(w, r.WithContext(ctx))
-		})
-	}
-}
-=======
-					attribute.Int64(
-						"http.request.timeout_ms",
-						timeout.Milliseconds(),
-					),
-				)
-			}
-
-			next.ServeHTTP(
-				rw,
-				r.WithContext(ctx),
+			span.SetAttributes(
+				attribute.Int64("http.request.timeout_ms", timeout.Milliseconds()),
 			)
->>>>>>> 9f919071e0e60cf5b08cae69e04231b06af1f312
+
+			next.ServeHTTP(rw, r.WithContext(ctx))
 
 			// If the context expired because of this middleware's deadline,
 			// attempt to return the standard timeout response.
@@ -126,19 +77,10 @@ func NewTimeout(timeout time.Duration) (func(http.Handler) http.Handler, error) 
 				return
 			}
 
-			if span.SpanContext().IsValid() {
-				span.SetStatus(
-					codes.Error,
-					"request deadline exceeded",
-				)
-
-				span.SetAttributes(
-					attribute.Bool(
-						"http.request.timeout",
-						true,
-					),
-				)
-			}
+			span.SetStatus(codes.Error, "request deadline exceeded")
+			span.SetAttributes(
+				attribute.Bool("http.request.timeout", true),
+			)
 
 			response.WriteError(
 				rw,

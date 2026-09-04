@@ -77,6 +77,6 @@ var statusByCode = map[apperror.ErrorCode]int{
 	// Infrastructure
 	apperror.CodeCircuitBreakerOpen: http.StatusServiceUnavailable, // 503
 	apperror.CodeDependencyFailure:  http.StatusServiceUnavailable, // 503
-	apperror.CodeTimeout:            http.StatusGatewayTimeout,     // 504
+	apperror.CodeRequestTimeout:            http.StatusGatewayTimeout,     // 504
 	apperror.CodeShutdownInProgress: http.StatusServiceUnavailable, // 503
 }
