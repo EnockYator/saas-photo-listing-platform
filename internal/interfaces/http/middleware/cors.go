@@ -80,18 +80,6 @@ func newCORSPolicy(cfg CORSConfig) (*corsPolicy, error) {
 		)
 	}
 
-	// Credentials and wildcard origins cannot safely be combined.
-	//
-	// Wildcard origins are already rejected by normalizeOrigins, but this
-	// invariant remains explicit here for future changes to the policy.
-	if cfg.AllowCredentials {
-		if _, exists := origins["*"]; exists {
-			return nil, fmt.Errorf(
-				"invalid CORS configuration: credentials cannot be used with wildcard origins",
-			)
-		}
-	}
-
 	policy := &corsPolicy{
 		origins:          origins,
 		methods:          methods.set,
