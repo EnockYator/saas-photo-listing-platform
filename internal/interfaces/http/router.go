@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/EnockYator/saas-photo-listing-platform/internal/domain/auth/infrastructure/jwt"
@@ -35,17 +36,13 @@ type Router struct {
 }
 
 // NewRouter constructs and validates the complete HTTP middleware stack.
-//
-// Configuration errors are returned immediately so that the application
-// fails during startup rather than discovering invalid configuration while
-// serving requests.
 func NewRouter(cfg RouterConfig) (*Router, error) {
+	// Validate critical dependencies
 	if cfg.DB == nil {
-		return nil, fmt.Errorf("http router: nil database")
+		return nil, fmt.Errorf("http router: database connection required")
 	}
-
 	if cfg.JWTValidator == nil {
-		return nil, fmt.Errorf("http router: nil JWT validator")
+		return nil, fmt.Errorf("http router: JWT validator required")
 	}
 
 	logger := cfg.Logger
@@ -53,112 +50,84 @@ func NewRouter(cfg RouterConfig) (*Router, error) {
 		logger = slog.Default()
 	}
 
+	// Initialize middleware components
 	corsMiddleware, err := middleware.NewCORS(cfg.CORS)
 	if err != nil {
 		return nil, fmt.Errorf("http router: initialize CORS: %w", err)
 	}
 
-	rateLimiter, err := middleware.NewRateLimiter(
-		cfg.RateLimiter,
-	)
+	rateLimiter, err := middleware.NewRateLimiter(cfg.RateLimiter)
 	if err != nil {
-		return nil, fmt.Errorf(
-			"http router: initialize rate limiter: %w",
-			err,
-		)
+		return nil, fmt.Errorf("http router: initialize rate limiter: %w", err)
 	}
 
-	timeoutMiddleware, err := middleware.NewTimeout(
-		cfg.RequestTimeout,
-	)
+	timeoutMiddleware, err := middleware.NewTimeout(cfg.RequestTimeout)
 	if err != nil {
 		rateLimiter.Close()
-
-		return nil, fmt.Errorf(
-			"http router: initialize request timeout: %w",
-			err,
-		)
+		return nil, fmt.Errorf("http router: initialize request timeout: %w", err)
 	}
 
 	// ------------------------------------------------------------
-	// Public routes
+	// Route Definitions
 	// ------------------------------------------------------------
 
+	// Public routes (no authentication required)
 	publicMux := http.NewServeMux()
-
 	publicMux.HandleFunc("/", root.RootHandler)
 	publicMux.HandleFunc("/health", health.Health)
 	publicMux.HandleFunc("/health/live", health.Live)
 	publicMux.HandleFunc("/health/ready", health.Ready(cfg.DB))
-	publicMux.Handle(
-		"/swagger/",
-		httpSwagger.Handler(
-			httpSwagger.URL("/swagger/doc.json"),
-		),
-	)
+	publicMux.Handle("/swagger/", httpSwagger.Handler(
+		httpSwagger.URL("/swagger/doc.json"),
+	))
 
-	// ------------------------------------------------------------
-	// Protected routes
-	// ------------------------------------------------------------
-
+	// Protected routes (require authentication)
 	protectedMux := http.NewServeMux()
+	// Register protected API endpoints here
+	// protectedMux.HandleFunc("/api/v1/photos", photoHandler.List)
 
-	// Register protected API endpoints here.
-	//
-	// Example:
-	//
-	// protectedMux.HandleFunc(
-	//     "/api/v1/photos",
-	//     photoHandler.List,
-	// )
-
-	protectedHandler := middleware.AuthMiddleware(
-		cfg.JWTValidator,
-	)(
-		middleware.TenantMiddleware(
-			protectedMux,
-		),
+	protectedHandler := middleware.AuthMiddleware(cfg.JWTValidator)(
+		middleware.TenantMiddleware(protectedMux),
 	)
 
-	// ------------------------------------------------------------
-	// Root router
-	// ------------------------------------------------------------
-
+	// Root router combines public and protected routes
 	rootMux := http.NewServeMux()
+	rootMux.Handle("/api/", protectedHandler) // Protected API routes
+	rootMux.Handle("/", publicMux)             // Public routes
 
-	// Everything under /api/ is protected.
-	rootMux.Handle("/api/", protectedHandler)
+	traceOpts := []middleware.TraceMiddlewareOption{
+		middleware.WithServiceName("saas-photo-listing-platform"),
+		middleware.WithFilter(func(r *http.Request) bool {
+			return strings.HasPrefix(r.URL.Path, "/health") ||
+				strings.HasPrefix(r.URL.Path, "/swagger")
+		}),
+	}
 
-	// Everything else is public.
-	rootMux.Handle("/", publicMux)
+	if cfg.TracerProvider != nil {
+		traceOpts = append(traceOpts, middleware.WithTracerProvider(cfg.TracerProvider))
+	}
 
 	// ------------------------------------------------------------
-	// Common middleware
+	// Middleware Chain Construction
 	// ------------------------------------------------------------
 
-	// Middleware executes from outside → inside.
-	//
-	// Recovery
-	//   Request ID
-	//     Tracing
-	//       CORS
-	//         Rate limiting
-	//           Timeout
-	//             Logging
-	//               Router
-	handler := middleware.RecoveryMiddleware(
-		logger,
-	)(
+	// Middleware order (outer → inner):
+	// 1. Recovery (catch panics)
+	// 2. Request ID (add unique ID to context)
+	// 3. Tracing (distributed tracing)
+	// 4. CORS (handle cross-origin requests)
+	// 5. Rate Limiting (throttle excessive requests)
+	// 6. Logging (request/response logging)
+	// 7. Timeout (request deadline enforcement)
+	// 8. Router (actual request handling)
+	// Recovery → RequestID → Trace → CORS → RateLimit → Logger → Timeout → Router
+	handler := middleware.RecoveryMiddleware(logger)(
 		middleware.RequestIDMiddleware(
-			middleware.NewTraceMiddleware(
-				middleware.WithServiceName("saas-photo-listing-platform"),
-			)(
+			middleware.NewTraceMiddleware(traceOpts...)(
 				corsMiddleware(
 					rateLimiter.RateLimitMiddleware(
-						timeoutMiddleware(
-							middleware.LoggerMiddleware(
-								logger,
-							)(
+						middleware.LoggerMiddleware(logger)(
+							timeoutMiddleware(
 								rootMux,
 							),
 						),
@@ -180,27 +149,8 @@ func (r *Router) Handler() http.Handler {
 }
 
 // Close releases resources owned by the router.
-//
-// Currently this stops the rate limiter's cleanup goroutine.
 func (r *Router) Close() {
-	if r == nil {
-		return
-	}
-
-	if r.rateLimiter != nil {
+	if r != nil && r.rateLimiter != nil {
 		r.rateLimiter.Close()
 	}
 }
-
-// // Configuring NewTraceMiddleware
-// handler = middleware.NewTraceMiddleware(
-//     middleware.WithServiceName("saas-photo-listing-platform"),
-//     middleware.WithFilter(func(r *http.Request) bool {
-// 		// Exclude health, metrics, and other infrastructure endpoints
-// 		return r.URL.Path == "/health" ||
-// 			r.URL.Path == "/ready" ||
-// 			strings.HasPrefix(r.URL.Path, "/metrics") ||
-// 			strings.HasPrefix(r.URL.Path, "/debug/pprof")
-// 	}),
-//     middleware.WithPublicEndpointFn(), // treat all incoming requests as root spans
-// )(handler)
