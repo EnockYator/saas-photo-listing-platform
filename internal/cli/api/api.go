@@ -4,17 +4,20 @@ import (
 	"context"
 	"log"
 	"log/slog"
+	"net/http"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 
 	"github.com/EnockYator/saas-photo-listing-platform/internal/cli"
 	"github.com/EnockYator/saas-photo-listing-platform/internal/config"
+	"github.com/EnockYator/saas-photo-listing-platform/internal/domain/auth/infrastructure/jwt"
 	"github.com/EnockYator/saas-photo-listing-platform/internal/infrastructure/database/postgres"
+	"github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http/middleware"
 	"github.com/EnockYator/saas-photo-listing-platform/internal/observability/tracing"
 
 	httpserver "github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http"
-	"github.com/EnockYator/saas-photo-listing-platform/internal/interfaces/http/dto/auth"
 )
 
 var apiCmd = &cobra.Command{
@@ -22,6 +25,7 @@ var apiCmd = &cobra.Command{
 	Short: "Start HTTP API server",
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := config.Load()
+		ctx, cancel := context.WithCancel(context.Background())
 
 		if err := cfg.Validate(); err != nil {
 			log.Fatal("invalid config:", err)
@@ -36,35 +40,32 @@ var apiCmd = &cobra.Command{
 			),
 		)
 
-		ctx, cancel := context.WithCancel(context.Background())
-
+		// Initialize tracing
 		tp, err := tracing.Init(
 			ctx,
 			tracing.Config{
 				ServiceName:    "cloud-gallery-api",
 				ServiceVersion: "1.0.0",
-				Environment:    "development",
+				DeploymentEnv:    "development",
 				SamplingRatio:  0.10,
+				OTLPEndpoint:    "",
+				OTLPHeaders:     "",
+				ShutdownTimeout: 5 * time.Second,
 			},
 			logger,
 		)
 		if err != nil {
-			logger.Error(
-				"failed to initialize tracing",
-				"error", err,
-			)
+			logger.Error("failed to initialize tracing", "error", err)
 			os.Exit(1)
 		}
 
 		defer func() {
-			if err := tracing.Shutdown(tp, 5*time.Second); err != nil {
-				logger.Error(
-					"failed to shutdown tracing",
-					"error", err,
-				)
+			if err := tracing.Shutdown(ctx, tp); err != nil {
+				logger.Error("failed to shutdown tracing", "error", err)
 			}
 		}()
 
+		// Connect to database
 		db, err := postgres.New(cfg.Database)
 		if err != nil {
 			log.Fatal("failed to connect to database:", err)
@@ -72,66 +73,63 @@ var apiCmd = &cobra.Command{
 
 		defer func() {
 			if err := db.Close(); err != nil {
-				logger.Error(
-					"failed to close database",
-					slog.Any("error", err),
-				)
+				logger.Error("failed to close database", slog.Any("error", err))
 			}
 		}()
 
+		// JWT secret
 		secret := os.Getenv("JWT_SECRET")
 		if secret == "" {
 			log.Fatal("JWT_SECRET environment variable is required")
 		}
 
-		// server := httpserver.NewServer(
-		// 	cfg,
-		// 	db,
-		// 	httpserver.ServerOptions{
-		// 		Logger:         logger,
-		// 		JWTValidator:   tokenValidator,
-		// 		TracerProvider: otel.GetTracerProvider(),
+		// Create JWT validator
+		tokenValidator := jwt.TokenValidater(secret)
 
-		// 		CORS: middleware.CORSConfig{
-		// 			AllowedOrigins: []string{
-		// 				"http://localhost:3000",
-		// 			},
-		// 			AllowedMethods: []string{
-		// 				http.MethodGet,
-		// 				http.MethodPost,
-		// 				http.MethodPut,
-		// 				http.MethodPatch,
-		// 				http.MethodDelete,
-		// 				http.MethodOptions,
-		// 			},
-		// 			AllowedHeaders: []string{
-		// 				"Authorization",
-		// 				"Content-Type",
-		// 				"X-Request-ID",
-		// 			},
-		// 			AllowCredentials: false,
-		// 			MaxAge:           3600,
-		// 		},
+		// Build complete server options
+		serverOpts := httpserver.ServerOptions{
+			Logger:         logger,
+			JWTValidator:   tokenValidator,
+			TracerProvider: tp,
 
-		// 		RateLimiter: middleware.RateLimiterConfig{
-		// 			RequestsPerSecond: 10,
-		// 			Burst:             20,
-		// 			CleanupInterval:   10 * time.Minute,
-		// 			TrustProxy:        false,
-		// 		},
+			CORS: middleware.CORSConfig{
+				AllowedOrigins: []string{
+					"http://localhost:3000",
+				},
+				AllowedMethods: []string{
+					http.MethodGet,
+					http.MethodPost,
+					http.MethodPut,
+					http.MethodPatch,
+					http.MethodDelete,
+					http.MethodOptions,
+				},
+				AllowedHeaders: []string{
+					"Authorization",
+					"Content-Type",
+					"X-Request-ID",
+				},
+				AllowCredentials: false,
+				MaxAge:           3600,
+			},
 
-		// 		RequestTimeout: 30 * time.Second,
-		// 	},
-		// )
+			RateLimiter: middleware.RateLimiterConfig{
+				RequestsPerSecond: 10,
+				Burst:             20,
+				CleanupInterval:   10 * time.Minute,
+				TrustProxy:        false,
+			},
 
-		server := httpserver.NewServer(cfg, db, nil)
+			RequestTimeout: 30 * time.Second,
+		}
+
+		// Start the server
+		server := httpserver.NewServer(cfg, db, serverOpts)
 		if err := server.Start(); err != nil {
-			logger.Error(
-				"server stopped with error",
-				slog.Any("error", err),
-			)
+			logger.Error("server stopped with error", slog.Any("error", err))
 			os.Exit(1)
 		}
+		defer cancel()
 	},
 }
 
