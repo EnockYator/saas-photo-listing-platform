@@ -87,7 +87,7 @@ func WithPublicEndpointFn() TraceMiddlewareOption {
 //	    middleware.WithFilter(func(r *http.Request) bool {
 //	        return r.URL.Path == "/health" || r.URL.Path == "/metrics"
 //	    }),
-//	    middleware.WithPublicEndpointFn(), // treat all incoming requests as public endpoints (no auth required)
+//	    middleware.WithPublicEndpoint(), // treat all incoming requests as public endpoints (no auth required)
 //	)(myHandler)
 func NewTraceMiddleware(opts ...TraceMiddlewareOption) func(http.Handler) http.Handler {
 	cfg := &TraceMiddlewareConfig{
