@@ -23,7 +23,7 @@ type Server struct {
 	db  *sql.DB
 
 	logger         *slog.Logger
-	jwtValidator   jwt.TokenValidator
+	jwtValidator   jwt.Validator
 	tracerProvider trace.TracerProvider
 	cors           middleware.CORSConfig
 	rateLimiter    middleware.RateLimiterConfig
@@ -37,7 +37,6 @@ type Server struct {
 // providers.
 type ServerOptions struct {
 	Logger         *slog.Logger
-	JWTValidator   jwt.TokenValidator
 	TracerProvider trace.TracerProvider
 	CORS           middleware.CORSConfig
 	RateLimiter    middleware.RateLimiterConfig
@@ -55,12 +54,22 @@ func NewServer(
 		logger = slog.Default()
 	}
 
+	// Create a validator for Google (or any OIDC provider)
+	tokenValidator, err := jwt.NewValidator(
+		context.Background(),
+		"https://accounts.google.com", // OIDC issuer
+		"YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com", // audience / client ID
+	)
+	if err != nil {
+		logger.Error("failed to validate token", err)
+	}
+
 	return &Server{
 		cfg: cfg,
 		db:  db,
 
 		logger:         logger,
-		jwtValidator:   opts.JWTValidator,
+		jwtValidator:   tokenValidator,
 		tracerProvider: opts.TracerProvider,
 		cors:           opts.CORS,
 		rateLimiter:    opts.RateLimiter,
