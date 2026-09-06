@@ -121,3 +121,8 @@ func getString(ctx context.Context, key contextKey) string {
 
 	return value
 }
+
+func GetRootCtx() (context.Context, context.CancelFunc) {
+	ctx, cancel := context.WithCancel(context.Background())
+	return ctx, cancel
+}
