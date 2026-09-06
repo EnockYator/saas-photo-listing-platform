@@ -93,7 +93,7 @@ func NewRouter(cfg RouterConfig) (*Router, error) {
 	// Root router combines public and protected routes
 	rootMux := http.NewServeMux()
 	rootMux.Handle("/api/", protectedHandler) // Protected API routes
-	rootMux.Handle("/", publicMux)             // Public routes
+	rootMux.Handle("/", publicMux)            // Public routes
 
 	traceOpts := []middleware.TraceMiddlewareOption{
 		middleware.WithServiceName("saas-photo-listing-platform"),

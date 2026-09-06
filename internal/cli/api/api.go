@@ -44,10 +44,10 @@ var apiCmd = &cobra.Command{
 		tp, err := tracing.Init(
 			ctx,
 			tracing.Config{
-				ServiceName:    "cloud-gallery-api",
-				ServiceVersion: "1.0.0",
-				DeploymentEnv:    "development",
-				SamplingRatio:  0.10,
+				ServiceName:     "cloud-gallery-api",
+				ServiceVersion:  "1.0.0",
+				DeploymentEnv:   "development",
+				SamplingRatio:   0.10,
 				OTLPEndpoint:    "",
 				OTLPHeaders:     "",
 				ShutdownTimeout: 5 * time.Second,

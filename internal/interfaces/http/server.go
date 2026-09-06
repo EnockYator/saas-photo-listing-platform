@@ -57,7 +57,7 @@ func NewServer(
 	// Create a validator for Google (or any OIDC provider)
 	tokenValidator, err := jwt.NewValidator(
 		context.Background(),
-		"https://accounts.google.com", // OIDC issuer
+		"https://accounts.google.com",                      // OIDC issuer
 		"YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com", // audience / client ID
 	)
 	if err != nil {
