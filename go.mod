@@ -4,12 +4,12 @@ go 1.25.0
 
 require (
 	github.com/coreos/go-oidc/v3 v3.21.0
-	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.9.2
 	github.com/joho/godotenv v1.5.1
 	github.com/spf13/cobra v1.10.2
+	github.com/swaggo/http-swagger v1.3.4
 	github.com/swaggo/swag v1.8.1
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.71.0
 	go.opentelemetry.io/otel v1.46.0
@@ -45,7 +45,6 @@ require (
 	github.com/lib/pq v1.12.3 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
-	github.com/swaggo/http-swagger v1.3.4 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.46.0 // indirect
 	go.opentelemetry.io/otel/metric v1.46.0 // indirect
